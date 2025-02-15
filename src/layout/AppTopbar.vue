@@ -30,7 +30,7 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
                     </g>
                 </svg>
 
-                <span>BookStore</span>
+                <span>Toys Store</span>
             </router-link>
         </div>
 

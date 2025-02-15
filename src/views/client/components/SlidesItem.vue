@@ -6,10 +6,10 @@
     </swiper>
 </template>
 <script setup>
-import image6 from '@/assets/img/10.jpg';
-import { default as image5 } from '@/assets/img/10.webp';
-import image3 from '@/assets/img/8.webp';
-import image7 from '@/assets/img/9.webp';
+import image3 from '@/assets/img/1.webp';
+import image7 from '@/assets/img/2.webp';
+import image5 from '@/assets/img/3.webp';
+import image6 from '@/assets/img/4.webp';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -32,8 +32,9 @@ const images = [
 </script>
 <style>
 .mySwiper {
-    width: 100%;
-    height: 100%;
+    width: 80%;
+    height: 600px;
+    border-radius: 25px;
 }
 .slide-image {
     width: 100%;
