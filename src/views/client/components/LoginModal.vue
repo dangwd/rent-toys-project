@@ -3,7 +3,7 @@
         <Button icon="pi pi-user" rounded label="Dang" text></Button>
     </div>
     <div v-else>
-        <Button @click="openLogin()" class="w-40" text icon="pi pi-sign-in" label="Đăng nhập"></Button>
+        <Button @click="openLogin()" class="w-40" icon="pi pi-sign-in" rounded label="Đăng nhập"></Button>
 
         <Dialog v-model:visible="visible" modal header="&nbsp;" position="top" :style="{ width: '50rem' }">
             <div class="flex items-center justify-center">
