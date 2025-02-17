@@ -1,6 +1,6 @@
 <template>
     <div v-if="user">
-        <Button icon="pi pi-user" rounded label="Dang" text></Button>
+        <Button icon="pi pi-user" rounded label="Dang" ></Button>
     </div>
     <div v-else>
         <Button @click="openLogin()" class="w-40" icon="pi pi-sign-in" rounded label="Đăng nhập"></Button>
