@@ -4,7 +4,7 @@ import AppTopbar from './AppTopbar.vue';
 <template>
     <Toast />
     <AppTopbar></AppTopbar>
-    <body class="font-montserrat text-sm bg-white">
+    <body class="font-montserrat h-auto text-sm bg-white">
         <router-view></router-view>
     </body>
 </template>

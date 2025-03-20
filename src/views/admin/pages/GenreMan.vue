@@ -21,7 +21,7 @@ const submitted = ref(false);
 
 const fetchAllGenres = async () => {
     try {
-        const res = await API.get(`genre?skip=0&limit=20`);
+        const res = await API.get(`genres?skip=0&limit=20`);
         Genres.value = res.data.metadata;
     } catch (error) {
         console.log(error);
@@ -29,17 +29,18 @@ const fetchAllGenres = async () => {
 };
 
 const openNew = async (data) => {
+    submitted.value = false;
+
     if (!data._id) {
         genresDialog.value = true;
         return (genreDetail.value = {});
     }
     try {
-        const res = await API.get(`genre/${data.slug}`);
+        const res = await API.get(`genre/${data._id}`);
         genreDetail.value = res.data.metadata;
     } catch (error) {
         console.log(error);
     }
-    submitted.value = false;
     genresDialog.value = true;
 };
 
@@ -49,16 +50,17 @@ function hideDialog() {
 }
 const validateData = (data) => {
     if (!data.genreName) {
-        return false
+        proxy.$notify('W', 'Vui lòng nhập teen thể loại!', toast);
+        return false;
     }
-    return true
-}
+    return true;
+};
 const saveGenre = async () => {
     let data = { ...genreDetail.value };
-    if(!validateData(data)) return
-    let API_EP = data._id ? `genre/${data.slug}` : `genre`;
-    let FUNC_API = data._id ? API.updatev2(API_EP, data) : API.create(API_EP, data);
     submitted.value = true;
+    if (!validateData(data)) return;
+    let API_EP = data._id ? `genre/${data._id}` : `genre`;
+    let FUNC_API = data._id ? API.updatev2(API_EP, data) : API.create(API_EP, data);
     try {
         const res = await FUNC_API;
         if (res.data) {
@@ -80,8 +82,9 @@ const confirmDeleteSelected = async () => {
     try {
         const res = await API.delete(`genre/${genreDetail.value._id}`);
         if (res) {
+            fetchAllGenres();
             proxy.$notify('S', 'Thành công!', toast);
-            deleteProductDialog.value = true;
+            deleteProductDialog.value = false;
         }
     } catch (error) {
         console.log(error);
@@ -115,9 +118,12 @@ function deleteSelectedProducts() {
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText class="w-[300px]" placeholder="Tìm kiếm phim theo tên..." />
+                            <InputText class="w-[300px]" placeholder="Tìm kiếm  theo tên..." />
                         </IconField>
                     </div>
+                </template>
+                <template #empty>
+                    <div class="text-center p-2">Dữ liệu trống</div>
                 </template>
                 <Column header="STT">
                     <template #body="sp">
@@ -141,7 +147,7 @@ function deleteSelectedProducts() {
             <div class="flex flex-col gap-6">
                 <div>
                     <label for="name" class="block font-bold mb-3">Thể loại</label>
-                    <InputText id="name" v-model.trim="genreDetail.genreName" required="true" autofocus :invalid="submitted && !genreDetail.genreName" fluid />
+                    <InputText id="name" v-model="genreDetail.genreName" required="true" autofocus :invalid="submitted && !genreDetail.genreName" fluid />
                     <small v-if="submitted && !genreDetail.genreName" class="text-red-500">Tên không được để trống</small>
                 </div>
                 <div>

@@ -17,12 +17,12 @@ export default [
             {
                 path: '/man/books',
                 name: 'books',
-                component: () => import('@/views/admin/pages/BooksMan.vue')
+                component: () => import('@/views/admin/pages/ProductsMan.vue')
             },
             {
                 path: '/man/authors',
                 name: 'authors',
-                component: () => import('@/views/admin/pages/AuthorsMan.vue')
+                component: () => import('@/views/admin/pages/BrandsMan.vue')
             },
             {
                 path: '/man/genre',

@@ -30,7 +30,7 @@ class AuthServices {
             formData.append(key, user[key]);
         }
         return axios
-            .post(api + 'signUp', formData, {
+            .post(api + 'register', formData, {
                 headers: {
                     'Content-Type': 'application/x-www-form-urlencoded'
                 }

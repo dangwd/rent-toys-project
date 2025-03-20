@@ -1,6 +1,6 @@
 <template>
     <div v-if="user">
-        <Button icon="pi pi-user" rounded label="Dang" ></Button>
+        <Button icon="pi pi-user" rounded :label="user.email"></Button>
     </div>
     <div v-else>
         <Button @click="openLogin()" class="w-40" icon="pi pi-sign-in" rounded label="Đăng nhập"></Button>
@@ -11,7 +11,7 @@
                     <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
                         <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
                             <div class="text-center mb-8">
-                                <div class="dark:text-surface-0 text-2xl text-primary font-medium mb-4">Welcome to BookStore!</div>
+                                <div class="dark:text-surface-0 text-2xl text-primary font-medium mb-4">Welcome to ToyStore!</div>
                                 <span class="text-muted-color font-medium">{{ loginForm ? `Đăng nhập để tiếp tục!` : `Đăng ký tài khoản` }}</span>
                             </div>
 
@@ -81,7 +81,7 @@ const router = useRouter();
 const username = ref('');
 const password = ref('');
 const checked = ref(false);
-const user = store?.user?.metadata?.information;
+const user = store?.user.metadata.user;
 
 const handleLogin = async () => {
     const data = {
@@ -99,7 +99,7 @@ const handleLogin = async () => {
 
 const handleRegister = async () => {
     const data = {
-        username: username.value,
+        email: username.value,
         password: password.value
     };
     const res = await store.register(data);

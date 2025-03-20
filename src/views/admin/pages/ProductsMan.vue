@@ -7,7 +7,7 @@ const { proxy } = getCurrentInstance();
 const toast = useToast();
 
 onMounted(() => {
-    fetchAllActors();
+    fetchAllProducts();
 });
 
 const formData = new FormData();
@@ -16,7 +16,7 @@ const Actors = ref();
 const actorDialog = ref(false);
 const deleteProductDialog = ref(false);
 const deleteProductsDialog = ref(false);
-const actorDetail = ref({});
+const productDetail = ref({});
 const selectedProducts = ref();
 const statuses = ref([
     {
@@ -30,10 +30,10 @@ const statuses = ref([
 ]);
 const submitted = ref(false);
 
-const fetchAllActors = async () => {
+const fetchAllProducts = async () => {
     try {
-        const res = await API.get(`actors?skip=0&limit=20`);
-        Actors.value = res.data.metadata;
+        const res = await API.get(`products?skip=0&limit=20`);
+        Actors.value = res.data.metadata.result;
     } catch (error) {
         console.log(error);
     }
@@ -42,9 +42,9 @@ const fetchAllActors = async () => {
 const openNew = async (data) => {
     if (data._id) {
         try {
-            const res = await API.get(`actor/${data._id}`);
+            const res = await API.get(`product/${data._id}`);
             console.log(res.data);
-            actorDetail.value = res.data.metadata;
+            productDetail.value = res.data.metadata;
         } catch (error) {
             console.log(error);
         }
@@ -58,20 +58,20 @@ function hideDialog() {
     submitted.value = false;
 }
 
-const saveActor = async () => {
+const saveProduct = async () => {
     submitted.value = true;
 
-    let data = { ...actorDetail.value };
+    let data = { ...productDetail.value };
     if (data._id) {
-        delete actorDetail.value.images;
+        delete productDetail.value.images;
     }
-    let URL_ENDPOINT = data._id ? `actor/${data._id}` : `actor`;
+    let URL_ENDPOINT = data._id ? `product/${data._id}` : `product`;
     formData.append('items', JSON.stringify(data));
     let FUNC_API = data._id ? API.updatev2(URL_ENDPOINT, formData) : API.create(URL_ENDPOINT, formData);
     try {
         const res = await FUNC_API;
         if (res.data) {
-            fetchAllActors();
+            fetchAllProducts();
             proxy.$notify('S', 'Thao tác thành công!', toast);
             actorDialog.value = false;
         }
@@ -84,17 +84,17 @@ const saveActor = async () => {
 };
 
 const deleteActorDlg = (data) => {
-    actorDetail.value = data;
+    productDetail.value = data;
     deleteProductDialog.value = true;
 };
 
 const confirmDeleteSelected = async () => {
     try {
-        const res = await API.delete(`actor/${actorDetail.value._id}`);
+        const res = await API.delete(`product/${productDetail.value._id}`);
         if (res.data) {
-            fetchAllActors();
+            fetchAllProducts();
             deleteProductDialog.value = false;
-            proxy.$notify();
+            proxy.$notify('S', 'Xóa thành công!', toast);
         }
     } catch (error) {}
 };
@@ -105,7 +105,7 @@ const UploadFileLocal = async (event, index) => {
     const file = event.target.files[0];
     formData.append('images', file);
     document.querySelectorAll('.click-file')[index].value = '';
-    actorDetail.value.files = URL.createObjectURL(file);
+    productDetail.value.files = URL.createObjectURL(file);
 };
 function deleteSelectedProducts() {
     Actors.value = Actors.value.filter((val) => !selectedProducts.value.includes(val));
@@ -119,7 +119,7 @@ function deleteSelectedProducts() {
         <div class="card">
             <Toolbar class="mb-6">
                 <template #start>
-                    <strong class="text-lg">Danh sách Sách</strong>
+                    <strong class="text-lg">Danh sách sản phẩm</strong>
                 </template>
                 <template #end>
                     <Button label="Thêm mới" icon="pi pi-plus" @click="openNew" />
@@ -129,35 +129,40 @@ function deleteSelectedProducts() {
             <DataTable ref="dt" v-model:selection="selectedProducts" showGridlines :value="Actors" dataKey="id" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 25]">
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Danh sách Sách</h4>
+                        <h4 class="m-0">Danh sách sản phẩm</h4>
                         <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText class="w-[300px]" placeholder="Tìm kiếm diễn viên theo tên..." />
+                            <InputText class="w-[300px]" placeholder="Tìm kiếm theo tên..." />
                         </IconField>
                     </div>
+                </template>
+                <template #empty>
+                    <div class="text-center p-2">Dữ liệu trống</div>
                 </template>
                 <Column header="STT">
                     <template #body="sp">
                         {{ sp.index + 1 }}
                     </template>
                 </Column>
-                <Column field="actorName" header="Tên diễn viên"></Column>
+                <Column field="productName" style="max-width: 200px" header="Tên sản phẩm"></Column>
                 <Column field="images" header="Ảnh">
                     <template #body="sp">
                         <Image crossorigin="anonymous" :src="sp.data.images[0]" alt="Image" width="50" />
                     </template>
                 </Column>
 
-                <Column field="actorDescription" header="Mô tả"></Column>
-                <Column field="placeOfBirth" header="Nơi sinh"></Column>
-                <Column field="birthDay" header="Ngày sinh">
+                <Column field="genre" header="Thể loại"></Column>
+                <Column field="brand" header="Thương hiệu"></Column>
+                <Column field="quantity" header="Số lượng">
                     <template #body="sp">
                         {{ sp.data.birthDay }}
                     </template>
                 </Column>
-                <Column field="status" header="Trạng thái"></Column>
+                <Column field="madeIn" header="Xuất xứ"></Column>
+                <Column field="age" header="Độ tuổi"></Column>
+                <Column field="sex" header="Giới tính"></Column>
                 <Column field="" header="Thao tác">
                     <template #body="sp">
                         <div class="flex gap-2">
@@ -169,12 +174,12 @@ function deleteSelectedProducts() {
             </DataTable>
         </div>
 
-        <Dialog v-model:visible="actorDialog" :style="{ width: '70%' }" header="Diễn viên" :modal="true">
+        <Dialog v-model:visible="actorDialog" :style="{ width: '70%' }" header="Sản phẩm" :modal="true">
             <div class="grid grid-cols-12">
                 <div class="col-span-4">
                     <div class="flex flex-col items-center gap-2">
                         <div class="rounded-full">
-                            <!-- <Image crossorigin="anonymous" :src="actorDetail?.images[0]" alt="Image" width="200" /> -->
+                            <Image crossorigin="anonymous" :src="actorDetail?.images ? actorDetail?.images[0] : `https://placehold.co/600x400`" alt="Image" width="200" />
                         </div>
                         <div>
                             <Button label="Chọn ảnh" icon="pi pi-cloud-upload" class="btn-up-file" raised @click="Openfile(index)" />
@@ -185,58 +190,64 @@ function deleteSelectedProducts() {
                 <div class="col-span-8">
                     <div class="flex flex-col gap-6">
                         <div>
-                            <label for="name" class="block font-bold mb-3">Tên sách</label>
-                            <InputText id="name" v-model.trim="actorDetail.actorName" required="true" autofocus :invalid="submitted && !actorDetail.actorName" fluid />
-                            <small v-if="submitted && !actorDetail.actorName" class="text-red-500">actorName is required.</small>
-                        </div>
-                        <div>
-                            <label for="description" class="block font-bold mb-3">Ngày sinh</label>
-                            <DatePicker v-model="actorDetail.birthDay" rows="3" cols="20" fluid />
-                        </div>
-                        <div>
-                            <label for="description" class="block font-bold mb-3">Nơi sinh</label>
-                            <InputText v-model="actorDetail.placeOfBirth" required="true" rows="3" cols="20" fluid />
+                            <label for="name" class="block font-bold mb-3">Tên sản phẩm</label>
+                            <InputText id="name" v-model="productDetail.productName" required="true" autofocus :invalid="submitted && !productDetail.actorName" fluid />
                         </div>
                         <div>
                             <label for="description" class="block font-bold mb-3">Mô tả</label>
-                            <Textarea v-model="actorDetail.actorDescription" required="true" rows="3" cols="20" fluid />
+                            <Textarea v-model="productDetail.description" required="true" rows="3" cols="20" fluid />
                         </div>
-                        <!-- <div>
-                    <label for="inventoryStatus" class="block font-bold mb-3">Trạng thái</label>
-                    <Select id="inventoryStatus" :options="statuses" optionLabel="label" placeholder="Chọn trạng thái" fluid></Select>
-                </div> -->
+                        <div class="flex gap-2 justify-between items-center">
+                            <div class="w-full">
+                                <label class="block font-bold mb-3">Thể loại</label>
+                                <InputText v-model="productDetail.genre" required="true" autofocus :invalid="submitted && !productDetail.genre" fluid />
+                            </div>
+                            <div class="w-full">
+                                <label class="block font-bold mb-3">Thương hiệu</label>
+                                <InputText v-model.trim="productDetail.brand" required="true" autofocus :invalid="submitted && !productDetail.brand" fluid />
+                            </div>
+                        </div>
+                        <div class="flex gap-2 justify-between items-center">
+                            <div class="w-full">
+                                <label class="block font-bold mb-3">Số lượng</label>
+                                <InputNumber v-model="productDetail.quantity" required="true" autofocus :invalid="submitted && !productDetail.quantity" fluid />
+                            </div>
+                            <div class="w-full">
+                                <label class="block font-bold mb-3">Xuất xứ</label>
+                                <InputNumber v-model="productDetail.madeIn" required="true" autofocus :invalid="submitted && !productDetail.madeIn" fluid />
+                            </div>
+                        </div>
+                        <div class="flex gap-2 justify-between items-center">
+                            <div class="w-full">
+                                <label class="block font-bold mb-3">Tuổi</label>
+                                <InputNumber v-model="productDetail.age" required="true" autofocus :invalid="submitted && !productDetail.age" fluid />
+                            </div>
+                            <div class="w-full">
+                                <label class="block font-bold mb-3">Giới tính</label>
+                                <InputNumber v-model="productDetail.sex" required="true" autofocus :invalid="submitted && !productDetail.sex" fluid />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <template #footer>
                 <Button label="Hủy" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Xác nhận" icon="pi pi-check" @click="saveActor()" />
+                <Button label="Xác nhận" icon="pi pi-check" @click="saveProduct()" />
             </template>
         </Dialog>
 
         <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Xác nhận" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="actorDetail"
-                    >Xác nhận xóa <b>{{ actorDetail.actorName }}</b
+                <span v-if="productDetail"
+                    >Xác nhận xóa <b>{{ productDetail.actorName }}</b
                     >?</span
                 >
             </div>
             <template #footer>
                 <Button label="Hủy" icon="pi pi-times" severity="secondary" @click="deleteProductDialog = false" />
                 <Button label="Xác nhận" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="actorDetail">Are you sure you want to delete the selected products?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false" />
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
             </template>
         </Dialog>
     </div>
