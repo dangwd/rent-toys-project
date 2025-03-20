@@ -8,8 +8,26 @@ const toast = useToast();
 
 onMounted(() => {
     fetchAllProducts();
+    fetchAllGenres();
+    fetchAllBrand();
 });
 
+const GenderOpts = ref([
+    {
+        label: 'Nam',
+        value: 'M'
+    },
+    {
+        label: 'Nữ',
+        value: 'F'
+    },
+    {
+        label: 'Khác',
+        value: 'O'
+    }
+]);
+const BrandOpts = ref([]);
+const GenresOpt = ref([]);
 const formData = new FormData();
 const dt = ref();
 const Actors = ref();
@@ -52,7 +70,22 @@ const openNew = async (data) => {
     submitted.value = false;
     actorDialog.value = true;
 };
-
+const fetchAllGenres = async () => {
+    try {
+        const res = await API.get(`genres`);
+        GenresOpt.value = res.data.metadata;
+    } catch (error) {
+        console.log(error);
+    }
+};
+const fetchAllBrand = async () => {
+    try {
+        const res = await API.get(`brands`);
+        BrandOpts.value = res.data.metadata;
+    } catch (error) {
+        console.log(error);
+    }
+};
 function hideDialog() {
     actorDialog.value = false;
     submitted.value = false;
@@ -107,11 +140,6 @@ const UploadFileLocal = async (event, index) => {
     document.querySelectorAll('.click-file')[index].value = '';
     productDetail.value.files = URL.createObjectURL(file);
 };
-function deleteSelectedProducts() {
-    Actors.value = Actors.value.filter((val) => !selectedProducts.value.includes(val));
-    deleteProductsDialog.value = false;
-    selectedProducts.value = null;
-}
 </script>
 
 <template>
@@ -146,23 +174,35 @@ function deleteSelectedProducts() {
                         {{ sp.index + 1 }}
                     </template>
                 </Column>
-                <Column field="productName" style="max-width: 200px" header="Tên sản phẩm"></Column>
+                <Column field="productName" style="max-width: 200px" header="Tên sản phẩm">
+                    <template #body="{ data }">
+                        <span class="line-clamp-2">{{ data.productName }}</span>
+                    </template>
+                </Column>
                 <Column field="images" header="Ảnh">
                     <template #body="sp">
                         <Image crossorigin="anonymous" :src="sp.data.images[0]" alt="Image" width="50" />
                     </template>
                 </Column>
-
-                <Column field="genre" header="Thể loại"></Column>
-                <Column field="brand" header="Thương hiệu"></Column>
-                <Column field="quantity" header="Số lượng">
-                    <template #body="sp">
-                        {{ sp.data.birthDay }}
+                <Column field="descriptions" header="Mô tả" style="max-width: 200px"></Column>
+                <Column field="genre" header="Thể loại">
+                    <template #body="{ data }">
+                        <span class="line-clamp-3">{{ data.genre?.genreName }}</span>
                     </template>
                 </Column>
+                <Column field="brand" header="Thương hiệu">
+                    <template #body="{ data }">
+                        {{ data.brand?.brandName }}
+                    </template>
+                </Column>
+                <Column field="quantity" header="Số lượng"> </Column>
                 <Column field="madeIn" header="Xuất xứ"></Column>
                 <Column field="age" header="Độ tuổi"></Column>
-                <Column field="sex" header="Giới tính"></Column>
+                <Column field="sex" header="Giới tính">
+                    <template #body="{ data }">
+                        {{ data.sex === 'M' ? 'Nam' : data.sex === 'F' ? 'Nữ' : 'Khác' }}
+                    </template>
+                </Column>
                 <Column field="" header="Thao tác">
                     <template #body="sp">
                         <div class="flex gap-2">
@@ -179,7 +219,8 @@ function deleteSelectedProducts() {
                 <div class="col-span-4">
                     <div class="flex flex-col items-center gap-2">
                         <div class="rounded-full">
-                            <Image crossorigin="anonymous" :src="actorDetail?.images ? actorDetail?.images[0] : `https://placehold.co/600x400`" alt="Image" width="200" />
+                            <Image v-if="productDetail.files" crossorigin="anonymous" :src="productDetail.files" alt="Image" width="200" />
+                            <Image v-else crossorigin="anonymous" :src="productDetail?.images ? productDetail?.images[0] : `https://placehold.co/600x600`" alt="Image" width="200" />
                         </div>
                         <div>
                             <Button label="Chọn ảnh" icon="pi pi-cloud-upload" class="btn-up-file" raised @click="Openfile(index)" />
@@ -195,16 +236,21 @@ function deleteSelectedProducts() {
                         </div>
                         <div>
                             <label for="description" class="block font-bold mb-3">Mô tả</label>
-                            <Textarea v-model="productDetail.description" required="true" rows="3" cols="20" fluid />
+                            <Textarea v-model="productDetail.descriptions" required="true" rows="3" cols="20" fluid />
+                        </div>
+                        <div>
+                            <label class="block font-bold mb-3">Giá tiền</label>
+                            <InputNumber v-model="productDetail.price" required="true" autofocus :invalid="submitted && !productDetail.price" fluid />
                         </div>
                         <div class="flex gap-2 justify-between items-center">
                             <div class="w-full">
                                 <label class="block font-bold mb-3">Thể loại</label>
-                                <InputText v-model="productDetail.genre" required="true" autofocus :invalid="submitted && !productDetail.genre" fluid />
+                                <!-- <InputText v-model="productDetail.genre" required="true" autofocus :invalid="submitted && !productDetail.genre" fluid /> -->
+                                <Dropdown v-model="productDetail.genre" :options="GenresOpt" optionLabel="genreName" class="w-full" optionValue="_id"></Dropdown>
                             </div>
                             <div class="w-full">
                                 <label class="block font-bold mb-3">Thương hiệu</label>
-                                <InputText v-model.trim="productDetail.brand" required="true" autofocus :invalid="submitted && !productDetail.brand" fluid />
+                                <Dropdown v-model="productDetail.brand" class="w-full" :options="BrandOpts" optionLabel="brandName" optionValue="_id"></Dropdown>
                             </div>
                         </div>
                         <div class="flex gap-2 justify-between items-center">
@@ -224,7 +270,7 @@ function deleteSelectedProducts() {
                             </div>
                             <div class="w-full">
                                 <label class="block font-bold mb-3">Giới tính</label>
-                                <InputNumber v-model="productDetail.sex" required="true" autofocus :invalid="submitted && !productDetail.sex" fluid />
+                                <Dropdown v-model="productDetail.sex" class="w-full" :options="GenderOpts" optionValue="value" optionLabel="label"></Dropdown>
                             </div>
                         </div>
                     </div>

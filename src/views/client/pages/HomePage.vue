@@ -1,8 +1,14 @@
 <script setup>
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import banner2 from '../../../assets/img/banner4.webp';
 import ProductsGrid from '../components/ProductsGrid.vue';
 import SlidesItem from '../components/SlidesItem.vue';
+import API from '@/api/api-main';
+
+onMounted(() => {
+    fetchAllProducts();
+});
+const Products = ref([]);
 const SectionData = ref([
     {
         title: 'Ưu đãi độc quyền online từ 15-21/02',
@@ -59,6 +65,14 @@ const SectionData = ref([
         ]
     }
 ]);
+const fetchAllProducts = async () => {
+    try {
+        const res = await API.get(`products?skip=0&limit=20`);
+        Products.value = res.data.metadata.result;
+    } catch (error) {
+        console.log(error);
+    }
+};
 </script>
 <template>
     <body class="font-montserrat text-sm bg-white dark:bg-zinc-900 flex flex-col gap-5">
@@ -73,7 +87,7 @@ const SectionData = ref([
 
             <div class="flex min-h-screen container mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto 2xl:border-x-2 2xl:border-gray-200 dark:2xl:border-zinc-700">
                 <div class="py-10">
-                    <ProductsGrid :data="item.items"></ProductsGrid>
+                    <ProductsGrid :data="Products"></ProductsGrid>
                 </div>
             </div>
         </div>

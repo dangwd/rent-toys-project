@@ -11,7 +11,7 @@ export default [
             {
                 path: '/client/detail/:id',
                 name: 'item-detail',
-                component: () => import('@/views/client/pages/BookDetail.vue')
+                component: () => import('@/views/client/pages/ProductDetail.vue')
             }
         ]
     }

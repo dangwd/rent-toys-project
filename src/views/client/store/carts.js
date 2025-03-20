@@ -10,16 +10,16 @@ export const useCartStore = defineStore('cart', () => {
     };
     const getItem = async () => {
         const res = await API.get(`cart`);
-        cart.value = res.data;
-        console.log(cart.value);
+        cart.value = res.data.metadata;
+        return res.data.metadata
     };
 
-    const addToCart = (product) => {
-        const existingItem = cart.value.find((item) => item.id === product.id);
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            cart.value.push({ ...product, quantity: 1 });
+    const addToCart = async (product) => {
+        try {
+            const res = await API.create('cart/addToCart', product)
+            console.log(res);
+        } catch (error) {
+            console.log(error);
         }
     };
 

@@ -1,10 +1,10 @@
 <template>
     <Card style="overflow: hidden; min-height: 550px; transition: 0.3s ease-in-out" class="hover:shadow-xl hover:bg-primary-100">
         <template #header>
-            <img alt="user header" :src="props.data.thumbnail" />
+            <img alt="user header" :src="props.data.images ? props.data.images[0] : `https://placehold.co/600x400`" />
         </template>
         <template #title>
-            <strong class="text-base">{{ props.data.title }}</strong>
+            <strong class="text-base">{{ props.data.productName }}</strong>
         </template>
 
         <template #footer>

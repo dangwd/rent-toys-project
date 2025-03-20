@@ -9,10 +9,11 @@
                     <span class="font-bold">Giỏ hàng</span>
                 </div>
             </template>
-            <ScrollPanel v-for="(item, index) in ItemsStore" :key="index" style="width: 100%" class="flex flex-col">
+
+            <ScrollPanel v-for="(item, index) in itemInCart.items" :key="index" style="width: 100%" class="flex flex-col">
                 <div class="card border rounded-2xl grid items-center grid-cols-12 p-3 m-0 shadow-md">
                     <div class="col-span-2">
-                        <Image :src="item.thumb" alt="Image" width="70" preview></Image>
+                        <Image :src="item.images ? item.images[0] : ``" alt="Image" width="70" preview></Image>
                     </div>
                     <div class="col-span-8 flex flex-col">
                         <strong>{{ item.title }}</strong>
@@ -61,21 +62,12 @@ import { useCartStore } from '../store/carts';
 const cartModal = ref(false);
 
 const cartStore = useCartStore();
-onMounted(() => {
-    console.log(cartStore.getCartItems());
-});
-
-const openModal = () => {
+const itemInCart = ref([]);
+const openModal = async () => {
     cartModal.value = true;
+    itemInCart.value = await cartStore.getItem();
 };
-const ItemsStore = ref([
-    {
-        title: 'Đồ chơi mô hình tỷ lệ 1:16 xe tải cần cẩu SCANIA BRUDER BRU03570',
-        thumb: 'https://www.mykingdom.com.vn/cdn/shop/files/BRU03570.jpg?v=1736388709&width=990',
-        quantity: 1,
-        price: 31500
-    }
-]);
+const ItemsStore = ref([]);
 const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US').format(price);
 };

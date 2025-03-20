@@ -1,5 +1,5 @@
 <template>
-    <div class="container mx-auto h-screen">
+    <div v-if="detail" class="container mx-auto h-screen">
         <div class="font-montserrat text-sm bg-white dark:bg-zinc-900 flex flex-col gap-5">
             <div class="flex flex-col gap-5 my-5">
                 <div class="flex items-center justify-between">
@@ -8,13 +8,13 @@
                 </div>
                 <div class="grid grid-cols-12 gap-4">
                     <div class="col-span-5">
-                        <img src="https://product.hstatic.net/200000343865/product/2_69e21e81483a4b4096ab04302f0c0632_master.jpg" alt="" />
+                        <img :src="detail.images ? detail.images[0] : ``" alt="" />
                     </div>
                     <div class="col-span-7 flex flex-col gap-3">
-                        <strong class="text-xl uppercase">Tuyển tập Doraemon bóng chày - Truyền kì về bóng chày siêu cấp - Tập 2</strong>
+                        <strong class="text-xl uppercase">{{ detail.productName }}</strong>
                         <hr />
                         <div class="flex gap-4">
-                            <span class="text-2xl font-semibold text-primary">40.500đ</span>
+                            <span class="text-2xl font-semibold text-primary">{{ formatPrice(detail.price) }}đ</span>
                             <span class="text-2xl font-semibold line-through">10.000đ</span>
                         </div>
                         <hr />
@@ -23,7 +23,7 @@
                                 <div class="flex flex-col gap-2">
                                     <div class="flex gap-2">
                                         <span>Mã sách: </span>
-                                        <strong>5242218710002</strong>
+                                        <strong>{{ detail._id }}</strong>
                                     </div>
                                     <div class="flex gap-2">
                                         <span>ISBN: </span>
@@ -57,7 +57,7 @@
                             </div>
                             <div class="col-span-6">
                                 <div class="flex flex-col gap-2">
-                                    <InputNumber inputId="horizontal-buttons" showButtons buttonLayout="horizontal" fluid>
+                                    <InputNumber v-model="quantity" inputId="horizontal-buttons" showButtons buttonLayout="horizontal" fluid>
                                         <template #incrementbuttonicon>
                                             <span class="pi pi-plus" />
                                         </template>
@@ -65,15 +65,14 @@
                                             <span class="pi pi-minus" />
                                         </template>
                                     </InputNumber>
-                                    <Button icon="pi pi-shopping-cart" severity="info" label="Thêm vào giỏ hàng"></Button>
+                                    <Button @click="addToCart()" icon="pi pi-shopping-cart" severity="info" label="Thêm vào giỏ hàng"></Button>
                                     <Button icon="pi pi-verified" label="Mua ngay"></Button>
                                 </div>
                             </div>
                         </div>
                         <Fieldset legend="Mô tả">
                             <p class="m-0 text-base">
-                                Tuyển tập thứ hai những trận đấu nổi bật với các cú ném ma thuật và đòn đánh “sát thủ”! Nối tiếp tiếng vang của tuyển tập thứ nhất, tuyển tập thứ hai tiếp tục điểm lại các trận đấu nổi bật xoay quanh vô số kĩ thuật
-                                “sát thủ” do tác giả tự tay chọn lọc! Ngoài ra còn bao gồm 2 truyện ngắn “Doragolf”! Đây sẽ là tuyển tập mà cả các Fan của Doraemon Bóng chày lẫn Fan của chú mèo ú Doraemon rất mong chờ!
+                                {{ detail.descriptions }}
                             </p>
                         </Fieldset>
                     </div>
@@ -83,13 +82,39 @@
     </div>
 </template>
 <script setup>
-import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import API from '@/api/api-main';
+import { onMounted, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { useCartStore } from '../store/carts';
 const home = ref({
     icon: 'pi pi-home'
 });
 const items = ref([{ label: 'Trang chủ' }, { label: 'Manga -Comic' }, { label: 'Tuyển tập Doraemon bóng chày - Truyền kì về bóng chày siêu cấp - Tập 2' }]);
-
+const detail = ref({});
 const router = useRouter();
+const route = useRoute();
+const quantity = ref(1);
+const cartStore = useCartStore();
+onMounted(() => {
+    fetchDetailProduct();
+});
+const fetchDetailProduct = async () => {
+    try {
+        const res = await API.get(`product/${route.params.id}`);
+        detail.value = res.data.metadata;
+    } catch (error) {
+        console.log(error);
+    }
+};
+const addToCart = async () => {
+    let data = {
+        productId: detail.value._id,
+        quantity: quantity.value
+    };
+    cartStore.addToCart(data);
+};
+const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-US').format(price);
+};
 </script>
 <style></style>

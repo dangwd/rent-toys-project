@@ -15,18 +15,18 @@ export default [
                 }
             },
             {
-                path: '/man/books',
-                name: 'books',
+                path: '/man/products',
+                name: 'products',
                 component: () => import('@/views/admin/pages/ProductsMan.vue')
             },
             {
-                path: '/man/authors',
-                name: 'authors',
+                path: '/man/brands',
+                name: 'brands',
                 component: () => import('@/views/admin/pages/BrandsMan.vue')
             },
             {
-                path: '/man/genre',
-                name: 'genre',
+                path: '/man/genres',
+                name: 'genres',
                 component: () => import('@/views/admin/pages/GenreMan.vue')
             }
         ]
