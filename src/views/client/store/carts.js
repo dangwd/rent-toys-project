@@ -12,10 +12,8 @@ export const useCartStore = defineStore('cart', () => {
     };
     const getItem = async () => {
         const res = await API.get(`cart`);
-        cart.value = res.data.metadata;
-        if (res.data) {
-            return res.data.metadata
-        }
+        return res.data.metadata
+
     };
 
     const addToCart = async (product) => {

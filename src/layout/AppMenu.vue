@@ -10,6 +10,7 @@ const model = ref([
             { label: 'Trang chủ', icon: 'pi pi-fw pi-home', to: '/' },
             { label: 'Sản phẩm', icon: 'pi pi-fw pi-images', to: '/man/products' },
             { label: 'Đơn hàng', icon: 'pi pi-fw pi-file', to: '/man/invoice' },
+            { label: 'Coupon', icon: 'pi pi-fw pi-ticket', to: '/man/coupon' },
             { label: 'Thương hiệu', icon: 'pi pi-fw pi-video', to: '/man/brands' },
             { label: 'Thể loại', icon: 'pi pi-fw pi-map', to: '/man/genres' }
         ]

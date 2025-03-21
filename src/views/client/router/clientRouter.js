@@ -12,7 +12,12 @@ export default [
                 path: '/client/detail/:id',
                 name: 'item-detail',
                 component: () => import('@/views/client/pages/ProductDetail.vue')
-            }
+            },
+            {
+                path: '/client/payment',
+                name: 'payment',
+                component: () => import('@/views/client/pages/Payment.vue')
+            },
         ]
     }
 ];

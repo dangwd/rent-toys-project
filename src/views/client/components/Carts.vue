@@ -36,7 +36,9 @@
                     <span
                         >Tổng cộng <strong>{{ formatPrice(totalCartValue ? totalCartValue : itemInCart.totalPrice) }}đ</strong></span
                     >
-                    <Button label="Thanh toán"></Button>
+                    <router-link to="client/payment">
+                        <Button label="Thanh toán"></Button>
+                    </router-link>
                 </div>
             </template>
         </Drawer>

@@ -28,6 +28,11 @@ export default [
                 path: '/man/genres',
                 name: 'genres',
                 component: () => import('@/views/admin/pages/GenreMan.vue')
+            },
+            {
+                path: '/man/coupon',
+                name: 'coupon',
+                component: () => import('@/views/admin/pages/CouponMan.vue')
             }
         ]
     },
