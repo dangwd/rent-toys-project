@@ -11,16 +11,16 @@
                 <strong class="text-lg">Địa chỉ giao hàng</strong>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Tỉnh/Thành phố</label>
-                    <Dropdown v-model="payload.province" option-value="Code" fluid :options="Province" option-label="FullName" @change="onProvinceChange"></Dropdown>
+                    <Dropdown v-model="payload.province" filter option-value="Code" fluid :options="Province" option-label="FullName" @change="onProvinceChange"></Dropdown>
                 </div>
                 <div class="flex justify-between gap-2">
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Quận/Huyện</label>
-                        <Dropdown v-model="payload.district" fluid :options="Districts" @change="onDistrictChange" option-value="Code" option-label="Name"></Dropdown>
+                        <Dropdown v-model="payload.district" filter fluid :options="Districts" @change="onDistrictChange" option-value="Code" option-label="FullName"></Dropdown>
                     </div>
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Phường/Xã</label>
-                        <Dropdown v-model="payload.ward" :options="Wards" option-label="Name" fluid></Dropdown>
+                        <Dropdown filter v-model="payload.ward" :options="Wards" option-label="FullName" fluid></Dropdown>
                     </div>
                 </div>
                 <div class="flex flex-col gap-2">
@@ -57,12 +57,39 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <Button label="Quay lại" text></Button>
-                            <Button label="Thanh toán"></Button>
+                            <div class="flex gap-2">
+                                <Button @click="openCouponDlg" label="Coupon giảm giá" icon="pi pi-ticket" text></Button>
+
+                                <Button label="Thanh toán"></Button>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+
+        <Drawer v-model:visible="couponModal" position="right" style="width: 30%">
+            <template #header>
+                <div class="flex items-center gap-2">
+                    <Button icon="pi pi-ticket" text></Button>
+                    <span class="font-bold">Coupon giảm giá</span>
+                </div>
+            </template>
+
+            <ScrollPanel v-for="(item, index) in Coupons" :key="index" style="width: 100%" class="flex flex-col my-5">
+                <div class="coupon hover:scale-105 transition-all ease-in-out duration-150">
+                    <div class="left"></div>
+                    <div class="center text-white">
+                        <div class="flex flex-col gap-2">
+                            <div class="">{{ item.CouponName }}</div>
+                            <div class="">Giá trị: {{ formatPrice(item.CouponValue) }}đ</div>
+                            <div class="">Giá trị đơn hàng:{{ formatPrice(item.minOrderValue) }}đ</div>
+                        </div>
+                    </div>
+                    <div class="right"></div>
+                </div>
+            </ScrollPanel>
+        </Drawer>
     </div>
 </template>
 <script setup>
@@ -71,6 +98,7 @@ import { useCartStore } from '../store/carts';
 import { useAuthStore } from '@/store';
 import API from '@/api/api-main';
 
+const Coupons = ref([]);
 const cartStore = useCartStore();
 const auth = useAuthStore();
 const user = auth.user.metadata.user;
@@ -81,6 +109,7 @@ const itemCart = ref([]);
 const payload = ref({
     email: user.email
 });
+const couponModal = ref(false);
 onMounted(async () => {
     itemCart.value = await cartStore.getItem();
     fetchProvince();
@@ -119,6 +148,82 @@ const onProvinceChange = () => {
 const onDistrictChange = () => {
     fetchWard();
 };
+const openCouponDlg = () => {
+    fetchAllCoupon();
+    couponModal.value = true;
+};
+const fetchAllCoupon = async () => {
+    try {
+        const res = await API.get(`coupon`);
+        Coupons.value = res.data.metadata.result;
+    } catch (error) {
+        console.log(error);
+    }
+};
 </script>
 <style>
+.coupon {
+    width: 95%;
+    height: 100px;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: auto;
+    filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+    display: flex;
+    align-items: stretch;
+    position: relative;
+}
+.coupon::before,
+.coupon::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 50%;
+    height: 100%;
+    z-index: -1;
+}
+
+.coupon::before {
+    left: 0;
+    background-image: radial-gradient(circle at 0 50%, transparent 25px, var(--primary-color) 26px);
+}
+
+.coupon::after {
+    right: 0;
+    background-image: radial-gradient(circle at 100% 50%, transparent 25px, var(--primary-color) 26px);
+}
+
+.coupon > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.left {
+    width: 20%;
+    border-right: 2px dashed rgba(0, 0, 0, 0.13);
+}
+
+.center {
+    flex-grow: 1;
+}
+
+.right {
+    width: 120px;
+    background-image: radial-gradient(circle at 100% 50%, transparent 25px, #fff 26px);
+}
+
+.center h2 {
+    background: #000;
+    color: var(--primary-color);
+    padding: 0 10px;
+    font-size: 2.15rem;
+    white-space: nowrap;
+}
+
+.center small {
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 2px;
+}
 </style>

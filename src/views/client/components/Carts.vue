@@ -36,9 +36,7 @@
                     <span
                         >Tổng cộng <strong>{{ formatPrice(totalCartValue ? totalCartValue : itemInCart.totalPrice) }}đ</strong></span
                     >
-                    <router-link to="client/payment">
-                        <Button label="Thanh toán"></Button>
-                    </router-link>
+                    <Button @click="directPayment" label="Thanh toán"></Button>
                 </div>
             </template>
         </Drawer>
@@ -48,9 +46,11 @@
 import { onMounted, ref, watch } from 'vue';
 import { useCartStore } from '../store/carts';
 import API from '@/api/api-main';
+import { useRouter } from 'vue-router';
 const cartModal = ref(false);
 const cartStore = useCartStore();
 
+const router = useRouter();
 onMounted(async () => {
     fetchItem();
 });
@@ -84,6 +84,10 @@ const onQuantityChange = async (e, data) => {
     };
     const res = await cartStore.updateCart(payload);
     totalCartValue.value = res.data.metadata.totalPrice;
+};
+const directPayment = () => {
+    cartModal.value = false;
+    router.push('/client/payment');
 };
 watch(
     () => cartStore.cart,
