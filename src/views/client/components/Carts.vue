@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Button class="w-32" @click="openModal" label="Giỏ hàng" rounded icon="pi pi-shopping-cart"></Button>
+        <Button class="w-32 whitespace-nowrap" @click="openModal" :badge="itemInCart.items?.length" :label="`Giỏ hàng `" rounded icon="pi pi-shopping-cart"></Button>
 
         <Drawer v-model:visible="cartModal" position="right" style="width: 30%">
             <template #header>
@@ -16,15 +16,10 @@
                         <Image :src="item.images ? item.images[0] : ``" alt="Image" width="70" preview></Image>
                     </div>
                     <div class="col-span-8 flex flex-col">
-                        <strong>{{ item.title }}</strong>
+                        <strong>{{ item.productName }}</strong>
                         <div class="flex items-center justify-between gap-3">
                             <div>
-                                <InputNumber :pt:pcInput:root:style="'width: 40px; text-align:center'" v-model="item.quantity" showButtons buttonLayout="horizontal">
-                                    <template #incrementbuttonicon>
-                                        <span class="pi pi-plus" />
-                                    </template>
-                                    <template #decrementbuttonicon> <span class="pi pi-minus" /> </template
-                                ></InputNumber>
+                                <InputNumber :pt:pcInput:root:style="'width: 40px; text-align:center'" :min="1" v-model="item.quantity" @input="onQuantityChange($event, item)" showButtons buttonLayout="horizontal"> </InputNumber>
                             </div>
                             <span
                                 >Giá sản phẩm: <strong class="text-primary">{{ formatPrice(item.price) }}đ</strong></span
@@ -32,23 +27,14 @@
                         </div>
                     </div>
                     <div class="col-span-2 flex justify-end">
-                        <Button icon="pi pi-trash" text></Button>
+                        <Button @click="removeItem(item.productId)" icon="pi pi-trash" text></Button>
                     </div>
                 </div>
             </ScrollPanel>
             <template #footer>
                 <div class="flex items-center justify-between w-full">
                     <span
-                        >Tổng cộng
-                        <strong
-                            >{{
-                                formatPrice(
-                                    ItemsStore.reduce((total, el) => {
-                                        return total + el.quantity * el.price;
-                                    }, 0)
-                                )
-                            }}đ</strong
-                        ></span
+                        >Tổng cộng <strong>{{ formatPrice(totalCartValue ? totalCartValue : itemInCart.totalPrice) }}đ</strong></span
                     >
                     <Button label="Thanh toán"></Button>
                 </div>
@@ -57,19 +43,52 @@
     </div>
 </template>
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useCartStore } from '../store/carts';
+import API from '@/api/api-main';
 const cartModal = ref(false);
-
 const cartStore = useCartStore();
+
+onMounted(async () => {
+    fetchItem();
+});
+
 const itemInCart = ref([]);
 const openModal = async () => {
+    fetchItem();
     cartModal.value = true;
-    itemInCart.value = await cartStore.getItem();
 };
-const ItemsStore = ref([]);
+const totalCartValue = ref();
 const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US').format(price);
 };
+const removeItem = async (id) => {
+    let data = {
+        productId: id
+    };
+    const res = await cartStore.removeItem(data);
+    if (res) {
+        fetchItem();
+    }
+};
+const fetchItem = async () => {
+    const res = await API.get(`cart`);
+    itemInCart.value = res.data.metadata;
+};
+const onQuantityChange = async (e, data) => {
+    let payload = {
+        productId: data.productId,
+        quantity: e.value
+    };
+    const res = await cartStore.updateCart(payload);
+    totalCartValue.value = res.data.metadata.totalPrice;
+};
+watch(
+    () => cartStore.cart,
+    async (newCart) => {
+        itemInCart.value = await cartStore.getItem();
+    },
+    { deep: true }
+);
 </script>
 <style></style>

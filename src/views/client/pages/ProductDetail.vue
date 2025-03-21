@@ -22,42 +22,30 @@
                             <div class="col-span-6">
                                 <div class="flex flex-col gap-2">
                                     <div class="flex gap-2">
-                                        <span>Mã sách: </span>
+                                        <span>Mã sản phẩm: </span>
                                         <strong>{{ detail._id }}</strong>
                                     </div>
                                     <div class="flex gap-2">
-                                        <span>ISBN: </span>
-                                        <strong>123123</strong>
+                                        <span>Xuất xứ: </span>
+                                        <strong> Trung Quốc </strong>
                                     </div>
                                     <div class="flex gap-2">
-                                        <span>Tác giả: </span>
-                                        <strong>Fujiko F Fujio, Mugiwara Shintaro</strong>
+                                        <span>Tuổi: </span>
+                                        <strong>{{ detail.age }}</strong>
                                     </div>
                                     <div class="flex gap-2">
-                                        <span>Đối tượng: </span>
-                                        <strong>Nhi đồng (6 – 11)</strong>
+                                        <span>Thương hiệu: </span>
+                                        <strong>{{ detail.brand }}</strong>
                                     </div>
                                     <div class="flex gap-2">
-                                        <span>Khuôn Khổ: </span>
-                                        <strong>13x18 cm</strong>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <span>Số trang: </span>
-                                        <strong>384</strong>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <span>Định dạng: </span>
-                                        <strong>bìa mềm </strong>
-                                    </div>
-                                    <div class="flex gap-2">
-                                        <span>Trọng lượng: </span>
-                                        <strong>345 gram </strong>
+                                        <span>Giới tính: </span>
+                                        <strong>{{ detail.sex }}</strong>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-span-6">
                                 <div class="flex flex-col gap-2">
-                                    <InputNumber v-model="quantity" inputId="horizontal-buttons" showButtons buttonLayout="horizontal" fluid>
+                                    <InputNumber v-model="quantity" :min="1" :max="detail.quantity" inputId="horizontal-buttons" showButtons buttonLayout="horizontal" fluid>
                                         <template #incrementbuttonicon>
                                             <span class="pi pi-plus" />
                                         </template>
@@ -83,9 +71,12 @@
 </template>
 <script setup>
 import API from '@/api/api-main';
-import { onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCartStore } from '../store/carts';
+import { useToast } from 'primevue/usetoast';
+import { getCurrentInstance, onMounted, ref } from 'vue';
+const { proxy } = getCurrentInstance();
+const toast = useToast();
 const home = ref({
     icon: 'pi pi-home'
 });
@@ -111,7 +102,11 @@ const addToCart = async () => {
         productId: detail.value._id,
         quantity: quantity.value
     };
-    cartStore.addToCart(data);
+    try {
+        const res = await cartStore.addToCart(data);
+    } catch (error) {
+        proxy.$notify('S', error, toast);
+    }
 };
 const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US').format(price);

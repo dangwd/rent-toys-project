@@ -67,7 +67,7 @@ const SectionData = ref([
 ]);
 const fetchAllProducts = async () => {
     try {
-        const res = await API.get(`products?skip=0&limit=20`);
+        const res = await API.get(`products?skip=0&limit=2000`);
         Products.value = res.data.metadata.result;
     } catch (error) {
         console.log(error);

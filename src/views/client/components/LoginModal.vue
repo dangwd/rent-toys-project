@@ -81,7 +81,7 @@ const router = useRouter();
 const username = ref('');
 const password = ref('');
 const checked = ref(false);
-const user = store?.user.metadata.user;
+const user = store?.user?.metadata.user;
 
 const handleLogin = async () => {
     const data = {
