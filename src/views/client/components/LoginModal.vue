@@ -93,7 +93,7 @@ const handleLogin = async () => {
         router.push({ name: 'home' });
         visible.value = false;
     } else {
-        proxy.$notify('E', res.message.response.data.message, toast);
+        proxy.$notify('E', res, toast);
     }
 };
 

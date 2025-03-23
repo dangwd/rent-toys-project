@@ -20,12 +20,12 @@
                     </div>
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Phường/Xã</label>
-                        <Dropdown filter v-model="payload.ward" :options="Wards" option-label="FullName" fluid></Dropdown>
+                        <Dropdown filter v-model="payload.ward" :options="Wards" option-value="Code" option-label="FullName" fluid></Dropdown>
                     </div>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Họ tên</label>
-                    <InputText></InputText>
+                    <InputText v-model="payload.fullName"></InputText>
                 </div>
             </div>
             <div>
@@ -53,14 +53,14 @@
                     <div class="flex flex-col gap-3">
                         <div class="flex justify-between items-center text-lg">
                             <span>Tổng tiền đơn hàng</span>
-                            <strong>{{ formatPrice(itemCart.totalPrice) }}đ</strong>
+                            <strong>{{ formatPrice(couponData ? itemCart.totalPrice - couponData.CouponValue : itemCart.totalPrice) }}đ</strong>
                         </div>
                         <div class="flex justify-between items-center">
                             <Button label="Quay lại" text></Button>
                             <div class="flex gap-2">
                                 <Button @click="openCouponDlg" label="Coupon giảm giá" icon="pi pi-ticket" text></Button>
 
-                                <Button label="Thanh toán"></Button>
+                                <Button @click="confirmOrder()" label="Thanh toán"></Button>
                             </div>
                         </div>
                     </div>
@@ -77,7 +77,7 @@
             </template>
 
             <ScrollPanel v-for="(item, index) in Coupons" :key="index" style="width: 100%" class="flex flex-col my-5">
-                <div class="coupon hover:scale-105 transition-all ease-in-out duration-150">
+                <div @click="useCoupon(item)" class="coupon hover:scale-105 transition-all ease-in-out duration-150">
                     <div class="left"></div>
                     <div class="center text-white">
                         <div class="flex flex-col gap-2">
@@ -93,11 +93,12 @@
     </div>
 </template>
 <script setup>
+import API from '@/api/api-main';
+import { useAuthStore } from '@/store';
 import { onMounted, ref } from 'vue';
 import { useCartStore } from '../store/carts';
-import { useAuthStore } from '@/store';
-import API from '@/api/api-main';
 
+const couponData = ref(0);
 const Coupons = ref([]);
 const cartStore = useCartStore();
 const auth = useAuthStore();
@@ -156,6 +157,21 @@ const fetchAllCoupon = async () => {
     try {
         const res = await API.get(`coupon`);
         Coupons.value = res.data.metadata.result;
+    } catch (error) {
+        console.log(error);
+    }
+};
+const useCoupon = (cp) => {
+    couponData.value = cp;
+};
+const confirmOrder = async () => {
+    let data = {
+        ...payload.value,
+        coupon: couponData.value._id
+    };
+    try {
+        const res = await API.create(`order/checkout`, data);
+        console.log(res);
     } catch (error) {
         console.log(error);
     }
