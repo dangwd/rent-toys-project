@@ -5,6 +5,16 @@
                 <ProductCard :data="item"></ProductCard>
             </div>
         </div>
+        <div class="grid grid-cols-4 gap-4">
+            <div v-for="(item, index) in props.data" :key="index">
+                <ProductCard :data="item"></ProductCard>
+            </div>
+        </div>
+        <div class="grid grid-cols-4 gap-4">
+            <div v-for="(item, index) in props.data" :key="index">
+                <ProductCard :data="item"></ProductCard>
+            </div>
+        </div>
     </div>
 </template>
 <script setup>

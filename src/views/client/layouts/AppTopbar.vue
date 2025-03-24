@@ -5,7 +5,7 @@
             <div class="flex gap-2 w-full">
                 <IconField>
                     <InputIcon class="pi pi-search" />
-                    <InputText class="w-[700px]" v-model="value1" placeholder="Nhập từ khóa tìm kiếm..." />
+                    <InputText class="w-[700px] rounded-full" placeholder="Nhập từ khóa tìm kiếm..." />
                 </IconField>
             </div>
             <div class="flex items-center gap-2">

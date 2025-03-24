@@ -1,17 +1,20 @@
 <script setup>
 import API from '@/api/api-main';
+import { usePrimeVue } from 'primevue/config';
 import { useToast } from 'primevue/usetoast';
 import { formatPrice } from '@/helper/formatPrice';
 import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
+const $primevue = usePrimeVue();
 
 onMounted(() => {
     fetchAllProducts();
     fetchAllGenres();
     fetchAllBrand();
 });
-
+const keySearch = ref('');
+const filterModal = ref(false);
 const GenderOpts = ref([
     {
         label: 'Nam',
@@ -29,21 +32,31 @@ const GenderOpts = ref([
 const BrandOpts = ref([]);
 const GenresOpt = ref([]);
 const formData = new FormData();
-const dt = ref();
 const Products = ref();
 const prodDialog = ref(false);
 const deleteProductDialog = ref(false);
 const productDetail = ref({});
-
+const filter = reactive({
+    brand: null,
+    genre: null,
+    age: null
+});
 const submitted = ref(false);
 const paginator = reactive({
     rows: 10,
     page: 0,
     total: 0
 });
-const fetchAllProducts = async () => {
+const fetchAllProducts = async (query = '') => {
+    let url = `products?skip=${paginator.page}&limit=${paginator.rows}`;
+    if (query) {
+        url += `&filter=${query}`;
+    }
+    if (keySearch.value) {
+        url += `&search=${keySearch.value}`;
+    }
     try {
-        const res = await API.get(`products?skip=${paginator.page}&limit=${paginator.rows}`);
+        const res = await API.get(url);
         Products.value = res.data.metadata.result;
         paginator.total = res.data.metadata.total;
     } catch (error) {
@@ -138,6 +151,37 @@ const onPageChange = (e) => {
 const onCustomUpload = async (e) => {
     await FuncUpload(e.files);
 };
+const formatSize = (bytes) => {
+    const k = 1024;
+    const dm = 3;
+    const sizes = $primevue.config.locale.fileSizeTypes;
+
+    if (bytes === 0) {
+        return `0 ${sizes[0]}`;
+    }
+
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const formattedSize = parseFloat((bytes / Math.pow(k, i)).toFixed(dm));
+
+    return `${formattedSize} ${sizes[i]}`;
+};
+const openFilterDlg = () => {
+    filterModal.value = true;
+};
+const confirmFilter = () => {
+    let queryArr = [];
+    if (filter.brand) {
+        queryArr.push(`brand=${filter.brand}`);
+    }
+    if (filter.genre) {
+        queryArr.push(`genre=${filter.genre}`);
+    }
+    if (filter.age) {
+        queryArr.push(`age=${filter.age}`);
+    }
+    let queryStr = queryArr.join('');
+    fetchAllProducts(queryStr);
+};
 </script>
 
 <template>
@@ -156,12 +200,15 @@ const onCustomUpload = async (e) => {
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
                         <h4 class="m-0">Danh sách sản phẩm</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText class="w-[300px]" placeholder="Tìm kiếm theo tên..." />
-                        </IconField>
+                        <div class="flex gap-2">
+                            <IconField>
+                                <InputIcon>
+                                    <i class="pi pi-search" />
+                                </InputIcon>
+                                <InputText v-model="keySearch" class="w-[300px]" @keyup.enter="fetchAllProducts()" placeholder="Tìm kiếm theo tên..." />
+                            </IconField>
+                            <Button @click="openFilterDlg()" icon="pi pi-filter" label="Bộ lọc"></Button>
+                        </div>
                     </div>
                 </template>
                 <template #empty>
@@ -244,6 +291,36 @@ const onCustomUpload = async (e) => {
                                         </div>
                                     </div>
                                 </template>
+                                <template #content="{ files, uploadedFiles, removeUploadedFileCallback, removeFileCallback, messages }">
+                                    <div class="flex flex-col gap-4 w-full">
+                                        <div class="w-full" v-if="files.length > 0">
+                                            <div class="flex flex-col w-full gap-4">
+                                                <div v-for="(file, index) of files" :key="index" class="p-4 rounded-border justify-between flex w-full border border-surface items-center gap-4">
+                                                    <div>
+                                                        <img role="presentation" :alt="file.name" :src="file.objectURL" width="100" height="50" />
+                                                    </div>
+                                                    <span class="font-semibold text-ellipsis max-w-96 whitespace-nowrap overflow-hidden">{{ file.name }}</span>
+                                                    <div>{{ formatSize(file.size) }}</div>
+                                                    <Badge value="Đang xử lý" severity="warn" />
+                                                    <Button icon="pi pi-times" @click="onRemoveTemplatingFile(file, removeFileCallback, index)" outlined rounded severity="danger" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="w-full" v-if="productDetail.images?.length > 0">
+                                            <div class="flex flex-col w-full gap-4">
+                                                <div v-for="(file, index) of productDetail.images" :key="index" class="p-4 rounded-border justify-between flex w-full border border-surface items-center gap-4">
+                                                    <div>
+                                                        <img role="presentation" :alt="file" :src="file" width="100" height="50" />
+                                                    </div>
+                                                    <span class="font-semibold text-ellipsis max-w-96 whitespace-nowrap overflow-hidden">{{ file.name }}</span>
+                                                    <div>{{ formatSize(file.size || 0) }}</div>
+                                                    <Badge value="Hoàn thành" severity="success" />
+                                                    <Button icon="pi pi-times" @click="removeImages(file)" outlined rounded severity="danger" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
                             </FileUpload>
                         </div>
                     </div>
@@ -265,11 +342,11 @@ const onCustomUpload = async (e) => {
                                 <div class="w-full">
                                     <label class="block font-bold mb-3">Thể loại</label>
                                     <!-- <InputText v-model="productDetail.genre" required="true" autofocus :invalid="submitted && !productDetail.genre" fluid /> -->
-                                    <Dropdown v-model="productDetail.genre" :options="GenresOpt" optionLabel="genreName" class="w-full" optionValue="_id"></Dropdown>
+                                    <Select v-model="productDetail.genre" :options="GenresOpt" optionLabel="genreName" class="w-full" optionValue="_id"></Select>
                                 </div>
                                 <div class="w-full">
                                     <label class="block font-bold mb-3">Thương hiệu</label>
-                                    <Dropdown v-model="productDetail.brand" class="w-full" :options="BrandOpts" optionLabel="brandName" optionValue="_id"></Dropdown>
+                                    <Select v-model="productDetail.brand" class="w-full" :options="BrandOpts" optionLabel="brandName" optionValue="_id"></Select>
                                 </div>
                             </div>
                             <div class="flex gap-2 justify-between items-center">
@@ -314,6 +391,23 @@ const onCustomUpload = async (e) => {
             <template #footer>
                 <Button label="Hủy" icon="pi pi-times" severity="secondary" @click="deleteProductDialog = false" />
                 <Button label="Xác nhận" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" />
+            </template>
+        </Dialog>
+
+        <Dialog v-model:visible="filterModal" :style="{ width: '30%' }" header="Bộ lọc" :modal="true">
+            <div class="flex flex-col gap-3">
+                <div class="flex flex-col gap-2 w-full">
+                    <label for="">Thể loại</label>
+                    <Select v-model="filter.genre" :options="GenresOpt" optionLabel="genreName" class="w-full" optionValue="_id" fluid></Select>
+                </div>
+                <div class="flex flex-col gap-2 w-full">
+                    <label for="">Thương hiệu</label>
+                    <Select v-model="filter.brand" :options="BrandOpts" optionLabel="brandName" optionValue="_id" fluid></Select>
+                </div>
+            </div>
+            <template #footer>
+                <Button label="Hủy" icon="pi pi-times" severity="secondary" @click="filterModal = false" />
+                <Button label="Xác nhận" icon="pi pi-filter" @click="confirmFilter" />
             </template>
         </Dialog>
     </div>
