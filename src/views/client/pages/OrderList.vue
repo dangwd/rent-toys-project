@@ -122,7 +122,7 @@
                         </Column>
                         <Column header="KM">
                             <template #body="{ data }">
-                                {{ `${data.coupon.CouponName} (${formatPrice(data.coupon.CouponValue)})` }}
+                                {{ data.coupon ? `${data?.coupon?.CouponName} (${formatPrice(data?.coupon?.CouponValue)})` : `Không KM` }}
                             </template>
                         </Column>
                         <Column header="Giá trị đơn hàng">
@@ -175,7 +175,7 @@ onMounted(() => {
 });
 const fetchAllOrder = async () => {
     try {
-        const res = await API.get(`order`);
+        const res = await API.get(`order?skip=${paginator.page}&limit=${paginator.rows}`);
         Orders.value = res.data.metadata.result;
         paginator.total = res.data.metadata.total;
     } catch (error) {
