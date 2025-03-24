@@ -90,14 +90,18 @@
                 </div>
             </ScrollPanel>
         </Drawer>
+        <Loading v-if="isLoading"></Loading>
     </div>
 </template>
 <script setup>
 import API from '@/api/api-main';
 import { useAuthStore } from '@/store';
-import { onMounted, ref } from 'vue';
 import { useCartStore } from '../store/carts';
-
+import { useToast } from 'primevue/usetoast';
+import { getCurrentInstance, onMounted, ref } from 'vue';
+const { proxy } = getCurrentInstance();
+const toast = useToast();
+const isLoading = ref(false);
 const couponData = ref(0);
 const Coupons = ref([]);
 const cartStore = useCartStore();
@@ -161,8 +165,19 @@ const fetchAllCoupon = async () => {
         console.log(error);
     }
 };
-const useCoupon = (cp) => {
-    couponData.value = cp;
+const useCoupon = async (cp) => {
+    isLoading.value = true;
+    try {
+        const res = await API.create(`coupon/apply/${cp._id}`);
+        proxy.$notify(res.status === 200 ? 'S' : 'E', res.status === 200 ? `Sử dụng thành công coupon!` : res?.response?.data?.message, toast);
+        if (res.status === 200) {
+            couponData.value = cp;
+        }
+    } catch (error) {
+        console.log(error);
+    } finally {
+        isLoading.value = false;
+    }
 };
 const confirmOrder = async () => {
     let data = {
@@ -171,9 +186,10 @@ const confirmOrder = async () => {
     };
     try {
         const res = await API.create(`order/checkout`, data);
-        console.log(res);
+
+        proxy.$notify(res.status === 200 ? 'S' : 'E', res.status === 200 ? `Đặt hàng thành công!` : res, toast);
     } catch (error) {
-        console.log(error);
+        proxy.$notify('E', error, toast);
     }
 };
 </script>

@@ -1,6 +1,8 @@
 <template>
     <div v-if="user">
-        <Button icon="pi pi-user" rounded :label="user.email"></Button>
+        <router-link to="/client/order-list">
+            <Button icon="pi pi-user" rounded :label="user.email"></Button>
+        </router-link>
     </div>
     <div v-else>
         <Button @click="openLogin()" class="w-40" icon="pi pi-sign-in" rounded label="Đăng nhập"></Button>
@@ -59,6 +61,10 @@
                 </div>
             </div>
         </Dialog>
+
+        <Popover ref="op">
+            <div class="flex flex-col gap-3">hehe</div>
+        </Popover>
     </div>
 </template>
 <script setup>
@@ -67,12 +73,6 @@ import { useToast } from 'primevue/usetoast';
 import { getCurrentInstance, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
-const visible = ref(false);
-const loginForm = ref(true);
-
-const openLogin = () => {
-    visible.value = true;
-};
 const { proxy } = getCurrentInstance();
 
 const toast = useToast();
@@ -82,7 +82,12 @@ const username = ref('');
 const password = ref('');
 const checked = ref(false);
 const user = store?.user?.metadata.user;
-
+const visible = ref(false);
+const loginForm = ref(true);
+const op = ref();
+const openLogin = () => {
+    visible.value = true;
+};
 const handleLogin = async () => {
     const data = {
         username: username.value,

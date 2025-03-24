@@ -4,7 +4,7 @@ import PrimeVue from 'primevue/config';
 import ConfirmationService from 'primevue/confirmationservice';
 import 'video.js/dist/video-js.css';
 import Notification from './service/Notification';
-
+import Loading from './components/Loading.vue';
 // City
 import '@videojs/themes/dist/city/index.css';
 
@@ -43,5 +43,5 @@ app.use(PrimeVue, {
 });
 app.use(ToastService);
 app.use(ConfirmationService);
-
+app.component('Loading', Loading)
 app.mount('#app');

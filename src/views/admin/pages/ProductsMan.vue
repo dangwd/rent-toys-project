@@ -1,8 +1,8 @@
 <script setup>
 import API from '@/api/api-main';
 import { useToast } from 'primevue/usetoast';
-
-import { getCurrentInstance, onMounted, ref } from 'vue';
+import { formatPrice } from '@/helper/formatPrice';
+import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 
@@ -30,28 +30,24 @@ const BrandOpts = ref([]);
 const GenresOpt = ref([]);
 const formData = new FormData();
 const dt = ref();
-const Actors = ref();
-const actorDialog = ref(false);
+const Products = ref();
+const prodDialog = ref(false);
 const deleteProductDialog = ref(false);
 const deleteProductsDialog = ref(false);
 const productDetail = ref({});
 const selectedProducts = ref();
-const statuses = ref([
-    {
-        label: 'Hoạt động',
-        value: true
-    },
-    {
-        label: 'Dừng Hoạt động',
-        value: false
-    }
-]);
-const submitted = ref(false);
 
+const submitted = ref(false);
+const paginator = reactive({
+    rows: 10,
+    page: 0,
+    total: 0
+});
 const fetchAllProducts = async () => {
     try {
-        const res = await API.get(`products?skip=0&limit=20`);
-        Actors.value = res.data.metadata.result;
+        const res = await API.get(`products?skip=${paginator.page}&limit=${paginator.rows}`);
+        Products.value = res.data.metadata.result;
+        paginator.total = res.data.metadata.total;
     } catch (error) {
         console.log(error);
     }
@@ -68,7 +64,7 @@ const openNew = async (data) => {
         }
     }
     submitted.value = false;
-    actorDialog.value = true;
+    prodDialog.value = true;
 };
 const fetchAllGenres = async () => {
     try {
@@ -87,7 +83,7 @@ const fetchAllBrand = async () => {
     }
 };
 function hideDialog() {
-    actorDialog.value = false;
+    prodDialog.value = false;
     submitted.value = false;
 }
 
@@ -106,7 +102,7 @@ const saveProduct = async () => {
         if (res.data) {
             fetchAllProducts();
             proxy.$notify('S', 'Thao tác thành công!', toast);
-            actorDialog.value = false;
+            prodDialog.value = false;
         }
     } catch (error) {
         console.log(error);
@@ -140,6 +136,11 @@ const UploadFileLocal = async (event, index) => {
     document.querySelectorAll('.click-file')[index].value = '';
     productDetail.value.files = URL.createObjectURL(file);
 };
+const onPageChange = (e) => {
+    paginator.page = e.page;
+    paginator.rows = e.rows;
+    fetchAllProducts();
+};
 </script>
 
 <template>
@@ -154,7 +155,7 @@ const UploadFileLocal = async (event, index) => {
                 </template>
             </Toolbar>
 
-            <DataTable ref="dt" v-model:selection="selectedProducts" showGridlines :value="Actors" dataKey="id" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 25]">
+            <DataTable lazy @page="onPageChange($event)" showGridlines :value="Products" dataKey="id" :paginator="true" :rows="paginator.rows" :page="paginator.page" :total-records="paginator.total" :rowsPerPageOptions="[5, 10, 25]">
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
                         <h4 class="m-0">Danh sách sản phẩm</h4>
@@ -184,7 +185,13 @@ const UploadFileLocal = async (event, index) => {
                         <Image crossorigin="anonymous" :src="sp.data.images[0]" alt="Image" width="50" />
                     </template>
                 </Column>
-                <Column field="descriptions" header="Mô tả" style="max-width: 200px"></Column>
+                <Column header="Mô tả" style="max-width: 200px">
+                    <template #body="{ data }">
+                        <div class="line-clamp-5">
+                            {{ data.descriptions }}
+                        </div>
+                    </template>
+                </Column>
                 <Column field="genre" header="Thể loại">
                     <template #body="{ data }">
                         <span class="line-clamp-3">{{ data.genre?.genreName }}</span>
@@ -196,6 +203,11 @@ const UploadFileLocal = async (event, index) => {
                     </template>
                 </Column>
                 <Column field="quantity" header="Số lượng"> </Column>
+                <Column field="price" header="Giá">
+                    <template #body="{ data }">
+                        {{ formatPrice(data.price) }}
+                    </template>
+                </Column>
                 <Column field="madeIn" header="Xuất xứ"></Column>
                 <Column field="age" header="Độ tuổi"></Column>
                 <Column field="sex" header="Giới tính">
@@ -214,7 +226,7 @@ const UploadFileLocal = async (event, index) => {
             </DataTable>
         </div>
 
-        <Dialog v-model:visible="actorDialog" :style="{ width: '70%' }" header="Sản phẩm" :modal="true">
+        <Dialog v-model:visible="prodDialog" :style="{ width: '70%' }" header="Sản phẩm" :modal="true">
             <div class="grid grid-cols-12">
                 <div class="col-span-4">
                     <div class="flex flex-col items-center gap-2">
