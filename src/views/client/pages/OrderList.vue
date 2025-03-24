@@ -11,8 +11,8 @@
                         <div class="col-span-3 flex flex-col gap-3 items-center">
                             <img class="rounded-full w-32 object-cover" :src="'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'" alt="" />
 
-                            <strong>-- </strong>
-                            <strong class="text-primary">--</strong>
+                            <strong> Nguyen Dang </strong>
+                            <strong class="text-primary"> {{ User.email }}</strong>
                         </div>
                         <div class="col-span-9 flex flex-col gap-3">
                             <div class="border border-gray-300 p-4 rounded-md">
@@ -21,38 +21,16 @@
                                     <div class="m-0">
                                         <div class="flex flex-col gap-3">
                                             <div class="flex gap-2">
-                                                <label class="w-10">Họ tên: </label>
+                                                <label class="w-30">Họ tên: </label>
                                                 <strong class="w-30"> -- </strong>
                                             </div>
-
                                             <div class="flex gap-2">
-                                                <label class="w-7rem" for="">Chi nhánh: </label>
-                                                <strong class="w-30rem">{{
-                                                    ProfileUser?.userBranchCounters
-                                                        ?.map((el) => el.branch?.branchName)
-                                                        .filter((el) => el)
-                                                        .join(', ')
-                                                }}</strong>
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <label class="w-7rem">Quầy: </label>
-                                                <strong class="w-30rem"> -- </strong>
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <label class="w-7rem">Trạng thái: </label>
-                                                <strong class="w-30rem"> -- </strong>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="m-0">
-                                        <div class="flex flex-col gap-3">
-                                            <div class="flex gap-2">
-                                                <label class="w-10rem">Tên đăng nhập: </label>
-                                                <strong class="w-30rem"></strong>
+                                                <label class="w-32">Tên đăng nhập: </label>
+                                                <strong class="w-30"></strong>
                                             </div>
                                             <div class="flex gap-2">
                                                 <label class="w-10rem">Email: </label>
-                                                <strong class="w-30rem"></strong>
+                                                <strong class="w-30rem"> {{ User.email }}</strong>
                                             </div>
                                             <div class="flex gap-2">
                                                 <label class="w-10rem">Số điện thoại: </label>
@@ -163,7 +141,7 @@
 import API from '@/api/api-main';
 import { format } from 'date-fns';
 import { onMounted, reactive, ref } from 'vue';
-
+import { formatPrice } from '@/helper/formatPrice';
 const Orders = ref([]);
 const paginator = reactive({
     rows: 5,
@@ -172,7 +150,9 @@ const paginator = reactive({
 });
 onMounted(() => {
     fetchAllOrder();
+    getMe();
 });
+const User = ref({});
 const fetchAllOrder = async () => {
     try {
         const res = await API.get(`order?skip=${paginator.page}&limit=${paginator.rows}`);
@@ -182,8 +162,11 @@ const fetchAllOrder = async () => {
         console.log(error);
     }
 };
-const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US').format(price);
+const getMe = async () => {
+    try {
+        const res = await API.get(`get-me`);
+        User.value = res.data.metadata;
+    } catch (error) {}
 };
 </script>
 <style>

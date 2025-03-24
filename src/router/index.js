@@ -12,11 +12,10 @@ router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresAuth) {
         const isAuthenticated = await auth();
         if (!isAuthenticated) {
-            next({ name: 'login' });
+            next({ name: 'home' });
             return;
         }
         if (to.meta.role && to.meta.role !== isAuthenticated.role) {
-            // Nếu role không khớp, chuyển hướng về trang phù hợp
             if (isAuthenticated.roles === 'A') {
                 next({ name: 'dashboard' });
             } else {

@@ -1,8 +1,6 @@
 <template>
     <div v-if="user">
-        <router-link to="/client/order-list">
-            <Button icon="pi pi-user" rounded :label="user.email"></Button>
-        </router-link>
+        <Button @click="toggle" icon="pi pi-user" rounded :label="user.email"></Button>
     </div>
     <div v-else>
         <Button @click="openLogin()" class="w-40" icon="pi pi-sign-in" rounded label="Đăng nhập"></Button>
@@ -61,11 +59,12 @@
                 </div>
             </div>
         </Dialog>
-
-        <Popover ref="op">
-            <div class="flex flex-col gap-3">hehe</div>
-        </Popover>
     </div>
+    <Popover ref="op">
+        <div class="flex flex-col w-52">
+            <TieredMenu :model="items" />
+        </div>
+    </Popover>
 </template>
 <script setup>
 import { useAuthStore } from '@/store';
@@ -88,6 +87,23 @@ const op = ref();
 const openLogin = () => {
     visible.value = true;
 };
+const items = ref([
+    {
+        label: 'Thông tin tài khoản',
+        icon: 'pi pi-user',
+        command: () => {
+            router.push(`/client/order-list`);
+        }
+    },
+    {
+        label: 'Đăng xuất',
+        icon: 'pi pi-sign-out',
+        command: () => {
+            localStorage.removeItem('user');
+            location.reload();
+        }
+    }
+]);
 const handleLogin = async () => {
     const data = {
         username: username.value,
@@ -97,6 +113,7 @@ const handleLogin = async () => {
     if (res.status === 1) {
         router.push({ name: 'home' });
         visible.value = false;
+        location.reload();
     } else {
         proxy.$notify('E', res, toast);
     }
@@ -115,5 +132,12 @@ const handleRegister = async () => {
         proxy.$notify('E', 'Có lỗi xảy ra!', toast);
     }
 };
+const toggle = (event) => {
+    op.value.toggle(event);
+};
 </script>
-<style></style>
+<style>
+.p-tieredmenu {
+    border: none !important;
+}
+</style>

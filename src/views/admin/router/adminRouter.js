@@ -30,6 +30,11 @@ export default [
                 component: () => import('@/views/admin/pages/GenreMan.vue')
             },
             {
+                path: '/man/invoice',
+                name: 'invoice',
+                component: () => import('@/views/admin/pages/InvoiceMan.vue')
+            },
+            {
                 path: '/man/coupon',
                 name: 'coupon',
                 component: () => import('@/views/admin/pages/CouponMan.vue')

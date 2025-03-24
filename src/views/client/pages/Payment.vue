@@ -53,7 +53,8 @@
                     <div class="flex flex-col gap-3">
                         <div class="flex justify-between items-center text-lg">
                             <span>Tổng tiền đơn hàng</span>
-                            <strong>{{ formatPrice(couponData ? itemCart.totalPrice - couponData.CouponValue : itemCart.totalPrice) }}đ</strong>
+                            <strong v-if="route.query.prd">{{ couponData ? itemCart.price - couponData.CouponValue : formatPrice(totalComputed) }}đ</strong>
+                            <strong v-else>{{ formatPrice(couponData ? itemCart.totalPrice - couponData.CouponValue : itemCart.totalPrice) }}đ</strong>
                         </div>
                         <div class="flex justify-between items-center">
                             <Button label="Quay lại" text></Button>
@@ -98,7 +99,8 @@ import API from '@/api/api-main';
 import { useAuthStore } from '@/store';
 import { useCartStore } from '../store/carts';
 import { useToast } from 'primevue/usetoast';
-import { getCurrentInstance, onMounted, ref } from 'vue';
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
+import { useRoute } from 'vue-router';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 const isLoading = ref(false);
@@ -114,10 +116,19 @@ const itemCart = ref([]);
 const payload = ref({
     email: user.email
 });
+const route = useRoute();
 const couponModal = ref(false);
 onMounted(async () => {
     itemCart.value = await cartStore.getItem();
     fetchProvince();
+    if (route.query.prd) {
+        fetchProductById(route.query.prd);
+    }
+});
+const totalComputed = computed(() => {
+    return itemCart.value?.items?.reduce((total, el) => {
+        return total + el.price * el.quantity;
+    }, 0);
 });
 const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US').format(price);
@@ -191,6 +202,13 @@ const confirmOrder = async () => {
     } catch (error) {
         proxy.$notify('E', error, toast);
     }
+};
+const fetchProductById = async (id) => {
+    try {
+        const res = await API.get(`product/${id}`);
+        itemCart.value.items.push(res.data.metadata);
+        console.log(res);
+    } catch (error) {}
 };
 </script>
 <style>

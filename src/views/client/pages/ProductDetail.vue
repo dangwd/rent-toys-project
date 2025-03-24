@@ -3,12 +3,20 @@
         <div class="font-montserrat text-sm bg-white dark:bg-zinc-900 flex flex-col gap-5">
             <div class="flex flex-col gap-5 my-5">
                 <div class="flex items-center justify-between">
-                    <Breadcrumb :home="home" :model="items" />
+                    <!-- <Breadcrumb :home="home" :model="items" /> -->
                     <Button @click="router.push('/client')" outlined rounded icon="pi pi-angle-left" raised></Button>
                 </div>
                 <div class="grid grid-cols-12 gap-4">
                     <div class="col-span-5">
-                        <img :src="detail.images ? detail.images[0] : ``" alt="" />
+                        <!-- <img :src="detail.images ? detail.images[0] : ``" alt="" /> -->
+                        <Galleria :value="detail.images" :responsiveOptions="responsiveOptions" :numVisible="5" containerStyle="max-width: 640px">
+                            <template #item="slotProps">
+                                <img :src="slotProps.item" :alt="slotProps.item.alt" style="width: 100%" />
+                            </template>
+                            <template #thumbnail="slotProps">
+                                <img :src="slotProps.item" style="width: 100px" class="object-cover" />
+                            </template>
+                        </Galleria>
                     </div>
                     <div class="col-span-7 flex flex-col gap-3">
                         <strong class="text-xl uppercase">{{ detail.productName }}</strong>
@@ -54,7 +62,7 @@
                                         </template>
                                     </InputNumber>
                                     <Button @click="addToCart()" icon="pi pi-shopping-cart" severity="info" label="Thêm vào giỏ hàng"></Button>
-                                    <Button icon="pi pi-verified" label="Mua ngay"></Button>
+                                    <Button @click="buyNow()" icon="pi pi-verified" label="Mua ngay"></Button>
                                 </div>
                             </div>
                         </div>
@@ -74,6 +82,7 @@ import API from '@/api/api-main';
 import { useRoute, useRouter } from 'vue-router';
 import { useCartStore } from '../store/carts';
 import { useToast } from 'primevue/usetoast';
+import { formatPrice } from '@/helper/formatPrice';
 import { getCurrentInstance, onMounted, ref } from 'vue';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
@@ -108,8 +117,18 @@ const addToCart = async () => {
         proxy.$notify('S', error, toast);
     }
 };
-const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US').format(price);
+const buyNow = () => {
+    router.push(`/client/payment?prd=${detail.value._id}`);
 };
+const responsiveOptions = ref([
+    {
+        breakpoint: '1300px',
+        numVisible: 4
+    },
+    {
+        breakpoint: '575px',
+        numVisible: 1
+    }
+]);
 </script>
 <style></style>

@@ -33,9 +33,7 @@ const dt = ref();
 const Products = ref();
 const prodDialog = ref(false);
 const deleteProductDialog = ref(false);
-const deleteProductsDialog = ref(false);
 const productDetail = ref({});
-const selectedProducts = ref();
 
 const submitted = ref(false);
 const paginator = reactive({
@@ -89,13 +87,13 @@ function hideDialog() {
 
 const saveProduct = async () => {
     submitted.value = true;
-
     let data = { ...productDetail.value };
     if (data._id) {
         delete productDetail.value.images;
     }
     let URL_ENDPOINT = data._id ? `product/${data._id}` : `product`;
     formData.append('items', JSON.stringify(data));
+    document.getElementById('onUpload').click();
     let FUNC_API = data._id ? API.updatev2(URL_ENDPOINT, formData) : API.create(URL_ENDPOINT, formData);
     try {
         const res = await FUNC_API;
@@ -116,7 +114,11 @@ const deleteActorDlg = (data) => {
     productDetail.value = data;
     deleteProductDialog.value = true;
 };
-
+const FuncUpload = async (files) => {
+    files.forEach((file) => {
+        formData.append(`images`, file);
+    });
+};
 const confirmDeleteSelected = async () => {
     try {
         const res = await API.delete(`product/${productDetail.value._id}`);
@@ -127,19 +129,14 @@ const confirmDeleteSelected = async () => {
         }
     } catch (error) {}
 };
-const Openfile = () => {
-    document.querySelectorAll('.click-file')[0].click();
-};
-const UploadFileLocal = async (event, index) => {
-    const file = event.target.files[0];
-    formData.append('images', file);
-    document.querySelectorAll('.click-file')[index].value = '';
-    productDetail.value.files = URL.createObjectURL(file);
-};
+
 const onPageChange = (e) => {
     paginator.page = e.page;
     paginator.rows = e.rows;
     fetchAllProducts();
+};
+const onCustomUpload = async (e) => {
+    await FuncUpload(e.files);
 };
 </script>
 
@@ -227,62 +224,73 @@ const onPageChange = (e) => {
         </div>
 
         <Dialog v-model:visible="prodDialog" :style="{ width: '70%' }" header="Sản phẩm" :modal="true">
-            <div class="grid grid-cols-12">
-                <div class="col-span-4">
-                    <div class="flex flex-col items-center gap-2">
-                        <div class="rounded-full">
-                            <Image v-if="productDetail.files" crossorigin="anonymous" :src="productDetail.files" alt="Image" width="200" />
-                            <Image v-else crossorigin="anonymous" :src="productDetail?.images ? productDetail?.images[0] : `https://placehold.co/600x600`" alt="Image" width="200" />
+            <div class="flex flex-col gap-2">
+                <div class="grid grid-cols-12 gap-3">
+                    <div class="col-span-5">
+                        <div class="flex flex-col gap-3">
+                            <label class="block font-bold">Ảnh sản phẩm</label>
+                            <FileUpload name="files" :multiple="true" :auto="false" :customUpload="true" uploadLabel="Đăng bài" :showUploadButton="false" @uploader="onCustomUpload" @select="onFileSelect">
+                                <template #empty>
+                                    <div class="p-2 text-center">
+                                        <span class="text-center">Chọn hoặc kéo thả ảnh vào đây!</span>
+                                    </div>
+                                </template>
+                                <template #header="{ chooseCallback, uploadCallback, clearCallback, files }">
+                                    <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
+                                        <div class="flex gap-2">
+                                            <Button @click="chooseCallback()" icon="pi pi-images" rounded outlined severity="secondary"></Button>
+                                            <Button style="display: none" id="onUpload" @click="uploadCallback()" icon="pi pi-cloud-upload" rounded outlined severity="success" :disabled="!files || files.length === 0"></Button>
+                                            <Button @click="clearCallback()" icon="pi pi-times" rounded outlined severity="danger" :disabled="!files || files.length === 0"></Button>
+                                        </div>
+                                    </div>
+                                </template>
+                            </FileUpload>
                         </div>
-                        <div>
-                            <Button label="Chọn ảnh" icon="pi pi-cloud-upload" class="btn-up-file" raised @click="Openfile(index)" />
-                        </div>
-                        <input type="file" class="hidden click-file" @change="UploadFileLocal($event, 0)" />
                     </div>
-                </div>
-                <div class="col-span-8">
-                    <div class="flex flex-col gap-6">
-                        <div>
-                            <label for="name" class="block font-bold mb-3">Tên sản phẩm</label>
-                            <InputText id="name" v-model="productDetail.productName" required="true" autofocus :invalid="submitted && !productDetail.actorName" fluid />
-                        </div>
-                        <div>
-                            <label for="description" class="block font-bold mb-3">Mô tả</label>
-                            <Textarea v-model="productDetail.descriptions" required="true" rows="3" cols="20" fluid />
-                        </div>
-                        <div>
-                            <label class="block font-bold mb-3">Giá tiền</label>
-                            <InputNumber v-model="productDetail.price" required="true" autofocus :invalid="submitted && !productDetail.price" fluid />
-                        </div>
-                        <div class="flex gap-2 justify-between items-center">
-                            <div class="w-full">
-                                <label class="block font-bold mb-3">Thể loại</label>
-                                <!-- <InputText v-model="productDetail.genre" required="true" autofocus :invalid="submitted && !productDetail.genre" fluid /> -->
-                                <Dropdown v-model="productDetail.genre" :options="GenresOpt" optionLabel="genreName" class="w-full" optionValue="_id"></Dropdown>
+                    <div class="col-span-7">
+                        <div class="flex flex-col gap-6">
+                            <div>
+                                <label for="name" class="block font-bold mb-3">Tên sản phẩm</label>
+                                <InputText id="name" v-model="productDetail.productName" required="true" autofocus :invalid="submitted && !productDetail.actorName" fluid />
                             </div>
-                            <div class="w-full">
-                                <label class="block font-bold mb-3">Thương hiệu</label>
-                                <Dropdown v-model="productDetail.brand" class="w-full" :options="BrandOpts" optionLabel="brandName" optionValue="_id"></Dropdown>
+                            <div>
+                                <label for="description" class="block font-bold mb-3">Mô tả</label>
+                                <Textarea v-model="productDetail.descriptions" required="true" rows="3" cols="20" fluid />
                             </div>
-                        </div>
-                        <div class="flex gap-2 justify-between items-center">
-                            <div class="w-full">
-                                <label class="block font-bold mb-3">Số lượng</label>
-                                <InputNumber v-model="productDetail.quantity" required="true" autofocus :invalid="submitted && !productDetail.quantity" fluid />
+                            <div>
+                                <label class="block font-bold mb-3">Giá tiền</label>
+                                <InputNumber v-model="productDetail.price" required="true" autofocus :invalid="submitted && !productDetail.price" fluid />
                             </div>
-                            <div class="w-full">
-                                <label class="block font-bold mb-3">Xuất xứ</label>
-                                <InputNumber v-model="productDetail.madeIn" required="true" autofocus :invalid="submitted && !productDetail.madeIn" fluid />
+                            <div class="flex gap-2 justify-between items-center">
+                                <div class="w-full">
+                                    <label class="block font-bold mb-3">Thể loại</label>
+                                    <!-- <InputText v-model="productDetail.genre" required="true" autofocus :invalid="submitted && !productDetail.genre" fluid /> -->
+                                    <Dropdown v-model="productDetail.genre" :options="GenresOpt" optionLabel="genreName" class="w-full" optionValue="_id"></Dropdown>
+                                </div>
+                                <div class="w-full">
+                                    <label class="block font-bold mb-3">Thương hiệu</label>
+                                    <Dropdown v-model="productDetail.brand" class="w-full" :options="BrandOpts" optionLabel="brandName" optionValue="_id"></Dropdown>
+                                </div>
                             </div>
-                        </div>
-                        <div class="flex gap-2 justify-between items-center">
-                            <div class="w-full">
-                                <label class="block font-bold mb-3">Tuổi</label>
-                                <InputNumber v-model="productDetail.age" required="true" autofocus :invalid="submitted && !productDetail.age" fluid />
+                            <div class="flex gap-2 justify-between items-center">
+                                <div class="w-full">
+                                    <label class="block font-bold mb-3">Số lượng</label>
+                                    <InputNumber v-model="productDetail.quantity" required="true" autofocus :invalid="submitted && !productDetail.quantity" fluid />
+                                </div>
+                                <div class="w-full">
+                                    <label class="block font-bold mb-3">Xuất xứ</label>
+                                    <InputNumber v-model="productDetail.madeIn" required="true" autofocus :invalid="submitted && !productDetail.madeIn" fluid />
+                                </div>
                             </div>
-                            <div class="w-full">
-                                <label class="block font-bold mb-3">Giới tính</label>
-                                <Dropdown v-model="productDetail.sex" class="w-full" :options="GenderOpts" optionValue="value" optionLabel="label"></Dropdown>
+                            <div class="flex gap-2 justify-between items-center">
+                                <div class="w-full">
+                                    <label class="block font-bold mb-3">Tuổi</label>
+                                    <InputNumber v-model="productDetail.age" required="true" autofocus :invalid="submitted && !productDetail.age" fluid />
+                                </div>
+                                <div class="w-full">
+                                    <label class="block font-bold mb-3">Giới tính</label>
+                                    <Dropdown v-model="productDetail.sex" class="w-full" :options="GenderOpts" optionValue="value" optionLabel="label"></Dropdown>
+                                </div>
                             </div>
                         </div>
                     </div>
