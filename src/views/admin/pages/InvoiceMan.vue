@@ -1,7 +1,9 @@
 <script setup>
 import API from '@/api/api-main';
 import { useToast } from 'primevue/usetoast';
-import { getCurrentInstance, onMounted, ref } from 'vue';
+import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
+import { formatPrice } from '@/helper/formatPrice';
+import { format } from 'date-fns';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 
@@ -9,20 +11,25 @@ onMounted(() => {
     fetchAllGenres();
 });
 
-const dt = ref();
+const paginator = reactive({
+    rows: 5,
+    page: 0,
+    total: 0
+});
 const Invoices = ref();
 const genresDialog = ref(false);
 const deleteProductDialog = ref(false);
 const deleteProductsDialog = ref(false);
-const genreDetail = ref({});
+const orderDetail = ref({});
 const selectedProducts = ref();
 
 const submitted = ref(false);
 
 const fetchAllGenres = async () => {
     try {
-        const res = await API.get(`genres?skip=0&limit=20`);
-        Invoices.value = res.data.metadata;
+        const res = await API.get(`order?skip=0&limit=20`);
+        Invoices.value = res.data.metadata.result;
+        paginator.total = res.data.metadata.total;
     } catch (error) {
         console.log(error);
     }
@@ -33,11 +40,11 @@ const openNew = async (data) => {
 
     if (!data._id) {
         genresDialog.value = true;
-        return (genreDetail.value = {});
+        return (orderDetail.value = {});
     }
     try {
-        const res = await API.get(`genre/${data._id}`);
-        genreDetail.value = res.data.metadata;
+        const res = await API.get(`order/${data._id}`);
+        orderDetail.value = res.data.metadata;
     } catch (error) {
         console.log(error);
     }
@@ -56,7 +63,7 @@ const validateData = (data) => {
     return true;
 };
 const saveGenre = async () => {
-    let data = { ...genreDetail.value };
+    let data = { ...orderDetail.value };
     submitted.value = true;
     if (!validateData(data)) return;
     let API_EP = data._id ? `genre/${data._id}` : `genre`;
@@ -73,14 +80,9 @@ const saveGenre = async () => {
     }
 };
 
-const deleteActorDlg = (data) => {
-    genreDetail.value = data;
-    deleteProductDialog.value = true;
-};
-
 const confirmDeleteSelected = async () => {
     try {
-        const res = await API.delete(`genre/${genreDetail.value._id}`);
+        const res = await API.delete(`genre/${orderDetail.value._id}`);
         if (res) {
             fetchAllGenres();
             proxy.$notify('S', 'Thành công!', toast);
@@ -90,12 +92,6 @@ const confirmDeleteSelected = async () => {
         console.log(error);
     }
 };
-
-function deleteSelectedProducts() {
-    Invoices.value = Invoices.value.filter((val) => !selectedProducts.value.includes(val));
-    deleteProductsDialog.value = false;
-    selectedProducts.value = null;
-}
 </script>
 
 <template>
@@ -106,37 +102,56 @@ function deleteSelectedProducts() {
                     <strong class="text-lg">Đơn hàng</strong>
                 </template>
                 <template #end>
-                    <Button label="Thêm mới" icon="pi pi-plus" @click="openNew" />
+                    <!-- <Button label="Thêm mới" icon="pi pi-plus" @click="openNew" /> -->
                 </template>
             </Toolbar>
 
-            <DataTable ref="dt" v-model:selection="selectedProducts" showGridlines :value="Invoices" dataKey="id" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 25]">
-                <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Danh Sách Đơn Hàng</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText class="w-[300px]" placeholder="Tìm kiếm  theo tên..." />
-                        </IconField>
-                    </div>
-                </template>
-                <template #empty>
-                    <div class="text-center p-2">Dữ liệu trống</div>
-                </template>
-                <Column header="STT">
-                    <template #body="sp">
-                        {{ sp.index + 1 }}
+            <DataTable :value="Invoices" show-gridlines paginator :rows="paginator.rows" :page="paginator.page" :total-records="paginator.total" lazy>
+                <Column header="#">
+                    <template #body="{ index }">
+                        {{ index + 1 }}
                     </template>
                 </Column>
-                <Column field="genreName" header="Thể loại"></Column>
-                <Column field="genreDescription" header="Mô tả"></Column>
-                <Column field="" header="Thao tác">
-                    <template #body="sp">
+                <Column header="Sản phẩm" style="max-width: 200px">
+                    <template #body="{ data }">
+                        {{ data.items.map((el) => el.productName).join(', ') }}
+                    </template>
+                </Column>
+                <Column header="Số lượng">
+                    <template #body="{ data }">
+                        {{ data.items.map((el) => el.quantity).join(', ') }}
+                    </template>
+                </Column>
+                <Column header="KM">
+                    <template #body="{ data }">
+                        {{ data.coupon ? `${data?.coupon?.CouponName} (${formatPrice(data?.coupon?.CouponValue)})` : `Không KM` }}
+                    </template>
+                </Column>
+                <Column header="Giá trị đơn hàng">
+                    <template #body="{ data }">
+                        {{ formatPrice(data.totalPrice) }}
+                    </template>
+                </Column>
+                <Column header="Đơn giá sau KM">
+                    <template #body="{ data }">
+                        {{ formatPrice(data.finalPrice) }}
+                    </template>
+                </Column>
+                <Column header="Ngày đặt hàng">
+                    <template #body="{ data }">
+                        {{ format(data.createdAt, 'dd/MM/yyyy') }}
+                    </template>
+                </Column>
+                <Column header="Trạng thái">
+                    <template #body="{ data }">
+                        {{ data.status }}
+                    </template>
+                </Column>
+                <Column header="Thao tác">
+                    <template #body="{ data }">
                         <div class="flex gap-2">
-                            <Button @click="openNew(sp.data)" text icon="pi pi-eye"></Button>
-                            <Button @click="deleteActorDlg(sp.data)" text icon="pi pi-trash" severity="danger"></Button>
+                            <Button @click="openNew(data)" icon="pi pi-eye" text></Button>
+                            <Button icon="pi pi-trash" text></Button>
                         </div>
                     </template>
                 </Column>
@@ -147,12 +162,12 @@ function deleteSelectedProducts() {
             <div class="flex flex-col gap-6">
                 <div>
                     <label for="name" class="block font-bold mb-3">Thể loại</label>
-                    <InputText id="name" v-model="genreDetail.genreName" required="true" autofocus :invalid="submitted && !genreDetail.genreName" fluid />
-                    <small v-if="submitted && !genreDetail.genreName" class="text-red-500">Tên không được để trống</small>
+                    <InputText id="name" v-model="orderDetail.genreName" required="true" autofocus :invalid="submitted && !orderDetail.genreName" fluid />
+                    <small v-if="submitted && !orderDetail.genreName" class="text-red-500">Tên không được để trống</small>
                 </div>
                 <div>
                     <label for="description" class="block font-bold mb-3">Mô tả</label>
-                    <Textarea id="description" v-model="genreDetail.genreDescription" required="true" rows="3" cols="20" fluid />
+                    <Textarea id="description" v-model="orderDetail.genreDescription" required="true" rows="3" cols="20" fluid />
                 </div>
             </div>
 
@@ -165,25 +180,14 @@ function deleteSelectedProducts() {
         <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Xác nhận" :modal="true">
             <div class="flex items-center gap-4">
                 <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="genreDetail"
-                    >Xác nhận xóa <b>{{ genreDetail.genreName }}</b
+                <span v-if="orderDetail"
+                    >Xác nhận xóa <b>{{ orderDetail.genreName }}</b
                     >?</span
                 >
             </div>
             <template #footer>
                 <Button label="Hủy" icon="pi pi-times" severity="secondary" @click="deleteProductDialog = false" />
                 <Button label="Xác nhận" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductsDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="genreDetail">Are you sure you want to delete the selected products?</span>
-            </div>
-            <template #footer>
-                <Button label="No" icon="pi pi-times" text @click="deleteProductsDialog = false" />
-                <Button label="Yes" icon="pi pi-check" text @click="deleteSelectedProducts" />
             </template>
         </Dialog>
     </div>

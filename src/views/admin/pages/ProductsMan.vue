@@ -12,7 +12,9 @@ onMounted(() => {
     fetchAllProducts();
     fetchAllGenres();
     fetchAllBrand();
+    fetchNations();
 });
+const Nations = ref([]);
 const keySearch = ref('');
 const filterModal = ref(false);
 const GenderOpts = ref([
@@ -181,6 +183,12 @@ const confirmFilter = () => {
     }
     let queryStr = queryArr.join('');
     fetchAllProducts(queryStr);
+};
+const fetchNations = async () => {
+    try {
+        const res = await API.get(`nations?skip=0&limit=1000000`);
+        Nations.value = res.data.metadata;
+    } catch (error) {}
 };
 </script>
 
@@ -356,7 +364,7 @@ const confirmFilter = () => {
                                 </div>
                                 <div class="w-full">
                                     <label class="block font-bold mb-3">Xuất xứ</label>
-                                    <InputText v-model="productDetail.madeIn" required="true" autofocus :invalid="submitted && !productDetail.madeIn" fluid />
+                                    <Select v-model="productDetail.madeIn" :options="Nations" option-value="niceName" option-label="niceName" :invalid="submitted && !productDetail.madeIn" fluid />
                                 </div>
                             </div>
                             <div class="flex gap-2 justify-between items-center">
