@@ -76,7 +76,7 @@ const fetchAllProducts = async () => {
 </script>
 <template>
     <body class="font-montserrat text-sm bg-white dark:bg-zinc-900 flex flex-col gap-5">
-        <div class="py-5">
+        <div class="pb-5">
             <SlidesItem></SlidesItem>
         </div>
         <div v-for="(item, index) in SectionData" :key="index" class="flex flex-col gap-5">

@@ -118,7 +118,7 @@ const addToCart = async () => {
     }
 };
 const buyNow = () => {
-    router.push(`/client/payment?prd=${detail.value._id}`);
+    router.push(`/client/payment?prd=${detail.value._id}&qt=${quantity.value}`);
 };
 const responsiveOptions = ref([
     {

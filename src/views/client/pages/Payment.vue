@@ -11,21 +11,25 @@
                 <strong class="text-lg">Địa chỉ giao hàng</strong>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Tỉnh/Thành phố</label>
-                    <Dropdown v-model="payload.province" filter option-value="Code" fluid :options="Province" option-label="FullName" @change="onProvinceChange"></Dropdown>
+                    <Select v-model="payload.province" filter option-value="Code" fluid :options="Province" option-label="FullName" @change="onProvinceChange"></Select>
                 </div>
                 <div class="flex justify-between gap-2">
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Quận/Huyện</label>
-                        <Dropdown v-model="payload.district" filter fluid :options="Districts" @change="onDistrictChange" option-value="Code" option-label="FullName"></Dropdown>
+                        <Select v-model="payload.district" filter fluid :options="Districts" @change="onDistrictChange" option-value="Code" option-label="FullName"></Select>
                     </div>
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Phường/Xã</label>
-                        <Dropdown filter v-model="payload.ward" :options="Wards" option-value="Code" option-label="FullName" fluid></Dropdown>
+                        <Select filter v-model="payload.ward" :options="Wards" option-value="Code" option-label="FullName" fluid></Select>
                     </div>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Họ tên</label>
                     <InputText v-model="payload.fullName"></InputText>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-semibold">Phương thức thanh toán</label>
+                    <Select v-model="payload.paymentMethod" :options="PaymentOpts" option-value="value" option-label="label"></Select>
                 </div>
             </div>
             <div>
@@ -116,6 +120,16 @@ const itemCart = ref([]);
 const payload = ref({
     email: user.email
 });
+const PaymentOpts = ref([
+    {
+        label: 'COD',
+        value: 'cod'
+    },
+    {
+        label: 'Zalo',
+        value: 'zalo'
+    }
+]);
 const route = useRoute();
 const couponModal = ref(false);
 onMounted(async () => {
@@ -193,7 +207,10 @@ const useCoupon = async (cp) => {
 const confirmOrder = async () => {
     let data = {
         ...payload.value,
-        coupon: couponData.value._id
+        type: route.query.prd ? 'NOW' : 'CART',
+        coupon: couponData.value._id,
+        productId: route.query.prd ? route.query.prd : null,
+        quantity: route.query.qt ? route.query.qt : null
     };
     try {
         const res = await API.create(`order/checkout`, data);
@@ -206,8 +223,8 @@ const confirmOrder = async () => {
 const fetchProductById = async (id) => {
     try {
         const res = await API.get(`product/${id}`);
-        itemCart.value.items.push(res.data.metadata);
-        console.log(res);
+        itemCart.value.items = [];
+        itemCart.value.items.push({ ...res.data.metadata, quantity: route.query.qt });
     } catch (error) {}
 };
 </script>

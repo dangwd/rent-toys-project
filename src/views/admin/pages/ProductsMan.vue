@@ -356,7 +356,7 @@ const confirmFilter = () => {
                                 </div>
                                 <div class="w-full">
                                     <label class="block font-bold mb-3">Xuất xứ</label>
-                                    <InputNumber v-model="productDetail.madeIn" required="true" autofocus :invalid="submitted && !productDetail.madeIn" fluid />
+                                    <InputText v-model="productDetail.madeIn" required="true" autofocus :invalid="submitted && !productDetail.madeIn" fluid />
                                 </div>
                             </div>
                             <div class="flex gap-2 justify-between items-center">

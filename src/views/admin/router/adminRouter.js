@@ -38,6 +38,11 @@ export default [
                 path: '/man/coupon',
                 name: 'coupon',
                 component: () => import('@/views/admin/pages/CouponMan.vue')
+            },
+            {
+                path: '/man/banners',
+                name: 'banners',
+                component: () => import('@/views/admin/pages/BannerMan.vue')
             }
         ]
     },

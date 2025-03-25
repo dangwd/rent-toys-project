@@ -2,12 +2,12 @@
     <div class="h-32 w-full bg-primary drop-shadow-md flex flex-col gap-1 z-50 sticky top-0">
         <div class="mx-auto h-full container w-full items-center flex justify-between gap-3">
             <img class="w-auto h-10" src="../../../assets/img/logo.avif" alt="" />
-            <div class="flex gap-2 w-full">
+            <!-- <div class="flex gap-2 w-full">
                 <IconField>
                     <InputIcon class="pi pi-search" />
                     <InputText class="w-[700px] rounded-full" placeholder="Nhập từ khóa tìm kiếm..." />
                 </IconField>
-            </div>
+            </div> -->
             <div class="flex items-center gap-2">
                 <LoginModal></LoginModal>
                 <Carts></Carts>
