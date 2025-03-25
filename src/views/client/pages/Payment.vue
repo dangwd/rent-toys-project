@@ -227,6 +227,9 @@ const fetchProductById = async (id) => {
         itemCart.value.items.push({ ...res.data.metadata, quantity: route.query.qt });
     } catch (error) {}
 };
+watch(route, (newVal, oldVal) => {
+    location.reload();
+});
 </script>
 <style>
 .coupon {
