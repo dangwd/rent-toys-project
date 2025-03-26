@@ -121,7 +121,7 @@ import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
-const router = useRouter()
+const router = useRouter();
 const isLoading = ref(false);
 const couponData = ref(0);
 const Coupons = ref([]);
@@ -237,7 +237,7 @@ const confirmOrder = async () => {
 
         proxy.$notify(res.status === 200 ? 'S' : 'E', res.status === 200 ? `Đặt hàng thành công!` : res, toast);
         if (res.data?.metadata.return_code === 1) {
-            router.push('/client/payment-ing')
+            router.push('/client/payment-ing');
             window.open(res.data?.metadata?.order_url, '_blank');
         }
     } catch (error) {
@@ -249,7 +249,9 @@ const fetchProductById = async (id) => {
         const res = await API.get(`product/${id}`);
         itemCart.value.items = [];
         itemCart.value.items.push({ ...res.data.metadata, quantity: route.query.qt });
-    } catch (error) {}
+    } catch (error) {
+        console.log(error);
+    }
 };
 watch(route, (newVal, oldVal) => {
     location.reload();
