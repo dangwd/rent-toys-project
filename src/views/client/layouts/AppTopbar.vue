@@ -1,7 +1,7 @@
 <template>
-    <div :class="{ 'bg-primary ': isScrolled }" class="h-32 w-full drop-shadow-md flex flex-col gap-1 z-50 sticky top-0">
+    <div :class="{ '!bg-primary': isScrolled }" class="h-32 w-full drop-shadow-md bg-white flex flex-col gap-1 z-50 sticky top-0">
         <div class="mx-auto h-full container w-full items-center flex justify-between gap-3">
-            <img class="w-auto h-10" src="../../../assets/img/logo.avif" alt="" />
+            <img width="200" src="../../../assets/img/logo.avif" alt="" />
             <div class="w-[500px]">
                 <AutoComplete
                     v-model="value"
@@ -56,12 +56,12 @@
             </div>
 
             <div class="flex items-center gap-2">
-                <LoginModal></LoginModal>
-                <Carts></Carts>
+                <LoginModal :isScrolled="isScrolled"></LoginModal>
+                <Carts :isScrolled="isScrolled"></Carts>
             </div>
         </div>
-        <div class="mx-auto h-full container items-center flex gap-3">
-            <div class="flex gap-20 font-semibold">
+        <div class="mx-auto h-full container justify-center flex gap-3">
+            <div class="flex items-center gap-20 font-semibold">
                 <router-link to="/client" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Trang chủ </router-link>
                 <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng mới </router-link>
                 <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Sản phẩm </router-link>
@@ -69,7 +69,6 @@
                 <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng độc quyền </router-link>
                 <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Chương trình khuyến mãi </router-link>
             </div>
-            <div></div>
         </div>
     </div>
 </template>

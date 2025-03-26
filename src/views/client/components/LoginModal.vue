@@ -1,6 +1,6 @@
 <template>
     <div v-if="user">
-        <Button @click="toggle" icon="pi pi-user" rounded :label="user.email"></Button>
+        <Button @click="toggle" icon="pi pi-user" rounded :text="!isScrolled" :label="user.email"></Button>
     </div>
     <div v-else>
         <Button @click="openLogin()" class="w-40" icon="pi pi-sign-in" rounded label="Đăng nhập"></Button>
@@ -73,7 +73,7 @@ import { getCurrentInstance, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const { proxy } = getCurrentInstance();
-
+const props = defineProps(['isScrolled']);
 const toast = useToast();
 const store = useAuthStore();
 const router = useRouter();

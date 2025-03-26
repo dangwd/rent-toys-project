@@ -1,6 +1,6 @@
 <template>
     <div>
-        <Button class="w-32 whitespace-nowrap" @click="openModal" :badge="itemInCart.items?.length" :label="`Giỏ hàng `" rounded icon="pi pi-shopping-cart"></Button>
+        <Button class="w-32 whitespace-nowrap" @click="openModal" :text="!isScrolled" :badge="itemInCart.items?.length" :label="`Giỏ hàng `" rounded icon="pi pi-shopping-cart"></Button>
 
         <Drawer v-model:visible="cartModal" position="right" style="width: 30%">
             <template #header>
@@ -49,6 +49,7 @@ import API from '@/api/api-main';
 import { useRouter } from 'vue-router';
 const cartModal = ref(false);
 const cartStore = useCartStore();
+const props = defineProps(['isScrolled']);
 
 const router = useRouter();
 onMounted(async () => {
