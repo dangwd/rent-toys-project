@@ -11,10 +11,10 @@
                         <!-- <img :src="detail.images ? detail.images[0] : ``" alt="" /> -->
                         <Galleria :value="detail.images" :responsiveOptions="responsiveOptions" :numVisible="5" containerStyle="max-width: 640px">
                             <template #item="slotProps">
-                                <img :src="slotProps.item" :alt="slotProps.item.alt" style="width: 100%" />
+                                <img :src="slotProps.item" crossorigin="anonymous" :alt="slotProps.item.alt" style="width: 100%" />
                             </template>
                             <template #thumbnail="slotProps">
-                                <img :src="slotProps.item" style="width: 100px" class="object-cover" />
+                                <img :src="slotProps.item" crossorigin="anonymous" style="width: 100px" class="object-cover" />
                             </template>
                         </Galleria>
                     </div>
