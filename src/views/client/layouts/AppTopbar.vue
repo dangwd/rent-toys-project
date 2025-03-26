@@ -62,12 +62,12 @@
         </div>
         <div class="mx-auto h-full container items-center flex gap-3">
             <div class="flex gap-20 font-semibold">
-                <router-link to="/client" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary hover-underline-animation left"> Trang chủ </router-link>
-                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary hover-underline-animation left"> Hàng mới </router-link>
-                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary hover-underline-animation left"> Sản phẩm </router-link>
-                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary hover-underline-animation left"> Thương hiệu </router-link>
-                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary hover-underline-animation left"> Hàng độc quyền </router-link>
-                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary hover-underline-animation left"> Chương trình khuyến mãi </router-link>
+                <router-link to="/client" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Trang chủ </router-link>
+                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng mới </router-link>
+                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Sản phẩm </router-link>
+                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Thương hiệu </router-link>
+                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng độc quyền </router-link>
+                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Chương trình khuyến mãi </router-link>
             </div>
             <div></div>
         </div>

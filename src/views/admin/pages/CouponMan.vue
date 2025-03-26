@@ -183,6 +183,10 @@ const formatPrice = (price) => {
                     <InputNumber id="name" v-model="couponDetail.minOrderValue" required="true" autofocus :invalid="submitted && !couponDetail.minOrderValue" fluid />
                 </div>
                 <div>
+                    <label class="block font-bold mb-3">Số lượng</label>
+                    <InputNumber v-model="couponDetail.usageLimit" required="true" autofocus :invalid="submitted && !couponDetail.usageLimit" fluid />
+                </div>
+                <div>
                     <label for="name" class="block font-bold mb-3">Hạn sử dụng</label>
                     <DatePicker id="name" v-model="couponDetail.expiryDate" required="true" autofocus :invalid="submitted && !couponDetail.expiryDate" fluid />
                 </div>

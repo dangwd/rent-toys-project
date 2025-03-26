@@ -71,8 +71,8 @@
                     <div class="flex flex-col gap-3">
                         <div class="flex justify-between items-center text-lg">
                             <span>Tổng tiền đơn hàng</span>
-                            <strong v-if="route.query.prd">{{ couponData ? itemCart.price - couponData.CouponValue : formatPrice(totalComputed) }}đ</strong>
-                            <strong v-else>{{ formatPrice(couponData ? itemCart.totalPrice - couponData.CouponValue : itemCart.totalPrice) }}đ</strong>
+                            <strong v-if="route.query.prd">{{ couponData ? itemCart.price - couponData.discountValue : formatPrice(totalComputed) }}đ</strong>
+                            <strong v-else>{{ formatPrice(couponData?.discountValue ? itemCart.totalPrice - couponData?.discountValue : itemCart.totalPrice) }}đ</strong>
                         </div>
                         <div class="flex justify-between items-center">
                             <Button label="Quay lại" text></Button>
@@ -123,7 +123,7 @@ const { proxy } = getCurrentInstance();
 const toast = useToast();
 const router = useRouter();
 const isLoading = ref(false);
-const couponData = ref(0);
+const couponData = ref({});
 const Coupons = ref([]);
 const cartStore = useCartStore();
 const auth = useAuthStore();
@@ -212,28 +212,60 @@ const fetchAllCoupon = async () => {
 };
 const useCoupon = async (cp) => {
     isLoading.value = true;
+    let items = [];
+
+    if (route.query.prd && route.query.qt) {
+        items.push({
+            productId: route.query.prd || null,
+            quantity: route.query.qt || null
+        });
+    } else {
+        items = itemCart.value.items.map((el) => ({
+            productId: el.productId,
+            quantity: el.quantity
+        }));
+    }
+
+    let data = {
+        coupon: cp._id,
+        items
+    };
     try {
-        const res = await API.create(`coupon/apply/${cp._id}`);
+        const res = await API.create(`coupon/apply`, data);
         proxy.$notify(res.status === 200 ? 'S' : 'E', res.status === 200 ? `Sử dụng thành công coupon!` : res?.response?.data?.message, toast);
         if (res.status === 200) {
-            couponData.value = cp;
+            couponData.value = res.data?.metadata;
         }
     } catch (error) {
         console.log(error);
     } finally {
+        couponModal.value = false;
         isLoading.value = false;
     }
 };
 const confirmOrder = async () => {
+    let items = [];
+
+    if (route.query.prd && route.query.qt) {
+        items.push({
+            productId: route.query.prd || null,
+            quantity: route.query.qt || null
+        });
+    } else {
+        items = itemCart.value.items.map((el) => ({
+            productId: el.productId,
+            quantity: el.quantity
+        }));
+    }
+
     let data = {
         ...payload.value,
         type: route.query.prd ? 'NOW' : 'CART',
         coupon: couponData.value._id,
-        productId: route.query.prd ? route.query.prd : null,
-        quantity: route.query.qt ? route.query.qt : null
+        items
     };
     try {
-        const res = await API.create(`order/checkout`, data);
+        const res = await API.create(`order/CheckoutWithPayload`, data);
 
         proxy.$notify(res.status === 200 ? 'S' : 'E', res.status === 200 ? `Đặt hàng thành công!` : res, toast);
         if (res.data?.metadata.return_code === 1) {
