@@ -11,58 +11,10 @@ onMounted(() => {
 const Products = ref([]);
 const SectionData = ref([
     {
-        title: 'Ưu đãi độc quyền online từ 15-21/02',
-        banner: banner2,
-        items: [
-            {
-                id: 1,
-                title: 'Đồ chơi lắp ráp Siêu Xe Lamborghini Huracán Tecnica LEGO TECHNIC 42161',
-                thumbnail: 'https://www.mykingdom.com.vn/cdn/shop/files/42161_d5649b1a-7db4-47a5-b841-02ba476300c9.jpg?v=1725519736&width=990',
-                price: 31500
-            },
-            {
-                id: 2,
-                title: 'Đồ chơi mô hình tỷ lệ 1:16 xe tải cần cẩu SCANIA BRUDER BRU03570',
-                thumbnail: 'https://www.mykingdom.com.vn/cdn/shop/files/BRU03570.jpg?v=1736388709&width=990',
-                price: 19800
-            },
-            {
-                id: 3,
-                title: 'Xe scooter 3 bánh light up HF-6405B Xanh HF-6405B',
-                thumbnail: 'https://www.mykingdom.com.vn/cdn/shop/files/2ad9cbc8a5456c3f1b748b94b6eb622d.jpg?v=1706828979&width=990',
-                price: 40500
-            },
-            {
-                id: 4,
-                title: 'Đồ chơi lắp ráp Tàu vũ trụ chở hàng VTOL LT81 LEGO TECHNIC 42181',
-                thumbnail: 'https://www.mykingdom.com.vn/cdn/shop/files/42181.jpg?v=1725613327&width=990',
-                price: 31500
-            },
-            {
-                id: 5,
-                title: 'Giá Đỡ Điều Chỉnh Tư Thế Ngồi Pro-Posture Xanh CLEVERHIPPO PP2401',
-                thumbnail: 'https://www.mykingdom.com.vn/cdn/shop/files/gia-do-dieu-chinh-tu-the-ngoi-pro-posture-xanh-cleverhippo-pp2401.jpg?v=1719828975&width=990',
-                price: 198000
-            },
-            {
-                id: 6,
-                title: 'Đồ Chơi Lắp Ráp Thùng Gạch Trung Classic Sáng Tạo LEGO CLASSIC 10696',
-                thumbnail: 'https://www.mykingdom.com.vn/cdn/shop/files/10696_7d115577-7174-438d-9b64-a520c1674914.jpg?v=1725529622&width=990',
-                price: 31500
-            },
-            {
-                id: 7,
-                title: 'Đồ Chơi Lắp Ráp Tàu Tốc Hành Vận Chuyển Hành Khách LEGO CITY 60337',
-                thumbnail: 'https://www.mykingdom.com.vn/cdn/shop/files/60337_d481fb65-037b-4493-b7ea-67f345a6f69c.jpg?v=1725530007&width=990',
-                price: 198000
-            },
-            {
-                id: 8,
-                title: 'Con Quay BX-31 Random Booster Vol.3 BEYBLADE X 914532',
-                thumbnail: 'https://www.mykingdom.com.vn/cdn/shop/files/con-quay-bx-31-random-booster-vol-3-beyblade-x-914532_2.jpg?v=1727152377&width=990',
-                price: 198000
-            }
-        ]
+        title: ''
+    },
+    {
+        title: 'Danh mục HOT'
     }
 ]);
 const fetchAllProducts = async () => {
@@ -79,17 +31,61 @@ const fetchAllProducts = async () => {
         <div class="pb-5">
             <SlidesItem></SlidesItem>
         </div>
-        <div v-for="(item, index) in SectionData" :key="index" class="flex flex-col gap-5">
+        <div class="flex flex-col gap-5">
             <section class="w-full container mx-auto">
-                <img :src="item.banner" class="rounded-xl" />
+                <div class="flex gap-2">
+                    <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/1_8b41d900-903d-47fc-849b-522ca3603914.png?v=1741857899'" class="hover:scale-110 transition-all ease-in-out duration-300" />
+                    <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/2_540def28-5e1a-4196-b99c-3bac9ec59131.png?v=1741768720'" class="hover:scale-110 transition-all ease-in-out duration-300" />
+                    <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/3_473dccab-4bc2-4b62-851d-4e2ab7911eab.png?v=1741857899'" class="hover:scale-110 transition-all ease-in-out duration-300" />
+                    <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/4_02934ac5-9a95-4c9e-8a35-f0db314254fb.png?v=1741857899'" class="hover:scale-110 transition-all ease-in-out duration-300" />
+                </div>
             </section>
-            <div class="text-2xl text-center uppercase font-semibold">{{ item.title }}</div>
-
+            <div class="text-2xl text-center uppercase font-semibold">Ưu Đãi Độc Quyền Website</div>
             <div class="flex min-h-screen container mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto 2xl:border-x-2 2xl:border-gray-200 dark:2xl:border-zinc-700">
                 <div class="py-10">
                     <ProductsGrid :data="Products"></ProductsGrid>
                 </div>
             </div>
+            <section class="w-full container mx-auto">
+                <div class="flex gap-3">
+                    <div class="flex flex-col gap-2 text-center">
+                        <div class="overflow-hidden rounded-lg">
+                            <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/D_ch_i_sang_t_o_3377bcb0-e505-4dd0-b9e6-f5ca11b032b0_296x.jpg?v=1741833151'" class="hover:scale-110 transition-all ease-in-out duration-300" />
+                        </div>
+                        <span class="text-xl font-semibold">Đồ chơi bé trai</span>
+                    </div>
+                    <div class="flex flex-col gap-2 text-center">
+                        <div class="overflow-hidden rounded-lg">
+                            <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/D_ch_i_be_gai_b3ab4bd5-f01c-4f9d-b4bf-5d626cec6d7b_296x.jpg?v=1741769125'" class="hover:scale-110 transition-all ease-in-out duration-300" />
+                        </div>
+                        <span class="text-xl font-semibold">Đồ chơi bé gái</span>
+                    </div>
+                    <div class="flex flex-col gap-2 text-center">
+                        <div class="overflow-hidden rounded-lg">
+                            <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/Hotwheels_9c0aa4d6-39dd-4087-a7f0-1485f14a2588_296x.jpg?v=1741769125'" class="hover:scale-110 transition-all ease-in-out duration-300" />
+                        </div>
+                        <span class="text-xl font-semibold">Hot Wheels</span>
+                    </div>
+                    <div class="flex flex-col gap-2 text-center">
+                        <div class="overflow-hidden rounded-lg">
+                            <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/Balo_tui_deo_vali_f2c9b528-4467-4d54-afd5-0097ff32a262_296x.jpg?v=1741769125'" class="hover:scale-110 transition-all ease-in-out duration-300" />
+                        </div>
+                        <span class="text-xl font-semibold">Ba lô, Túi</span>
+                    </div>
+                </div>
+            </section>
+            <div class="text-2xl text-center uppercase font-semibold">Ưu Đãi Độc Quyền Website</div>
+            <div class="flex min-h-screen container mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto 2xl:border-x-2 2xl:border-gray-200 dark:2xl:border-zinc-700">
+                <div class="py-10">
+                    <ProductsGrid :data="Products"></ProductsGrid>
+                </div>
+            </div>
+            <img
+                height="100"
+                class="object-cover"
+                src="//www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=375 375w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=550 550w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=750 750w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=1100 1100w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=1500 1500w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=1780 1780w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=2000 2000w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=3000 3000w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=3840 3840w"
+                alt=""
+            />
         </div>
     </body>
 </template>
