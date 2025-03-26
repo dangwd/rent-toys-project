@@ -126,7 +126,7 @@
                         <Column header="Thao tác">
                             <template #body="{ data }">
                                 <div class="flex gap-2">
-                                    <Button @click="openOrder(data)" icon="pi pi-eye" text></Button>
+                                    <DetailOrder :data="data"></DetailOrder>
                                     <Button icon="pi pi-trash" text></Button>
                                 </div>
                             </template>
@@ -142,6 +142,7 @@ import API from '@/api/api-main';
 import { format } from 'date-fns';
 import { onMounted, reactive, ref } from 'vue';
 import { formatPrice } from '@/helper/formatPrice';
+import DetailOrder from '@/components/DetailOrder.vue';
 const Orders = ref([]);
 const paginator = reactive({
     rows: 5,
@@ -155,7 +156,7 @@ onMounted(() => {
 const User = ref({});
 const fetchAllOrder = async () => {
     try {
-        const res = await API.get(`order?skip=${paginator.page}&limit=${paginator.rows}`);
+        const res = await API.get(`order/me?skip=${paginator.page}&limit=${paginator.rows}`);
         Orders.value = res.data.metadata.result;
         paginator.total = res.data.metadata.total;
     } catch (error) {

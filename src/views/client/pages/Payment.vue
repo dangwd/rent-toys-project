@@ -11,21 +11,33 @@
                 <strong class="text-lg">Địa chỉ giao hàng</strong>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Tỉnh/Thành phố</label>
-                    <Select v-model="payload.province" filter option-value="Code" fluid :options="Province" option-label="FullName" @change="onProvinceChange"></Select>
+                    <Select v-model="selectedProvince" filter fluid :options="Province" option-label="FullName" @change="onProvinceChange"></Select>
                 </div>
                 <div class="flex justify-between gap-2">
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Quận/Huyện</label>
-                        <Select v-model="payload.district" filter fluid :options="Districts" @change="onDistrictChange" option-value="Code" option-label="FullName"></Select>
+                        <Select v-model="selectedDistrict" filter fluid :options="Districts" @change="onDistrictChange" option-label="FullName"></Select>
                     </div>
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Phường/Xã</label>
-                        <Select filter v-model="payload.ward" :options="Wards" option-value="Code" option-label="FullName" fluid></Select>
+                        <Select filter v-model="payload.ward" :options="Wards" option-value="FullName" option-label="FullName" fluid></Select>
                     </div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-semibold">Địa chỉ</label>
+                    <InputText v-model="payload.addressLine"></InputText>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-semibold">Số điện thoại</label>
+                    <InputText v-model="payload.phone"></InputText>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Họ tên</label>
                     <InputText v-model="payload.fullName"></InputText>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <label class="font-semibold">Ghi chú</label>
+                    <Textarea v-model="payload.notes"></Textarea>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Phương thức thanh toán</label>
@@ -35,22 +47,24 @@
             <div>
                 <strong class="text-lg">Sản phẩm</strong>
                 <div class="flex flex-col justify-between h-full">
-                    <div class="items-center p-3 m-0" v-for="(item, index) in itemCart.items" :key="index">
-                        <div class="grid items-center grid-cols-12 m-0">
-                            <div class="col-span-2">
-                                <Image :src="item.images ? item.images[0] : ``" alt="Image" width="70" preview></Image>
-                            </div>
-                            <div class="col-span-10 flex flex-col grow">
-                                <strong>{{ item.productName }}</strong>
-                                <div class="flex items-center justify-between gap-3 mb-2">
-                                    <span
-                                        >Số lượng: <strong class="text-primary">{{ item.quantity }}</strong></span
-                                    >
-                                    <span
-                                        >Giá sản phẩm: <strong class="text-primary">{{ formatPrice(item.price) }}đ</strong></span
-                                    >
+                    <div class="flex flex-col gap-2">
+                        <div class="items-center p-3 m-0" v-for="(item, index) in itemCart.items" :key="index">
+                            <div class="grid items-center grid-cols-12 m-0">
+                                <div class="col-span-2">
+                                    <Image :src="item.images ? item.images[0] : ``" alt="Image" width="70" preview></Image>
                                 </div>
-                                <hr />
+                                <div class="col-span-10 flex flex-col grow">
+                                    <strong>{{ item.productName }}</strong>
+                                    <div class="flex items-center justify-between gap-3 mb-2">
+                                        <span
+                                            >Số lượng: <strong class="text-primary">{{ item.quantity }}</strong></span
+                                        >
+                                        <span
+                                            >Giá sản phẩm: <strong class="text-primary">{{ formatPrice(item.price) }}đ</strong></span
+                                        >
+                                    </div>
+                                    <hr />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -113,6 +127,8 @@ const Coupons = ref([]);
 const cartStore = useCartStore();
 const auth = useAuthStore();
 const user = auth.user.metadata.user;
+const selectedProvince = ref();
+const selectedDistrict = ref();
 const Province = ref([]);
 const Districts = ref([]);
 const Wards = ref([]);
@@ -155,28 +171,31 @@ const fetchProvince = async () => {
         console.log(error);
     }
 };
-const fetchDistrict = async () => {
+const fetchDistrict = async (province) => {
     try {
-        const res = await API.get(`province/district/${payload.value.province}`);
+        const res = await API.get(`province/district/${province.Code}`);
         Districts.value = res.data.metadata;
     } catch (error) {
         console.log(error);
     }
 };
-const fetchWard = async () => {
+const fetchWard = async (district) => {
+    console.log(district);
     try {
-        const res = await API.get(`province/ward/${payload.value.district}`);
+        const res = await API.get(`province/ward/${district.Code}`);
         Wards.value = res.data.metadata;
     } catch (error) {
         console.log(error);
     }
 };
 
-const onProvinceChange = () => {
-    fetchDistrict();
+const onProvinceChange = (e) => {
+    payload.value.province = selectedProvince.value.FullName;
+    fetchDistrict(e.value);
 };
-const onDistrictChange = () => {
-    fetchWard();
+const onDistrictChange = (e) => {
+    payload.value.district = selectedDistrict.value.FullName;
+    fetchWard(e.value);
 };
 const openCouponDlg = () => {
     fetchAllCoupon();
@@ -216,6 +235,9 @@ const confirmOrder = async () => {
         const res = await API.create(`order/checkout`, data);
 
         proxy.$notify(res.status === 200 ? 'S' : 'E', res.status === 200 ? `Đặt hàng thành công!` : res, toast);
+        if (res.data?.metadata.return_code === 1) {
+            window.open(res.data?.metadata?.order_url, '_blank');
+        }
     } catch (error) {
         proxy.$notify('E', error, toast);
     }

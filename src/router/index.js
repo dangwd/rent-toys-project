@@ -5,7 +5,11 @@ import auth from '../middleware/auth.middleware';
 const routes = [...clientRouter, ...adminRouter];
 const router = createRouter({
     history: createWebHistory(),
-    routes
+    routes,
+    scrollBehavior(to, from, savedPosition) {
+        // always scroll to top
+        return { top: 0 }
+    },
 });
 
 router.beforeEach(async (to, from, next) => {
