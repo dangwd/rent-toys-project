@@ -2,6 +2,7 @@
 import API from '@/api/api-main';
 import { useToast } from 'primevue/usetoast';
 import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
+import DetailOrder from '@/components/DetailOrder.vue';
 import { formatPrice } from '@/helper/formatPrice';
 import { format } from 'date-fns';
 const { proxy } = getCurrentInstance();
@@ -17,8 +18,7 @@ const paginator = reactive({
     total: 0
 });
 const Invoices = ref();
-const genresDialog = ref(false);
-const deleteProductDialog = ref(false);
+const orderDialog = ref(false);
 const deleteProductsDialog = ref(false);
 const orderDetail = ref({});
 const selectedProducts = ref();
@@ -35,11 +35,11 @@ const fetchAllGenres = async () => {
     }
 };
 
-const openNew = async (data) => {
+const openDetailOrder = async (data) => {
     submitted.value = false;
 
     if (!data._id) {
-        genresDialog.value = true;
+        orderDialog.value = true;
         return (orderDetail.value = {});
     }
     try {
@@ -48,45 +48,25 @@ const openNew = async (data) => {
     } catch (error) {
         console.log(error);
     }
-    genresDialog.value = true;
+    orderDialog.value = true;
 };
 
 function hideDialog() {
-    genresDialog.value = false;
+    orderDialog.value = false;
     submitted.value = false;
 }
-const validateData = (data) => {
-    if (!data.genreName) {
-        proxy.$notify('W', 'Vui lòng nhập tên thể loại!', toast);
-        return false;
-    }
-    return true;
-};
+
 const saveGenre = async () => {
     let data = { ...orderDetail.value };
     submitted.value = true;
-    if (!validateData(data)) return;
     let API_EP = data._id ? `genre/${data._id}` : `genre`;
     let FUNC_API = data._id ? API.updatev2(API_EP, data) : API.create(API_EP, data);
     try {
         const res = await FUNC_API;
         if (res.data) {
-            genresDialog.value = false;
+            orderDialog.value = false;
             proxy.$notify('S', 'Thành công!', toast);
             fetchAllGenres();
-        }
-    } catch (error) {
-        console.log(error);
-    }
-};
-
-const confirmDeleteSelected = async () => {
-    try {
-        const res = await API.delete(`genre/${orderDetail.value._id}`);
-        if (res) {
-            fetchAllGenres();
-            proxy.$notify('S', 'Thành công!', toast);
-            deleteProductDialog.value = false;
         }
     } catch (error) {
         console.log(error);
@@ -149,16 +129,13 @@ const confirmDeleteSelected = async () => {
                 </Column>
                 <Column header="Thao tác">
                     <template #body="{ data }">
-                        <div class="flex gap-2">
-                            <Button @click="openNew(data)" icon="pi pi-eye" text></Button>
-                            <Button icon="pi pi-trash" text></Button>
-                        </div>
+                        <DetailOrder :data="data"></DetailOrder>
                     </template>
                 </Column>
             </DataTable>
         </div>
 
-        <Dialog v-model:visible="genresDialog" :style="{ width: '450px' }" header="Thể loại" :modal="true">
+        <Dialog v-model:visible="orderDialog" :style="{ width: '450px' }" header="Thể loại" :modal="true">
             <div class="flex flex-col gap-6">
                 <div>
                     <label for="name" class="block font-bold mb-3">Thể loại</label>
@@ -174,20 +151,6 @@ const confirmDeleteSelected = async () => {
             <template #footer>
                 <Button label="Hủy" icon="pi pi-times" text @click="hideDialog" />
                 <Button label="Xác nhận" icon="pi pi-check" @click="saveGenre" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Xác nhận" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="orderDetail"
-                    >Xác nhận xóa <b>{{ orderDetail.genreName }}</b
-                    >?</span
-                >
-            </div>
-            <template #footer>
-                <Button label="Hủy" icon="pi pi-times" severity="secondary" @click="deleteProductDialog = false" />
-                <Button label="Xác nhận" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" />
             </template>
         </Dialog>
     </div>
