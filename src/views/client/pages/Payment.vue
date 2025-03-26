@@ -51,7 +51,7 @@
                         <div class="items-center p-3 m-0" v-for="(item, index) in itemCart.items" :key="index">
                             <div class="grid items-center grid-cols-12 m-0">
                                 <div class="col-span-2">
-                                    <Image :src="item.images ? item.images[0] : ``" alt="Image" width="70" preview></Image>
+                                    <Image crossorigin="anonymous" :src="item.images ? item.images[0] : ``" alt="Image" width="70" preview></Image>
                                 </div>
                                 <div class="col-span-10 flex flex-col grow">
                                     <strong>{{ item.productName }}</strong>
@@ -118,9 +118,10 @@ import { useAuthStore } from '@/store';
 import { useCartStore } from '../store/carts';
 import { useToast } from 'primevue/usetoast';
 import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
+const router = useRouter()
 const isLoading = ref(false);
 const couponData = ref(0);
 const Coupons = ref([]);
@@ -236,6 +237,7 @@ const confirmOrder = async () => {
 
         proxy.$notify(res.status === 200 ? 'S' : 'E', res.status === 200 ? `Đặt hàng thành công!` : res, toast);
         if (res.data?.metadata.return_code === 1) {
+            router.push('/client/payment-ing')
             window.open(res.data?.metadata?.order_url, '_blank');
         }
     } catch (error) {

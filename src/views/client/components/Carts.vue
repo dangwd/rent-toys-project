@@ -13,7 +13,7 @@
             <ScrollPanel v-for="(item, index) in itemInCart.items" :key="index" style="width: 100%" class="flex flex-col">
                 <div class="card border rounded-2xl grid items-center grid-cols-12 p-3 m-0 shadow-md">
                     <div class="col-span-2">
-                        <Image :src="item.images ? item.images[0] : ``" alt="Image" width="70" preview></Image>
+                        <Image crossorigin="anonymous" :src="item.images ? item.images[0] : ``" alt="Image" width="70" preview></Image>
                     </div>
                     <div class="col-span-8 flex flex-col">
                         <strong>{{ item.productName }}</strong>

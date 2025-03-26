@@ -23,6 +23,12 @@ export default [
                 name: 'orderlist',
                 component: () => import('@/views/client/pages/OrderList.vue')
             },
+            {
+                path: '/client/payment-ing',
+                name: 'payment-ing',
+                component: () => import('@/views/client/pages/PaymentPage.vue')
+            },
+
         ]
     }
 ];

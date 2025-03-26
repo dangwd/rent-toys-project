@@ -318,7 +318,7 @@ const fetchNations = async () => {
                                             <div class="flex flex-col w-full gap-4">
                                                 <div v-for="(file, index) of productDetail.images" :key="index" class="p-4 rounded-border justify-between flex w-full border border-surface items-center gap-4">
                                                     <div>
-                                                        <img role="presentation" :alt="file" :src="file" width="100" height="50" />
+                                                        <img crossorigin="anonymous" role="presentation" :alt="file" :src="file" width="100" height="50" />
                                                     </div>
                                                     <span class="font-semibold text-ellipsis max-w-96 whitespace-nowrap overflow-hidden">{{ file.name }}</span>
                                                     <div>{{ formatSize(file.size || 0) }}</div>
