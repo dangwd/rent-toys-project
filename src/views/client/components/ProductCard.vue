@@ -1,5 +1,5 @@
 <template>
-    <router-link :to="`client/detail/${props.data._id}`">
+    <router-link :to="`/client/detail/${props.data._id}`">
         <CardItem :data="props.data"></CardItem>
     </router-link>
 </template>

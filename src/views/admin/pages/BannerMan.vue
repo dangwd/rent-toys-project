@@ -81,7 +81,7 @@ const confirmDeleteSelected = async () => {
     try {
         const res = await API.delete(`branner/${bannerDetail.value._id}`);
         if (res) {
-            fetchAllBanner();
+            fetchAllBanners();
             proxy.$notify('S', 'Thành công!', toast);
             deleteProductDialog.value = false;
         }

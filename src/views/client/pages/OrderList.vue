@@ -51,7 +51,7 @@
                                     <div class="col flex flex-col gap-3">
                                         <div class="flex flex-col gap-2">
                                             <label for="">Mật khẩu hiện tại</label>
-                                            <Password fluid toggleMask />
+                                            <Password :autocomplete="false" fluid toggleMask />
                                         </div>
                                         <div class="flex flex-col gap-2">
                                             <label for="">Mật khẩu mới</label>

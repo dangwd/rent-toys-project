@@ -9,6 +9,16 @@ export default [
                 component: () => import('@/views/client/pages/HomePage.vue')
             },
             {
+                path: '/client/new-products',
+                name: 'new-products',
+                component: () => import('@/views/client/pages/NewProducts.vue')
+            },
+            {
+                path: '/client/products-list',
+                name: 'products-list',
+                component: () => import('@/views/client/pages/ProductsList.vue')
+            },
+            {
                 path: '/client/detail/:id',
                 name: 'item-detail',
                 component: () => import('@/views/client/pages/ProductDetail.vue')

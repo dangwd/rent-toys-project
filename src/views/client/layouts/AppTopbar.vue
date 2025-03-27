@@ -4,7 +4,8 @@
             <img width="200" src="../../../assets/img/logo.avif" alt="" />
             <div class="w-[500px]">
                 <AutoComplete
-                    :pt
+                    input-id="cc"
+                    :autocomplete="false"
                     v-model="value"
                     optionLabel="name"
                     :suggestions="itemSearch"
@@ -48,8 +49,8 @@
         <div class="mx-auto h-full container justify-center flex gap-3">
             <div class="flex items-center gap-20 font-semibold">
                 <router-link to="/client" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Trang chủ </router-link>
-                <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng mới </router-link>
-                <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Sản phẩm </router-link>
+                <router-link to="/client/new-products" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng mới </router-link>
+                <router-link to="/client/products-list" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Sản phẩm </router-link>
                 <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Thương hiệu </router-link>
                 <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng độc quyền </router-link>
                 <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Chương trình khuyến mãi </router-link>
