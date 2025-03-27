@@ -58,7 +58,8 @@ onMounted(async () => {
 
 const itemInCart = ref([]);
 const openModal = async () => {
-    fetchItem();
+    await fetchItem();
+    cartModal.value = true;
 };
 const totalCartValue = ref();
 const formatPrice = (price) => {
@@ -76,13 +77,12 @@ const removeItem = async (id) => {
 const fetchItem = async () => {
     try {
         const res = await API.get(`cart`);
-        itemInCart.value = res.data.metadata;
-        cartModal.value = true;
-    } catch (error) {
-        console.log(error);
-        if (error.status === 401) {
+        if (res.status === 401) {
             return router.push(`/auth/login`);
         }
+        itemInCart.value = res.data.metadata;
+    } catch (error) {
+        console.log(error);
     }
 };
 const onQuantityChange = async (e, data) => {

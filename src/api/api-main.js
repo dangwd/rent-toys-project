@@ -12,7 +12,7 @@ class API {
             });
             return res;
         } catch (error) {
-            console.log(error);
+            return error
         }
     }
     async create(patch, params) {

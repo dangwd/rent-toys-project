@@ -100,7 +100,8 @@ const items = ref([
         icon: 'pi pi-sign-out',
         command: () => {
             localStorage.removeItem('user');
-            location.reload();
+            router.push('/auth/login');
+            // location.reload();
         }
     }
 ]);

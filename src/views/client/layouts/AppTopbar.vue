@@ -4,49 +4,34 @@
             <img width="200" src="../../../assets/img/logo.avif" alt="" />
             <div class="w-[500px]">
                 <AutoComplete
+                    :pt
                     v-model="value"
                     optionLabel="name"
                     :suggestions="itemSearch"
+                    scrollHeight="500px"
                     @complete="search"
                     placeholder="Tìm kiếm tên sản phẩm"
                     size="large"
                     fluid
                     @item-select="
                         (e) => {
-                            router.push(`/detail/${e.value._id}`), (value = '');
+                            router.push(`/client/detail/${e.value._id}`), (value = '');
                         }
                     "
                 >
                     <template #option="slotProps">
-                        <div class="flex items-center gap-4 cursor-pointer max-w-[500px] overflow-hidden hover:bg-gray-50" @click="router.push(`/detail/${slotProps.option._id}`)">
-                            <!-- Ảnh dự án -->
-                            <img :src="''" class="w-14 h-14 object-cover rounded-lg" alt="Project Image" />
+                        <div class="flex items-center gap-4 p-2 cursor-pointer max-w-[500px] overflow-hidden hover:bg-gray-50" @click="router.push(`/client/detail/${slotProps.option._id}`)">
+                            <img crossorigin="anonymous" :src="slotProps.option.images ? slotProps.option.images[0] : ''" class="w-14 h-14 object-cover rounded-lg" alt="Project Image" />
 
                             <!-- Thông tin chính -->
                             <div class="flex flex-col min-w-0">
-                                <!-- Tên dự án -->
-                                <p class="font-semibold text-gray-800 w-full break-words truncate">--</p>
-                                <div class="flex items-center gap-2 text-sm text-gray-600 mt-1" v-if="slotProps.option.type == 'TC'">
-                                    <img :src="''" class="w-5 h-5 rounded-full" alt="Org Avatar" />
-                                    <span> -- </span>
-                                </div>
-                                <div class="flex items-center gap-2 text-sm text-gray-600 mt-1" v-else>
-                                    <img :src="''" class="w-5 h-5 rounded-full" alt="Org Avatar" />
-                                    <span> -- </span>
-                                </div>
-                                <!-- Địa chỉ và tiến độ -->
-                                <div class="flex items-center gap-2 text-sm text-gray-500 mt-1">
-                                    <!-- Thông tin tổ chức -->
+                                <p class="font-semibold text-gray-800 w-full break-words truncate">{{ slotProps.option.productName }}</p>
+                                <div class="flex flex-col gap-2 text-sm text-gray-500 mt-1">
                                     <div class="flex items-center gap-1">
-                                        <i class="pi pi-map-marker"></i>
-                                        <span> -- </span>
+                                        <span>SKU: {{ slotProps.option._id }} đ</span>
                                     </div>
-                                    <!-- Tiến độ quyên góp -->
                                     <div class="flex items-center gap-1">
-                                        <i class="pi pi-heart-fill text-red-500"></i>
-                                        <span> -- </span>
-                                        <span>/</span>
-                                        <span> --</span>
+                                        <span> {{ formatPrice(slotProps.option.price) }} đ</span>
                                     </div>
                                 </div>
                             </div>
@@ -63,11 +48,11 @@
         <div class="mx-auto h-full container justify-center flex gap-3">
             <div class="flex items-center gap-20 font-semibold">
                 <router-link to="/client" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Trang chủ </router-link>
-                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng mới </router-link>
-                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Sản phẩm </router-link>
-                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Thương hiệu </router-link>
-                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng độc quyền </router-link>
-                <router-link style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Chương trình khuyến mãi </router-link>
+                <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng mới </router-link>
+                <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Sản phẩm </router-link>
+                <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Thương hiệu </router-link>
+                <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng độc quyền </router-link>
+                <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Chương trình khuyến mãi </router-link>
             </div>
         </div>
     </div>
@@ -77,6 +62,8 @@ import { useRouter } from 'vue-router';
 import Carts from '../components/Carts.vue';
 import LoginModal from '../components/LoginModal.vue';
 import { ref, onMounted } from 'vue';
+import API from '@/api/api-main';
+import { formatPrice } from '@/helper/formatPrice';
 const router = useRouter();
 onMounted(() => {
     window.addEventListener('scroll', handleScroll);
@@ -86,6 +73,14 @@ const itemSearch = ref([]);
 const value = ref('');
 const handleScroll = () => {
     isScrolled.value = window.scrollY > 50;
+};
+const search = async () => {
+    try {
+        const res = await API.get(`products?search=${value.value}`);
+        itemSearch.value = res.data.metadata.result;
+    } catch (error) {
+        console.log(error);
+    }
 };
 </script>
 <style >

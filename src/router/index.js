@@ -16,7 +16,7 @@ router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresAuth) {
         const isAuthenticated = await auth();
         if (!isAuthenticated) {
-            next({ name: 'home' });
+            next({ name: 'login' });
             return;
         }
         if (to.meta.role && to.meta.role !== isAuthenticated.role) {
