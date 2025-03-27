@@ -69,6 +69,7 @@
 <script setup>
 import { useAuthStore } from '@/store';
 import { useToast } from 'primevue/usetoast';
+import { onMounted } from 'vue';
 import { getCurrentInstance, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
@@ -87,14 +88,18 @@ const op = ref();
 const openLogin = () => {
     visible.value = true;
 };
+onMounted(() => {
+    if (user.role === 'A') {
+        items.value.unshift({
+            label: 'Trang quản trị',
+            icon: 'pi pi-chart-pie',
+            command: () => {
+                router.push(`/`);
+            }
+        });
+    }
+});
 const items = ref([
-    {
-        label: 'Trang quản trị',
-        icon: 'pi pi-chart-pie',
-        command: () => {
-            router.push(`/`);
-        }
-    },
     {
         label: 'Thông tin tài khoản',
         icon: 'pi pi-user',
