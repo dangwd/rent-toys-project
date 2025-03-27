@@ -117,7 +117,7 @@ import API from '@/api/api-main';
 import { useAuthStore } from '@/store';
 import { useCartStore } from '../store/carts';
 import { useToast } from 'primevue/usetoast';
-import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
+import { computed, getCurrentInstance, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
@@ -134,6 +134,7 @@ const Province = ref([]);
 const Districts = ref([]);
 const Wards = ref([]);
 const itemCart = ref([]);
+
 const payload = ref({
     email: user.email
 });
@@ -261,9 +262,10 @@ const confirmOrder = async () => {
     let data = {
         ...payload.value,
         type: route.query.prd ? 'NOW' : 'CART',
-        coupon: couponData.value._id,
+        coupon: couponData.value.couponId,
         items
     };
+
     try {
         const res = await API.create(`order/CheckoutWithPayload`, data);
 
@@ -288,6 +290,7 @@ const fetchProductById = async (id) => {
 watch(route, (newVal, oldVal) => {
     location.reload();
 });
+
 </script>
 <style>
 .coupon {
