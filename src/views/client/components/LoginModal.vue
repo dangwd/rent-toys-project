@@ -89,6 +89,13 @@ const openLogin = () => {
 };
 const items = ref([
     {
+        label: 'Trang quản trị',
+        icon: 'pi pi-chart-pie',
+        command: () => {
+            router.push(`/`);
+        }
+    },
+    {
         label: 'Thông tin tài khoản',
         icon: 'pi pi-user',
         command: () => {
