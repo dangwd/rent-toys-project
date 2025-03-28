@@ -221,6 +221,12 @@ const userDetail = ref({});
 const Province = ref([]);
 const Districts = ref([]);
 const Wards = ref([]);
+const StatusOpts = ref([
+    {
+        label: 'Đã thanh toán',
+        value: 'paid'
+    }
+])
 const updateUserModal = ref(false);
 const User = ref({});
 const fetchAllOrder = async () => {

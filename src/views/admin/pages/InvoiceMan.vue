@@ -19,9 +19,8 @@ const paginator = reactive({
 });
 const Invoices = ref();
 const orderDialog = ref(false);
-const deleteProductsDialog = ref(false);
+const filterDialog = ref(false);
 const orderDetail = ref({});
-const selectedProducts = ref();
 
 const submitted = ref(false);
 
@@ -33,22 +32,6 @@ const fetchAllGenres = async () => {
     } catch (error) {
         console.log(error);
     }
-};
-
-const openDetailOrder = async (data) => {
-    submitted.value = false;
-
-    if (!data._id) {
-        orderDialog.value = true;
-        return (orderDetail.value = {});
-    }
-    try {
-        const res = await API.get(`order/${data._id}`);
-        orderDetail.value = res.data.metadata;
-    } catch (error) {
-        console.log(error);
-    }
-    orderDialog.value = true;
 };
 
 function hideDialog() {
@@ -72,6 +55,9 @@ const saveGenre = async () => {
         console.log(error);
     }
 };
+const openFilter = () => {
+    filterDialog.value = true;
+};
 </script>
 
 <template>
@@ -82,7 +68,7 @@ const saveGenre = async () => {
                     <strong class="text-lg">Đơn hàng</strong>
                 </template>
                 <template #end>
-                    <!-- <Button label="Thêm mới" icon="pi pi-plus" @click="openNew" /> -->
+                    <Button label="Bộ lọc" icon="pi pi-filter" @click="openFilter()" />
                 </template>
             </Toolbar>
 
@@ -152,6 +138,10 @@ const saveGenre = async () => {
                 <Button label="Hủy" icon="pi pi-times" text @click="hideDialog" />
                 <Button label="Xác nhận" icon="pi pi-check" @click="saveGenre" />
             </template>
+        </Dialog>
+
+        <Dialog v-model:visible="filterDialog" :style="{ width: '450px' }" header="Bộ lọc" :modal="true">
+            <Dropdown :options="statusOpts"></Dropdown>
         </Dialog>
     </div>
 </template>

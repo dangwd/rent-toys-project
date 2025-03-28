@@ -16,12 +16,12 @@ const deleteProductDialog = ref(false);
 const deleteProductsDialog = ref(false);
 const genreDetail = ref({});
 const selectedProducts = ref();
-
+const keySearch = ref('');
 const submitted = ref(false);
 
 const fetchAllGenres = async () => {
     try {
-        const res = await API.get(`genres?skip=0&limit=20`);
+        const res = await API.get(`genres?skip=0&limit=200&search=${keySearch.value}`);
         Genres.value = res.data.metadata;
     } catch (error) {
         console.log(error);
@@ -118,7 +118,7 @@ function deleteSelectedProducts() {
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText class="w-[300px]" placeholder="Tìm kiếm  theo tên..." />
+                            <InputText v-model="keySearch" @keydown.enter="fetchAllGenres" class="w-[300px]" placeholder="Tìm kiếm  theo tên..." />
                         </IconField>
                     </div>
                 </template>

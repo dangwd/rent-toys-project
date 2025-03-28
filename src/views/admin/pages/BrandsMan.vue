@@ -1,13 +1,12 @@
 <script setup>
 import API from '@/api/api-main';
 import { useToast } from 'primevue/usetoast';
-import { getCurrentInstance, onMounted, ref } from 'vue';
+import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
 const { proxy } = getCurrentInstance();
 onMounted(() => {
     fetchAll();
 });
 
-const formData = new FormData();
 const toast = useToast();
 const dt = ref();
 const Brands = ref();
@@ -16,12 +15,17 @@ const deleteProductDialog = ref(false);
 const deleteProductsDialog = ref(false);
 const brandDetail = ref({});
 const selectedProducts = ref();
-
+const keySearch = ref('');
+const paginator = reactive({
+    page: 0,
+    rows: 100,
+    total: 0
+});
 const submitted = ref(false);
 
 const fetchAll = async () => {
     try {
-        const res = await API.get(`brands?skip=0&limit=20`);
+        const res = await API.get(`brands?skip=${paginator.page}&limit=${paginator.rows}&search=${keySearch.value}`);
         Brands.value = res.data.metadata;
     } catch (error) {
         console.log(error);
@@ -79,14 +83,6 @@ function deleteSelectedProducts() {
     deleteProductsDialog.value = false;
     selectedProducts.value = null;
 }
-const Openfile = () => {
-    document.querySelectorAll('.click-file')[0].click();
-};
-const UploadFileLocal = async (event, index) => {
-    const file = event.target.files[0];
-    formData.append('files', file);
-    document.querySelectorAll('.click-file')[index].value = '';
-};
 </script>
 
 <template>
@@ -109,7 +105,7 @@ const UploadFileLocal = async (event, index) => {
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText class="w-[300px]" placeholder="Tìm kiếm theo tên..." />
+                            <InputText v-model="keySearch" @keyup.enter="fetchAll()" class="w-[300px]" placeholder="Tìm kiếm theo tên..." />
                         </IconField>
                     </div>
                 </template>

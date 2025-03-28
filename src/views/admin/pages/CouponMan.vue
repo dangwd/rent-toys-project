@@ -20,6 +20,7 @@ const couponTypeOpts = ref([
         value: 'fixed'
     }
 ]);
+const keySearch = ref('');
 const Coupons = ref();
 const couponsDialog = ref(false);
 const deleteProductDialog = ref(false);
@@ -30,7 +31,7 @@ const submitted = ref(false);
 
 const fetchAllGenres = async () => {
     try {
-        const res = await API.get(`coupon?skip=0&limit=20`);
+        const res = await API.get(`coupon?skip=0&limit=200&search=${keySearch.value}`);
         Coupons.value = res.data.metadata.result;
     } catch (error) {
         console.log(error);
@@ -124,7 +125,7 @@ const formatPrice = (price) => {
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
-                            <InputText class="w-[300px]" placeholder="Tìm kiếm  theo tên..." />
+                            <InputText v-model="keySearch" class="w-[300px]" @keydown.enter="fetchAllGenres(s)" placeholder="Tìm kiếm  theo tên..." />
                         </IconField>
                     </div>
                 </template>
