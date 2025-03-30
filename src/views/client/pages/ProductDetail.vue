@@ -47,7 +47,7 @@
                                     </div>
                                     <div class="flex gap-2">
                                         <span>Giới tính: </span>
-                                        <strong>{{ detail.sex }}</strong>
+                                        <strong>{{ detail.sex === 'M' ? 'Nam' : detail.sex === 'F' ? 'Nữ' : 'Khác' }}</strong>
                                     </div>
                                 </div>
                             </div>
@@ -79,11 +79,11 @@
 </template>
 <script setup>
 import API from '@/api/api-main';
+import { formatPrice } from '@/helper/formatPrice';
+import { useToast } from 'primevue/usetoast';
+import { getCurrentInstance, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCartStore } from '../store/carts';
-import { useToast } from 'primevue/usetoast';
-import { formatPrice } from '@/helper/formatPrice';
-import { getCurrentInstance, onMounted, ref } from 'vue';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 const home = ref({

@@ -11,21 +11,21 @@
                 <strong class="text-lg">Địa chỉ giao hàng</strong>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Tỉnh/Thành phố</label>
-                    <Select v-model="selectedProvince" filter fluid :options="Province" option-label="FullName" @change="onProvinceChange"></Select>
+                    <Select v-model="selectedProvince" filter :placeholder="payload.province || ''" fluid :options="Province" option-label="FullName" @change="onProvinceChange"></Select>
                 </div>
                 <div class="flex justify-between gap-2">
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Quận/Huyện</label>
-                        <Select v-model="selectedDistrict" filter fluid :options="Districts" @change="onDistrictChange" option-label="FullName"></Select>
+                        <Select v-model="selectedDistrict" :placeholder="payload.district || ''" filter fluid :options="Districts" @change="onDistrictChange" option-label="FullName"></Select>
                     </div>
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Phường/Xã</label>
-                        <Select filter v-model="payload.ward" :options="Wards" option-value="FullName" option-label="FullName" fluid></Select>
+                        <Select filter v-model="payload.ward" :placeholder="payload.ward || ''" :options="Wards" option-value="FullName" option-label="FullName" fluid></Select>
                     </div>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Địa chỉ</label>
-                    <InputText v-model="payload.addressLine"></InputText>
+                    <InputText v-model="payload.addressLine" :placeholder="payload.addressLine || ''"></InputText>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Số điện thoại</label>
@@ -75,7 +75,7 @@
                             <strong v-else>{{ formatPrice(couponData?.discountValue ? itemCart.totalPrice - couponData?.discountValue : itemCart.totalPrice) }}đ</strong>
                         </div>
                         <div class="flex justify-between items-center">
-                            <Button label="Quay lại" text></Button>
+                            <Button @click="router.push(`/`)" label="Quay lại" text></Button>
                             <div class="flex gap-2">
                                 <Button @click="openCouponDlg" label="Coupon giảm giá" icon="pi pi-ticket" text></Button>
 
@@ -115,10 +115,10 @@
 <script setup>
 import API from '@/api/api-main';
 import { useAuthStore } from '@/store';
-import { useCartStore } from '../store/carts';
 import { useToast } from 'primevue/usetoast';
-import { computed, getCurrentInstance, onMounted, reactive, ref, watch } from 'vue';
+import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useCartStore } from '../store/carts';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 const router = useRouter();
@@ -156,6 +156,7 @@ onMounted(async () => {
     if (route.query.prd) {
         fetchProductById(route.query.prd);
     }
+    getMe();
 });
 const totalComputed = computed(() => {
     return itemCart.value?.items?.reduce((total, el) => {
@@ -287,10 +288,16 @@ const fetchProductById = async (id) => {
         console.log(error);
     }
 };
+const getMe = async () => {
+    try {
+        const res = await API.get('get-me');
+        Object.assign(payload.value, res.data.metadata);
+        payload.value.fullName = res.data.metadata.name;
+    } catch (error) {}
+};
 watch(route, (newVal, oldVal) => {
     location.reload();
 });
-
 </script>
 <style>
 .coupon {

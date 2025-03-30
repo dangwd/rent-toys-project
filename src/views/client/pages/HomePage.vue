@@ -1,9 +1,8 @@
 <script setup>
+import API from '@/api/api-main';
 import { onMounted, ref } from 'vue';
-import banner2 from '../../../assets/img/banner4.webp';
 import ProductsGrid from '../components/ProductsGrid.vue';
 import SlidesItem from '../components/SlidesItem.vue';
-import API from '@/api/api-main';
 
 onMounted(() => {
     fetchAllProducts();
@@ -41,10 +40,10 @@ const fetchAllProducts = async () => {
                         <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/2_540def28-5e1a-4196-b99c-3bac9ec59131.png?v=1741768720'" class="hover:scale-110 transition-all ease-in-out duration-300" />
                     </router-link>
 
-                    <router-link to="#">
+                    <router-link to="/client/new-products">
                         <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/3_473dccab-4bc2-4b62-851d-4e2ab7911eab.png?v=1741857899'" class="hover:scale-110 transition-all ease-in-out duration-300" />
                     </router-link>
-                    <router-link to="#">
+                    <router-link to="/client/new-products">
                         <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/4_02934ac5-9a95-4c9e-8a35-f0db314254fb.png?v=1741857899'" class="hover:scale-110 transition-all ease-in-out duration-300" />
                     </router-link>
                 </div>

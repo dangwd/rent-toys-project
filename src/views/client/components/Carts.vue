@@ -43,12 +43,11 @@
     </div>
 </template>
 <script setup>
-import { onMounted, ref, watch } from 'vue';
-import { useCartStore } from '../store/carts';
 import API from '@/api/api-main';
-import { useRouter } from 'vue-router';
 import { useToast } from 'primevue/usetoast';
-import { getCurrentInstance } from 'vue';
+import { getCurrentInstance, onMounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
+import { useCartStore } from '../store/carts';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 const cartModal = ref(false);
@@ -98,11 +97,11 @@ const onQuantityChange = async (e, data) => {
     totalCartValue.value = res.data.metadata.totalPrice;
 };
 const directPayment = () => {
-    if (totalCartValue.value?.length > 0) {
-        cartModal.value = false;
-        router.push('/client/payment');
+    if (!itemInCart.value.items?.length) {
+        return proxy.$notify('W', 'Không có sản phẩm trong giỏ hàng!', toast);
     }
-    return proxy.$notify('W', 'Không có sản phẩm trong giỏ hàng!', toast);
+    cartModal.value = false;
+    router.push('/client/payment');
 };
 watch(
     () => cartStore.cart,
