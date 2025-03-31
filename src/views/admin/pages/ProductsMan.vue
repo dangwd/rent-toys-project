@@ -346,6 +346,10 @@ const fetchNations = async () => {
                                 <label class="block font-bold mb-3">Giá tiền</label>
                                 <InputNumber v-model="productDetail.price" required="true" autofocus :invalid="submitted && !productDetail.price" fluid />
                             </div>
+                            <div>
+                                <label class="block font-bold mb-3">Giảm giá</label>
+                                <InputNumber v-model="productDetail.discount" :min="0" :max="100" suffix="%" required="true" autofocus fluid />
+                            </div>
                             <div class="flex gap-2 justify-between items-center">
                                 <div class="w-full">
                                     <label class="block font-bold mb-3">Thể loại</label>

@@ -337,8 +337,12 @@ const confirmChangePassword = async () => {
     }
     try {
         const res = await API.updatev2(`update-password`, changePassword.value);
-        console.log(res);
+        if (res.status === 400) {
+            return proxy.$notify('E', 'Có lỗi xảy ra !', toast);
+        }
+        proxy.$notify('S', 'Đổi mật khẩu thành công!', toast);
     } catch (error) {
+        proxy.$notify('E', error, toast);
         console.log(error);
     }
 };

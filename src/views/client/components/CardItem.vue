@@ -10,12 +10,13 @@
 
             <template #footer>
                 <div class="flex items-center justify-between gap-4 mt-1">
-                    <strong class="text-lg text-primary">{{ formatPrice(props.data.price) }}đ</strong>
-                    <strong class="text-lg text-secondary line-through">{{ formatPrice(props.data.price) }}đ</strong>
+                    <strong class="text-lg text-primary">{{ formatPrice(props.data.price - (props.data.price * props.data.discount) / 100) }}đ</strong>
+                    <strong v-if="props.data.discount" class="text-lg text-secondary line-through">{{ formatPrice(props.data.price) }}đ</strong>
                 </div>
             </template>
         </Card>
-        <div :class="{ hidden: route.query.t !== 'new' }" class="absolute block top-0 right-0 bg-red-500 text-white p-2 rounded-tr-xl">New</div>
+        <div v-if="route.query.t === 'new'" class="absolute block top-0 right-0 bg-red-500 text-white p-2 rounded-tr-xl">New</div>
+        <div v-else-if="props.data.discount" class="absolute block top-0 right-0 bg-red-500 text-white p-2 rounded-tr-xl">-{{ props.data.discount }}%</div>
     </div>
 </template>
 

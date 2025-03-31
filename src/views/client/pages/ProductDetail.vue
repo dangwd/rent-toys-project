@@ -22,8 +22,8 @@
                         <strong class="text-xl uppercase">{{ detail.productName }}</strong>
                         <hr />
                         <div class="flex gap-4">
-                            <span class="text-2xl font-semibold text-primary">{{ formatPrice(detail.price) }}đ</span>
-                            <span class="text-2xl font-semibold line-through">10.000đ</span>
+                            <strong class="text-2xl text-primary">{{ formatPrice(detail.price - (detail.price * detail.discount) / 100) }}đ</strong>
+                            <strong v-if="detail.discount" class="text-2xl text-secondary line-through">{{ formatPrice(detail.price) }}đ</strong>
                         </div>
                         <hr />
                         <div class="grid grid-cols-12 text-base">
@@ -35,7 +35,7 @@
                                     </div>
                                     <div class="flex gap-2">
                                         <span>Xuất xứ: </span>
-                                        <strong> Trung Quốc </strong>
+                                        <strong> {{ detail.madeIn }} </strong>
                                     </div>
                                     <div class="flex gap-2">
                                         <span>Tuổi: </span>
@@ -43,7 +43,7 @@
                                     </div>
                                     <div class="flex gap-2">
                                         <span>Thương hiệu: </span>
-                                        <strong>{{ detail.brand }}</strong>
+                                        <strong>{{ detail.brand?.brandName }}</strong>
                                     </div>
                                     <div class="flex gap-2">
                                         <span>Giới tính: </span>

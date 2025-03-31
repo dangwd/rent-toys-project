@@ -49,7 +49,7 @@ class API {
             });
             return res;
         } catch (error) {
-            console.log(error);
+            return error
         }
     }
     async remove(patch, params) {

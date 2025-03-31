@@ -27,9 +27,9 @@ const submitted = ref(false);
 
 const fetchAllOrders = async () => {
     try {
-        const res = await API.get(`order?skip=${paginator.page}&limit=${paginator.rows}`);
+        const res = await API.get(`order?skip=${paginator.page}&limit=1000`);
         Invoices.value = res.data.metadata.result;
-        paginator.total = res.data.metadata.total;
+        // paginator.total = res.data.metadata.total;
     } catch (error) {
         console.log(error);
     }
@@ -78,7 +78,7 @@ const onPageChange = (e) => {
                 </template>
             </Toolbar>
 
-            <DataTable :value="Invoices" show-gridlines paginator @page="onPageChange" :rows="paginator.rows" :page="paginator.page" :total-records="paginator.total" lazy>
+            <DataTable :value="Invoices" show-gridlines paginator @page="onPageChange" :rows="paginator.rows" :page="paginator.page">
                 <Column header="#">
                     <template #body="{ index }">
                         {{ index + 1 }}
