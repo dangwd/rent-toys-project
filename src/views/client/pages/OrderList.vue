@@ -125,7 +125,7 @@
                         </Column>
                         <Column header="Trạng thái">
                             <template #body="{ data }">
-                                {{ data.status }}
+                                {{ formatStatusOrder(data.status) }}
                             </template>
                         </Column>
                         <Column header="Thao tác">
@@ -205,6 +205,7 @@
 import API from '@/api/api-main';
 import DetailOrder from '@/components/DetailOrder.vue';
 import { formatPrice } from '@/helper/formatPrice';
+import { formatStatusOrder } from '@/helper/formatStatusOrder';
 import { format } from 'date-fns';
 import { useToast } from 'primevue/usetoast';
 import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
