@@ -1,5 +1,5 @@
 <template>
-    <div v-if="detail" class="container mx-auto h-auto">
+    <div v-if="detail" class="container mx-auto h-auto py-10">
         <div class="font-montserrat text-sm bg-white dark:bg-zinc-900 flex flex-col gap-5">
             <div class="flex flex-col gap-5 my-5">
                 <div class="flex items-center justify-between">
@@ -75,7 +75,19 @@
                 </div>
             </div>
         </div>
-
+        <div class="border border-gray-300 p-4 rounded-lg flex flex-col gap-3">
+            <strong class="text-xl">Đánh giá sản phẩm</strong>
+            <div v-for="(item, index) in 5" :key="index" class="flex flex-col gap-3 border-b">
+                <div class="flex gap-2 p-2">
+                    <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" class="mr-2" size="large" shape="circle" />
+                    <div class="flex flex-col gap-1">
+                        <strong>Hoàng Gay lọ</strong>
+                        <Rating v-model="value" />
+                    </div>
+                </div>
+                <span>Tôi là Hoàng, tôi bị gay...</span>
+            </div>
+        </div>
         <strong class="text-xl">Có thể bạn quan tâm</strong>
 
         <ProductsGrid :data="Products"></ProductsGrid>
@@ -99,6 +111,7 @@ const detail = ref({});
 const router = useRouter();
 const route = useRoute();
 const quantity = ref(1);
+const value = ref(4);
 const cartStore = useCartStore();
 const Products = ref([]);
 onMounted(() => {
