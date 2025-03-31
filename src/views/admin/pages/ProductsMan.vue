@@ -381,6 +381,10 @@ const fetchNations = async () => {
                                     <Dropdown v-model="productDetail.sex" class="w-full" :options="GenderOpts" optionValue="value" optionLabel="label"></Dropdown>
                                 </div>
                             </div>
+                            <div class="flex gap-2 items-center">
+                                <Checkbox v-model="productDetail.type" value="monopoly" binary></Checkbox>
+                                <label for="" class="font-bold">Hàng độc quyền</label>
+                            </div>
                         </div>
                     </div>
                 </div>

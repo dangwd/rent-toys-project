@@ -43,6 +43,11 @@ export default [
                 name: 'brands-page',
                 component: () => import('@/views/client/pages/BrandsPage.vue')
             },
+            {
+                path: '/client/monopoly',
+                name: 'monopoly',
+                component: () => import('@/views/client/pages/MonopolyPage.vue')
+            },
         ]
     }
 ];

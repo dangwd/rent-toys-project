@@ -54,8 +54,8 @@
                 <router-link to="/client/new-products?t=new" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng mới </router-link>
                 <router-link to="/client/products-list" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Sản phẩm </router-link>
                 <router-link to="/client/brands-page" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Thương hiệu </router-link>
-                <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng độc quyền </router-link>
-                <router-link to="#" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Chương trình khuyến mãi </router-link>
+                <router-link to="/client/monopoly" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng độc quyền </router-link>
+                <router-link to="/" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Chương trình khuyến mãi </router-link>
             </div>
         </div>
     </div>
