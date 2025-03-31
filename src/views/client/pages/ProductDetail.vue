@@ -77,6 +77,15 @@
         </div>
         <div class="border border-gray-300 p-4 rounded-lg flex flex-col gap-3">
             <strong class="text-xl">Đánh giá sản phẩm</strong>
+            <div class="flex flex-col gap-2">
+                <div class="flex gap-2">
+                    <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" class="mr-2" size="large" shape="circle" />
+                    <div class="flex flex-col gap-2">
+                        <strong>Hoàng Gay Lọ</strong>
+                        <InputText></InputText>
+                    </div>
+                </div>
+            </div>
             <div v-for="(item, index) in 5" :key="index" class="flex flex-col gap-3 border-b">
                 <div class="flex gap-2 p-2">
                     <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" class="mr-2" size="large" shape="circle" />
