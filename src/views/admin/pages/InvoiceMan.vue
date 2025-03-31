@@ -1,6 +1,7 @@
 <script setup>
 import API from '@/api/api-main';
 import { useToast } from 'primevue/usetoast';
+import { formatStatusOrder } from '@/helper/formatStatusOrder';
 import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
 import DetailOrder from '@/components/DetailOrder.vue';
 import { formatPrice } from '@/helper/formatPrice';
@@ -9,7 +10,7 @@ const { proxy } = getCurrentInstance();
 const toast = useToast();
 
 onMounted(() => {
-    fetchAllGenres();
+    fetchAllOrders();
 });
 
 const paginator = reactive({
@@ -24,9 +25,9 @@ const orderDetail = ref({});
 
 const submitted = ref(false);
 
-const fetchAllGenres = async () => {
+const fetchAllOrders = async () => {
     try {
-        const res = await API.get(`order?skip=0&limit=20`);
+        const res = await API.get(`order?skip=${paginator.page}&limit=${paginator.rows}`);
         Invoices.value = res.data.metadata.result;
         paginator.total = res.data.metadata.total;
     } catch (error) {
@@ -49,7 +50,7 @@ const saveGenre = async () => {
         if (res.data) {
             orderDialog.value = false;
             proxy.$notify('S', 'Thành công!', toast);
-            fetchAllGenres();
+            fetchAllOrders();
         }
     } catch (error) {
         console.log(error);
@@ -57,6 +58,11 @@ const saveGenre = async () => {
 };
 const openFilter = () => {
     filterDialog.value = true;
+};
+const onPageChange = (e) => {
+    paginator.page = e.page;
+    paginator.rows = e.rows;
+    fetchAllOrders();
 };
 </script>
 
@@ -72,7 +78,7 @@ const openFilter = () => {
                 </template>
             </Toolbar>
 
-            <DataTable :value="Invoices" show-gridlines paginator :rows="paginator.rows" :page="paginator.page" :total-records="paginator.total" lazy>
+            <DataTable :value="Invoices" show-gridlines paginator @page="onPageChange" :rows="paginator.rows" :page="paginator.page" :total-records="paginator.total" lazy>
                 <Column header="#">
                     <template #body="{ index }">
                         {{ index + 1 }}
@@ -90,7 +96,7 @@ const openFilter = () => {
                 </Column>
                 <Column header="KM">
                     <template #body="{ data }">
-                        {{ data.coupon ? `${data?.coupon?.CouponName} (${formatPrice(data?.coupon?.CouponValue)})` : `Không KM` }}
+                        {{ data.coupon ? `${data?.coupon?.CouponName} (${formatPrice(data?.coupon?.CouponValue)}đ)` : `Không KM` }}
                     </template>
                 </Column>
                 <Column header="Giá trị đơn hàng">
@@ -110,7 +116,7 @@ const openFilter = () => {
                 </Column>
                 <Column header="Trạng thái">
                     <template #body="{ data }">
-                        {{ data.status }}
+                        {{ formatStatusOrder(data.status) }}
                     </template>
                 </Column>
                 <Column header="Thao tác">
