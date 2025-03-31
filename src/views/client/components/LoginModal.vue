@@ -89,7 +89,7 @@ const openLogin = () => {
     visible.value = true;
 };
 onMounted(() => {
-    if (user.role === 'A') {
+    if (user?.role === 'A') {
         items.value.unshift({
             label: 'Trang quản trị',
             icon: 'pi pi-chart-pie',

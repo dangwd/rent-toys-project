@@ -1,5 +1,5 @@
 <template>
-    <div v-if="detail" class="container mx-auto h-screen">
+    <div v-if="detail" class="container mx-auto h-auto">
         <div class="font-montserrat text-sm bg-white dark:bg-zinc-900 flex flex-col gap-5">
             <div class="flex flex-col gap-5 my-5">
                 <div class="flex items-center justify-between">
@@ -75,10 +75,15 @@
                 </div>
             </div>
         </div>
+
+        <strong class="text-xl">Có thể bạn quan tâm</strong>
+
+        <ProductsGrid :data="Products"></ProductsGrid>
     </div>
 </template>
 <script setup>
 import API from '@/api/api-main';
+import ProductsGrid from '../components/ProductsGrid.vue';
 import { formatPrice } from '@/helper/formatPrice';
 import { useToast } from 'primevue/usetoast';
 import { getCurrentInstance, onMounted, ref } from 'vue';
@@ -89,13 +94,15 @@ const toast = useToast();
 const home = ref({
     icon: 'pi pi-home'
 });
-const items = ref([{ label: 'Trang chủ' }, { label: 'Manga -Comic' }, { label: 'Tuyển tập Doraemon bóng chày - Truyền kì về bóng chày siêu cấp - Tập 2' }]);
+// const items = ref([{ label: 'Trang chủ' }, { label: 'Manga -Comic' }, { label: 'Tuyển tập Doraemon bóng chày - Truyền kì về bóng chày siêu cấp - Tập 2' }]);
 const detail = ref({});
 const router = useRouter();
 const route = useRoute();
 const quantity = ref(1);
 const cartStore = useCartStore();
+const Products = ref([]);
 onMounted(() => {
+    fetchAllProducts();
     fetchDetailProduct();
 });
 const fetchDetailProduct = async () => {
@@ -130,5 +137,13 @@ const responsiveOptions = ref([
         numVisible: 1
     }
 ]);
+const fetchAllProducts = async () => {
+    try {
+        const res = await API.get(`products`);
+        Products.value = res.data.metadata.result;
+    } catch (error) {
+        console.log(error);
+    }
+};
 </script>
 <style></style>

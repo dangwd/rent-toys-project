@@ -38,7 +38,11 @@ export default [
                 name: 'payment-ing',
                 component: () => import('@/views/client/pages/PaymentPage.vue')
             },
-
+            {
+                path: '/client/brands-page',
+                name: 'brands-page',
+                component: () => import('@/views/client/pages/BrandsPage.vue')
+            },
         ]
     }
 ];

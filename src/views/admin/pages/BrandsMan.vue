@@ -118,6 +118,11 @@ function deleteSelectedProducts() {
                     </template>
                 </Column>
                 <Column field="brandName" header="Tên Thương hiệu"></Column>
+                <Column header="Ảnh thương hiệu">
+                    <template #body="{ data }">
+                        <img :src="data.imageLink" alt="" />
+                    </template>
+                </Column>
 
                 <Column field="brandDescription" header="Mô tả"></Column>
                 <Column field="" header="Thao tác">
@@ -137,6 +142,10 @@ function deleteSelectedProducts() {
                     <label for="name" class="block font-bold mb-3">Tên Thương hiệu</label>
                     <InputText id="name" v-model="brandDetail.brandName" required="true" autofocus :invalid="submitted && !brandDetail.brandName" fluid />
                     <small v-if="submitted && !brandDetail.brandName" class="text-red-500">brandName is required.</small>
+                </div>
+                <div>
+                    <label for="name" class="block font-bold mb-3">Link ảnh thương hiệu</label>
+                    <InputText id="name" v-model="brandDetail.imageLink" required="true" autofocus :invalid="submitted && !brandDetail.imageLink" fluid />
                 </div>
                 <div>
                     <label for="movieDescription" class="block font-bold mb-3">Mô tả</label>

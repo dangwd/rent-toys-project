@@ -51,15 +51,15 @@
                                     <div class="col flex flex-col gap-3">
                                         <div class="flex flex-col gap-2">
                                             <label for="">Mật khẩu hiện tại</label>
-                                            <Password :autocomplete="false" fluid toggleMask />
+                                            <Password v-model.trim="changePassword.password" :autocomplete="false" fluid toggleMask />
                                         </div>
                                         <div class="flex flex-col gap-2">
                                             <label for="">Mật khẩu mới</label>
-                                            <Password fluid toggleMask />
+                                            <Password v-model.trim="changePassword.newPassword" fluid toggleMask />
                                         </div>
                                         <div class="flex flex-col gap-2">
                                             <label for="">Nhập lại mật khẩu</label>
-                                            <Password fluid toggleMask />
+                                            <Password v-model.trim="changePassword.cfPassword" fluid toggleMask />
                                         </div>
                                     </div>
                                     <div class="col flex flex-col gap-3">
@@ -235,6 +235,11 @@ const StatusOpts = ref([
         value: 'paid'
     }
 ]);
+const changePassword = ref({
+    password: '',
+    newPassword: '',
+    cfPassword: ''
+});
 const updateUserModal = ref(false);
 const User = ref({});
 const fetchAllOrder = async () => {
@@ -325,6 +330,17 @@ const UploadFileLocal = async (event, index) => {
     document.querySelectorAll('.click-file')[index].value = '';
     updateUser();
     //   ProfileUser.value.files = URL.createObjectURL(file);
+};
+const confirmChangePassword = async () => {
+    if (changePassword.value.cfPassword !== changePassword.value.newPassword) {
+        return proxy.$notify('E', 'Mật khẩu nhập lại không khớp!', toast);
+    }
+    try {
+        const res = await API.updatev2(`update-password`, changePassword.value);
+        console.log(res);
+    } catch (error) {
+        console.log(error);
+    }
 };
 </script>
 <style></style>
