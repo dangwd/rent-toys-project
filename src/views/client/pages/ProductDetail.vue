@@ -79,22 +79,27 @@
             <strong class="text-xl">Đánh giá sản phẩm</strong>
             <div class="flex flex-col gap-2">
                 <div class="flex gap-2">
-                    <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" class="mr-2" size="large" shape="circle" />
-                    <div class="flex flex-col gap-2">
-                        <strong>Hoàng Gay Lọ</strong>
-                        <InputText></InputText>
+                    <Avatar crossorigin="anonymous" :image="User?.thumbnail" class="mr-2 object-cover" size="large" shape="circle" />
+                    <div class="flex flex-col gap-2 w-full">
+                        <strong>{{ User?.name }}</strong>
+                        <Rating v-model="ratingValue.rating" />
+                        <Textarea v-model="ratingValue.content" auto-resize class="w-full"></Textarea>
+                        <div class="flex justify-end">
+                            <Button @click="confirmSubmit()" label="Gửi"></Button>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div v-for="(item, index) in 5" :key="index" class="flex flex-col gap-3 border-b">
+            <div v-for="(item, index) in detail.comments" :key="index" class="flex flex-col gap-3">
                 <div class="flex gap-2 p-2">
-                    <Avatar image="https://primefaces.org/cdn/primevue/images/avatar/amyelsner.png" class="mr-2" size="large" shape="circle" />
+                    <Avatar crossorigin="anonymous" :image="item.user?.thumbnail" class="mr-2 object-cover" size="large" shape="circle" />
                     <div class="flex flex-col gap-1">
-                        <strong>Hoàng Gay lọ</strong>
-                        <Rating v-model="value" />
+                        <strong>{{ item.user?.name }}</strong>
+                        <Rating v-model="item.rating" />
                     </div>
                 </div>
-                <span>Tôi là Hoàng, tôi bị gay...</span>
+                <span>{{ item.content }}</span>
+                <hr />
             </div>
         </div>
         <strong class="text-xl">Có thể bạn quan tâm</strong>
@@ -121,11 +126,17 @@ const router = useRouter();
 const route = useRoute();
 const quantity = ref(1);
 const value = ref(4);
+const ratingValue = ref({
+    content: '',
+    rating: 0
+});
+const User = ref();
 const cartStore = useCartStore();
 const Products = ref([]);
 onMounted(() => {
     fetchAllProducts();
     fetchDetailProduct();
+    getMe();
 });
 const fetchDetailProduct = async () => {
     try {
@@ -166,6 +177,23 @@ const fetchAllProducts = async () => {
     } catch (error) {
         console.log(error);
     }
+};
+const confirmSubmit = async () => {
+    try {
+        const res = await API.create(`product/${detail.value._id}/comment`, ratingValue.value);
+        if (res.data) {
+            fetchDetailProduct();
+            proxy.$notify('S', 'Thành công!', toast);
+        }
+    } catch (error) {
+        console.log(error);
+    }
+};
+const getMe = async () => {
+    try {
+        const res = await API.get(`get-me`);
+        User.value = res.data.metadata;
+    } catch (error) {}
 };
 </script>
 <style></style>
