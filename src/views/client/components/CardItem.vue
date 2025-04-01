@@ -7,7 +7,11 @@
             <template #title>
                 <strong class="text-base">{{ props.data.productName }}</strong>
             </template>
-
+            <template #content>
+                <span class="line-clamp-3">
+                    {{ props.data.descriptions }}
+                </span>
+            </template>
             <template #footer>
                 <div class="flex items-center justify-between gap-4 mt-1">
                     <strong class="text-lg text-primary">{{ formatPrice(props.data.price - (props.data.price * props.data.discount) / 100) }}đ</strong>
@@ -31,8 +35,5 @@ const route = useRoute();
 const formatPrice = (price) => {
     return new Intl.NumberFormat('en-US').format(price);
 };
-onMounted(() => {
-    console.log(route.query.t);
-});
 </script>
 <style></style>
