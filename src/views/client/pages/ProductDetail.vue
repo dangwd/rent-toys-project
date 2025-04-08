@@ -79,7 +79,7 @@
             <strong class="text-xl">Đánh giá sản phẩm</strong>
             <div class="flex flex-col gap-2">
                 <div class="flex gap-2">
-                    <Avatar crossorigin="anonymous" :image="User?.thumbnail" class="mr-2 object-cover" size="large" shape="circle" />
+                    <Avatar crossorigin="anonymous" :image="User?.thumbnail ? User?.thumbnail : `https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png`" class="mr-2 object-cover" size="large" shape="circle" />
                     <div class="flex flex-col gap-2 w-full">
                         <strong>{{ User?.name }}</strong>
                         <Rating v-model="cmtPayload.rating" />
