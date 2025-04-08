@@ -95,7 +95,13 @@
                 </div>
             </template>
 
-            <ScrollPanel v-for="(item, index) in Coupons" :key="index" style="width: 100%" class="flex flex-col my-5">
+            <ScrollPanel
+                v-if="Coupons.filter((el) => new Date(el.expiryDate) >= new Date())?.length > 0"
+                v-for="(item, index) in Coupons.filter((el) => new Date(el.expiryDate) >= new Date())"
+                :key="index"
+                style="width: 100%"
+                class="flex flex-col my-5"
+            >
                 <div @click="useCoupon(item)" class="coupon hover:scale-105 transition-all ease-in-out duration-150">
                     <div class="left"></div>
                     <div class="center text-white">
@@ -103,11 +109,14 @@
                             <div class="">{{ item.CouponName }}</div>
                             <div class="">Giá trị: {{ formatPrice(item.CouponValue) }}đ</div>
                             <div class="">Giá trị đơn hàng:{{ formatPrice(item.minOrderValue) }}đ</div>
+                            <div class="">Hạn sử dụng: {{ format(item.expiryDate, 'dd/MM/yyyy') }}</div>
+                            <div class="">Số lượng còn lại: {{ item.usageLimit }}</div>
                         </div>
                     </div>
                     <div class="right"></div>
                 </div>
             </ScrollPanel>
+            <div class="text-center" v-else>Danh sách trống</div>
         </Drawer>
         <Loading v-if="isLoading"></Loading>
     </div>
@@ -119,6 +128,7 @@ import { useToast } from 'primevue/usetoast';
 import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCartStore } from '../store/carts';
+import { format } from 'date-fns';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 const router = useRouter();
@@ -274,6 +284,8 @@ const confirmOrder = async () => {
         if (res.data?.metadata.return_code === 1) {
             router.push('/client/payment-ing');
             window.open(res.data?.metadata?.order_url, '_blank');
+        } else {
+            router.push('/client/payment-check');
         }
     } catch (error) {
         proxy.$notify('E', error, toast);
@@ -302,7 +314,7 @@ watch(route, (newVal, oldVal) => {
 <style>
 .coupon {
     width: 95%;
-    height: 100px;
+    height: 150px;
     border-radius: 10px;
     overflow: hidden;
     margin: auto;

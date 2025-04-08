@@ -48,6 +48,11 @@ export default [
                 name: 'monopoly',
                 component: () => import('@/views/client/pages/MonopolyPage.vue')
             },
+            {
+                path: '/client/payment-check',
+                name: 'payment-check',
+                component: () => import('@/components/PaymentSuccess.vue')
+            },
         ]
     }
 ];

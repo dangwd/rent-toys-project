@@ -7,7 +7,16 @@ import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 const $primevue = usePrimeVue();
-
+const SexOpts = ref([
+    {
+        label: 'Nam',
+        value: 'M'
+    },
+    {
+        label: 'Nữ',
+        value: 'F'
+    }
+]);
 onMounted(() => {
     fetchAllProducts();
     fetchAllGenres();
@@ -52,7 +61,7 @@ const paginator = reactive({
 const fetchAllProducts = async (query = '') => {
     let url = `products?skip=${paginator.page}&limit=${paginator.rows}`;
     if (query) {
-        url += `&filter=${query}`;
+        url += `&${query}`;
     }
     if (keySearch.value) {
         url += `&search=${keySearch.value}`;
@@ -178,10 +187,13 @@ const confirmFilter = () => {
     if (filter.genre) {
         queryArr.push(`genre=${filter.genre}`);
     }
+    if (filter.sex) {
+        queryArr.push(`sex=${filter.sex}`);
+    }
     if (filter.age) {
         queryArr.push(`age=${filter.age}`);
     }
-    let queryStr = queryArr.join('');
+    let queryStr = queryArr.join('&');
     fetchAllProducts(queryStr);
 };
 const fetchNations = async () => {
@@ -417,8 +429,8 @@ const fetchNations = async () => {
                     <Select v-model="filter.genre" :options="GenresOpt" optionLabel="genreName" class="w-full" optionValue="_id" fluid></Select>
                 </div>
                 <div class="flex flex-col gap-2 w-full">
-                    <label for="">Thương hiệu</label>
-                    <Select v-model="filter.brand" :options="BrandOpts" optionLabel="brandName" optionValue="_id" fluid></Select>
+                    <label for="">Giới tính</label>
+                    <Select v-model="filter.sex" :options="SexOpts" optionLabel="label" optionValue="value" fluid></Select>
                 </div>
             </div>
             <template #footer>
