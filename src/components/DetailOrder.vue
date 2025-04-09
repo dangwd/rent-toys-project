@@ -48,15 +48,15 @@
                         <div class="border border-gray-300 p-3 rounded-lg">
                             <div class="flex items-center justify-between">
                                 <strong class="text-lg">Trạng thái đơn hàng</strong>
-                                <Select class="w-52" :options="OrderStatusOpts" @change="onStatusChange($event)" option-label="label"></Select>
+                                <Select :disabled="detailOrder.status === 'cancelled'" class="w-52" v-model="detailOrder.status" option-value="value" :options="OrderStatusOpts" @change="onStatusChange($event)" option-label="label"></Select>
                             </div>
-                            <Timeline :value="events" layout="horizontal" align="top">
+                            <!-- <Timeline :value="events" layout="horizontal" align="top">
                                 <template #content="slotProps">
                                     <div class="whitespace-normal w-full">
                                         {{ slotProps.item }}
                                     </div>
                                 </template>
-                            </Timeline>
+                            </Timeline> -->
                         </div>
                     </div>
                     <div class="col-span-3 flex flex-col gap-2">
@@ -103,8 +103,12 @@
 </template>
 <script setup>
 import API from '@/api/api-main';
-import { ref } from 'vue';
 import { formatPrice } from '@/helper/formatPrice';
+import { useToast } from 'primevue/usetoast';
+import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
+const { proxy } = getCurrentInstance();
+const toast = useToast();
+
 import { format } from 'date-fns';
 const props = defineProps(['data']);
 const events = ref(['Đã đặt hàng']);
@@ -112,13 +116,24 @@ const visible = ref(false);
 const detailOrder = ref({});
 const OrderStatusOpts = ref([
     {
-        label: 'Đã đặt hàng'
+        label: 'Hủy',
+        value: 'cancelled'
     },
     {
-        label: 'Đang giao hàng'
+        label: 'Đã đặt hàng',
+        value: 'pending'
     },
     {
-        label: 'Đã giao'
+        label: 'Đang giao hàng',
+        value: 'shipped'
+    },
+    {
+        label: 'Đã giao',
+        value: 'delivered'
+    },
+    {
+        label: 'Đã thanh toán',
+        value: 'paid'
     }
 ]);
 const openDetail = () => {
@@ -134,9 +149,22 @@ const fetchDetailOrder = async () => {
         console.log(error);
     }
 };
-const onStatusChange = (e) => {
+const onStatusChange = async (e) => {
     if (!events.value.includes(e.value.label)) {
         events.value.push(e.value.label);
+    }
+    let data = {
+        status: e.value
+    };
+    try {
+        const res = await API.create(`order/${props.data._id}/status`, data);
+        if (res) {
+            fetchDetailOrder();
+            visible.value = false;
+            proxy.$notify('S', 'Cập nhật thành công!', toast);
+        }
+    } catch (error) {
+        console.log(error);
     }
 };
 </script>
