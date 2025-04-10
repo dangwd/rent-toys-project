@@ -50,13 +50,6 @@
                                 <strong class="text-lg">Trạng thái đơn hàng</strong>
                                 <Select :disabled="detailOrder.status === 'cancelled'" class="w-52" v-model="detailOrder.status" option-value="value" :options="OrderStatusOpts" @change="onStatusChange($event)" option-label="label"></Select>
                             </div>
-                            <!-- <Timeline :value="events" layout="horizontal" align="top">
-                                <template #content="slotProps">
-                                    <div class="whitespace-normal w-full">
-                                        {{ slotProps.item }}
-                                    </div>
-                                </template>
-                            </Timeline> -->
                         </div>
                     </div>
                     <div class="col-span-3 flex flex-col gap-2">
@@ -110,7 +103,7 @@ const { proxy } = getCurrentInstance();
 const toast = useToast();
 
 import { format } from 'date-fns';
-const props = defineProps(['data']);
+const props = defineProps(['data', 'client']);
 const events = ref(['Đã đặt hàng']);
 const visible = ref(false);
 const detailOrder = ref({});

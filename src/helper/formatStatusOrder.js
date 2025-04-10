@@ -1,5 +1,5 @@
 const STATUS_MAPPING = {
-  pending: 'Chờ xác nhận',
+  pending: 'Đã đặt hàng',
   paid: 'Đã thanh toán',
   cancelled: 'Đã hủy',
   delivered: 'Đã giao hàng',
