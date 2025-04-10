@@ -112,7 +112,7 @@ import API from '@/api/api-main';
 import ProductsGrid from '../components/ProductsGrid.vue';
 import { formatPrice } from '@/helper/formatPrice';
 import { useToast } from 'primevue/usetoast';
-import { getCurrentInstance, onMounted, ref } from 'vue';
+import { getCurrentInstance, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCartStore } from '../store/carts';
 const { proxy } = getCurrentInstance();
@@ -199,5 +199,13 @@ const getMe = async () => {
         console.log(error);
     }
 };
+watch(
+    () => route.params.id,
+    (newVal, oldVal) => {
+        if (newVal !== oldVal) {
+            fetchDetailProduct();
+        }
+    }
+);
 </script>
 <style></style>
