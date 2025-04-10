@@ -272,7 +272,7 @@ const confirmOrder = async () => {
 
     let data = {
         ...payload.value,
-        type: route.query.prd ? 'NOW' : 'CART',
+        orderType: route.query.prd ? '' : 'Cart',
         coupon: couponData.value.couponId,
         items
     };
