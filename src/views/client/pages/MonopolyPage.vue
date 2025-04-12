@@ -8,9 +8,9 @@
     </div>
 </template>
 <script setup>
+import API from '@/api/api-main';
 import { onMounted, ref } from 'vue';
 import ProductsGrid from '../components/ProductsGrid.vue';
-import API from '@/api/api-main';
 
 const Products = ref([]);
 
@@ -26,5 +26,4 @@ const fetchAllProducts = async () => {
     }
 };
 </script>
-<style>
-</style>
+<style></style>

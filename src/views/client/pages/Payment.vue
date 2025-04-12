@@ -60,7 +60,7 @@
                                             >Số lượng: <strong class="text-primary">{{ item.quantity }}</strong></span
                                         >
                                         <span
-                                            >Giá sản phẩm: <strong class="text-primary">{{ formatPrice(item.price) }}đ</strong></span
+                                            >Giá sản phẩm: <strong class="text-primary">{{ formatPrice(route.query.prd ? item.price - (item.price * item.discount) / 100 : item.finalSubTotal) }}đ</strong></span
                                         >
                                     </div>
                                     <hr />
@@ -71,9 +71,8 @@
                     <div class="flex flex-col gap-3">
                         <div class="flex justify-between items-center text-lg">
                             <span>Tổng tiền đơn hàng</span>
-                            {{ couponData }}
-                            <strong v-if="route.query.prd">{{ couponData?.discountValue ? itemCart.price - couponData.discountValue : formatPrice(totalComputed) }}đ </strong>
-                            <strong v-else>{{ formatPrice(couponData?.discountValue ? itemCart.totalPrice - couponData?.discountValue : itemCart.totalPrice) }}đ</strong>
+                            <strong v-if="route.query.prd">{{ couponData?.discountValue ? formatPrice(couponData.finalPrice) : formatPrice(totalComputed) }}đ (-{{ couponData?.couponValue }}%)</strong>
+                            <strong v-else>{{ formatPrice(couponData?.discountValue ? couponData.finalPrice : itemCart.totalPrice) }}đ (-{{ couponData?.couponValue }}%)</strong>
                         </div>
                         <div class="flex justify-between items-center">
                             <Button @click="router.push(`/`)" label="Quay lại" text></Button>
@@ -108,7 +107,7 @@
                     <div class="center text-white">
                         <div class="flex flex-col gap-2">
                             <div class="">{{ item.CouponName }}</div>
-                            <div class="">Giá trị: {{ formatPrice(item.CouponValue) }}đ</div>
+                            <div class="">Giá trị: {{ formatPrice(item.CouponValue) }}%</div>
                             <div class="">Giá trị đơn hàng:{{ formatPrice(item.minOrderValue) }}đ</div>
                             <div class="">Hạn sử dụng: {{ format(item.expiryDate, 'dd/MM/yyyy') }}</div>
                             <div class="">Số lượng còn lại: {{ item.usageLimit }}</div>

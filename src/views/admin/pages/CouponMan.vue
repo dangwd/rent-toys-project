@@ -48,6 +48,7 @@ const openNew = async (data) => {
     try {
         const res = await API.get(`coupon/${data._id}`);
         couponDetail.value = res.data.metadata;
+        couponDetail.value.expiryDate = new Date(res.data?.metadata.expiryDate);
     } catch (error) {
         console.log(error);
     }
@@ -66,7 +67,10 @@ const validateData = (data) => {
     return true;
 };
 const saveCoupon = async () => {
-    let data = { ...couponDetail.value };
+    let data = {
+        ...couponDetail.value,
+        CouponType: 'percent'
+    };
     submitted.value = true;
     if (!validateData(data)) return;
     let API_EP = data._id ? `coupon/${data._id}` : `coupon`;
@@ -138,7 +142,7 @@ const formatPrice = (price) => {
                     </template>
                 </Column>
                 <Column field="CouponName" header="Coupon"></Column>
-                <Column field="CouponType" header="Loại"> </Column>
+                <!-- <Column field="CouponType" header="Loại"> </Column> -->
                 <Column field="CouponValue" header="Giá trị Coupon">
                     <template #body="{ data }">
                         {{ formatPrice(data.CouponValue) }}
@@ -171,13 +175,13 @@ const formatPrice = (price) => {
                     <label for="name" class="block font-bold mb-3">Tên Coupon</label>
                     <InputText id="name" v-model="couponDetail.CouponName" required="true" autofocus :invalid="submitted && !couponDetail.CouponName" fluid />
                 </div>
-                <div>
+                <!-- <div>
                     <label class="block font-bold mb-3">Loại</label>
                     <Dropdown v-model="couponDetail.CouponType" :options="couponTypeOpts" optionValue="value" optionLabel="name" required="true" autofocus :invalid="submitted && !couponDetail.CouponType" fluid />
-                </div>
+                </div> -->
                 <div>
                     <label for="name" class="block font-bold mb-3">Giá trị Coupon</label>
-                    <InputNumber id="name" v-model="couponDetail.CouponValue" required="true" autofocus :invalid="submitted && !couponDetail.CouponValue" fluid />
+                    <InputNumber id="name" :max="100" :min="0" suffix="%" v-model="couponDetail.CouponValue" required="true" autofocus :invalid="submitted && !couponDetail.CouponValue" fluid />
                 </div>
                 <div>
                     <label for="name" class="block font-bold mb-3">Áp dụng cho sản phẩm từ</label>
@@ -189,7 +193,7 @@ const formatPrice = (price) => {
                 </div>
                 <div>
                     <label for="name" class="block font-bold mb-3">Hạn sử dụng</label>
-                    <DatePicker id="name" v-model="couponDetail.expiryDate" required="true" autofocus :invalid="submitted && !couponDetail.expiryDate" fluid />
+                    <DatePicker id="name" v-model="couponDetail.expiryDate" dateFormat="dd/mm/yy" required="true" autofocus :invalid="submitted && !couponDetail.expiryDate" fluid />
                 </div>
             </div>
 

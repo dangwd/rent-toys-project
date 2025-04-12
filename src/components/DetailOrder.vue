@@ -37,7 +37,7 @@
                                 </div>
                                 <div class="flex flex-wrap items-center justify-between">
                                     <span>Giảm giá: </span>
-                                    <strong>{{ detailOrder.coupon ? `- ${formatPrice(detailOrder.coupon?.CouponValue)}` : 0 }}đ</strong>
+                                    <strong>{{ detailOrder.coupon ? `- ${formatPrice(detailOrder.coupon?.CouponValue)}` : 0 }}%</strong>
                                 </div>
                                 <div class="flex flex-wrap items-center justify-between">
                                     <span>Thành tiền: </span>
@@ -48,7 +48,7 @@
                         <div class="border border-gray-300 p-3 rounded-lg">
                             <div class="flex items-center justify-between">
                                 <strong class="text-lg">Trạng thái đơn hàng</strong>
-                                <Select :disabled="detailOrder.status === 'cancelled'" class="w-52" v-model="detailOrder.status" option-value="value" :options="OrderStatusOpts" @change="onStatusChange($event)" option-label="label"></Select>
+                                <Select :disabled="detailOrder.status === 'cancelled' || client" class="w-52" v-model="detailOrder.status" option-value="value" :options="OrderStatusOpts" @change="onStatusChange($event)" option-label="label"></Select>
                             </div>
                         </div>
                     </div>
@@ -98,7 +98,7 @@
 import API from '@/api/api-main';
 import { formatPrice } from '@/helper/formatPrice';
 import { useToast } from 'primevue/usetoast';
-import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
+import { getCurrentInstance, ref } from 'vue';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 

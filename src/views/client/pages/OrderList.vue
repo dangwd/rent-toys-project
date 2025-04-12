@@ -131,7 +131,7 @@
                         <Column header="Thao tác">
                             <template #body="{ data }">
                                 <div class="flex gap-2">
-                                    <DetailOrder :data="data"></DetailOrder>
+                                    <DetailOrder :client="true" :data="data"></DetailOrder>
                                     <Button icon="pi pi-trash" text></Button>
                                 </div>
                             </template>
