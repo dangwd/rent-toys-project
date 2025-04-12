@@ -14,8 +14,7 @@ class AuthServices {
                 }
             })
             .then((res) => {
-                if (res.data) {
-                    console.log(res.data.meta);
+                if (res?.data) {
                     const currentDate = new Date();
                     const expireTokenTime = new Date(currentDate.getTime() + res.data.metadata.atokenExp * 60 * 1000).toString();
                     const jToken = { ExpireToken: expireTokenTime, ...res.data };
