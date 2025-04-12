@@ -113,12 +113,12 @@ const removeBannerLink = (index) => {
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
                         <h4 class="m-0">Danh Sách Banner</h4>
-                        <IconField>
+                        <!-- <IconField>
                             <InputIcon>
                                 <i class="pi pi-search" />
                             </InputIcon>
                             <InputText class="w-[300px]" placeholder="Tìm kiếm  theo tên..." />
-                        </IconField>
+                        </IconField> -->
                     </div>
                 </template>
                 <template #empty>

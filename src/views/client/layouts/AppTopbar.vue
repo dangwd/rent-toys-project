@@ -55,18 +55,18 @@
                 <router-link to="/client/products-list" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Sản phẩm </router-link>
                 <router-link to="/client/brands-page" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Thương hiệu </router-link>
                 <router-link to="/client/monopoly" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Hàng độc quyền </router-link>
-                <router-link to="/" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Chương trình khuyến mãi </router-link>
+                <!-- <router-link to="/" style="transition: 0.3s ease" :class="{ 'text-white': isScrolled }" class="hover:text-gray-700 text-primary"> Chương trình khuyến mãi </router-link> -->
             </div>
         </div>
     </div>
 </template>
 <script setup>
+import API from '@/api/api-main';
+import { formatPrice } from '@/helper/formatPrice';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import Carts from '../components/Carts.vue';
 import LoginModal from '../components/LoginModal.vue';
-import { ref, onMounted } from 'vue';
-import API from '@/api/api-main';
-import { formatPrice } from '@/helper/formatPrice';
 const router = useRouter();
 onMounted(() => {
     window.addEventListener('scroll', handleScroll);
@@ -86,7 +86,7 @@ const search = async () => {
     }
 };
 </script>
-<style >
+<style>
 .hover-underline-animation {
     display: inline-block;
     position: relative;

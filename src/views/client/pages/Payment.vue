@@ -71,6 +71,7 @@
                     <div class="flex flex-col gap-3">
                         <div class="flex justify-between items-center text-lg">
                             <span>Tổng tiền đơn hàng</span>
+                            {{ couponData }}
                             <strong v-if="route.query.prd">{{ couponData?.discountValue ? itemCart.price - couponData.discountValue : formatPrice(totalComputed) }}đ </strong>
                             <strong v-else>{{ formatPrice(couponData?.discountValue ? itemCart.totalPrice - couponData?.discountValue : itemCart.totalPrice) }}đ</strong>
                         </div>
@@ -124,11 +125,11 @@
 <script setup>
 import API from '@/api/api-main';
 import { useAuthStore } from '@/store';
+import { format } from 'date-fns';
 import { useToast } from 'primevue/usetoast';
 import { computed, getCurrentInstance, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCartStore } from '../store/carts';
-import { format } from 'date-fns';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 const router = useRouter();
