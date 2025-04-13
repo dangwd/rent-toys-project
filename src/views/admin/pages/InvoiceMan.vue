@@ -152,7 +152,7 @@ const handleFilter = () => {
                 </Column>
                 <Column header="Trạng thái">
                     <template #body="{ data }">
-                        {{ formatStatusOrder(data.status) }}
+                        <Tag :severity="data.status == 'confirmed' ? `success` : `primary`" :value="formatStatusOrder(data.status)"></Tag>
                     </template>
                 </Column>
                 <Column header="Thao tác">

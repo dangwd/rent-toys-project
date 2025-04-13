@@ -19,7 +19,7 @@ onMounted(() => {
 });
 const fetchAllProducts = async () => {
     try {
-        const res = await API.get(`products?type=true`);
+        const res = await API.get(`products`);
         Products.value = res.data.metadata.result;
     } catch (error) {
         console.log(error);
