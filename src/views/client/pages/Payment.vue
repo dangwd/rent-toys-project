@@ -1,5 +1,5 @@
 <template>
-    <div class="h-screen container mx-auto py-10">
+    <div class="h-auto container mx-auto py-10">
         <div class="grid grid-cols-2 gap-3">
             <div class="flex flex-col gap-3">
                 <img width="200" src="https://cdn.shopify.com/s/files/1/0731/6514/4343/files/logo-254x76_1_x320.png?v=1697473116" alt="" />
@@ -16,24 +16,24 @@
                 <div class="flex justify-between gap-2">
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Quận/Huyện</label>
-                        <Select v-model="selectedDistrict" :placeholder="payload.district || ''" filter fluid :options="Districts" @change="onDistrictChange" option-label="FullName"></Select>
+                        <Select v-model="selectedDistrict" :invalid="submited && !payload.district" :placeholder="payload.district || ''" filter fluid :options="Districts" @change="onDistrictChange" option-label="FullName"></Select>
                     </div>
                     <div class="flex flex-col gap-2 w-full">
                         <label class="font-semibold">Phường/Xã</label>
-                        <Select filter v-model="payload.ward" :placeholder="payload.ward || ''" :options="Wards" option-value="FullName" option-label="FullName" fluid></Select>
+                        <Select filter v-model="payload.ward" :invalid="submited && !payload.ward" :placeholder="payload.ward || ''" :options="Wards" option-value="FullName" option-label="FullName" fluid></Select>
                     </div>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Địa chỉ</label>
-                    <InputText v-model="payload.addressLine" :placeholder="payload.addressLine || ''"></InputText>
+                    <InputText v-model="payload.addressLine" :invalid="submited && !payload.addressLine" :placeholder="payload.addressLine || ''"></InputText>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Số điện thoại</label>
-                    <InputText v-model="payload.phone"></InputText>
+                    <InputText v-model="payload.phone" :invalid="submited && !payload.phone"></InputText>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Họ tên</label>
-                    <InputText v-model="payload.fullName"></InputText>
+                    <InputText v-model="payload.fullName" :invalid="submited && !payload.fullName"></InputText>
                 </div>
                 <div class="flex flex-col gap-2">
                     <label class="font-semibold">Ghi chú</label>
@@ -142,12 +142,14 @@ const user = auth.user.metadata.user;
 const selectedProvince = ref();
 const selectedDistrict = ref();
 const Province = ref([]);
+const submited = ref(false);
 const Districts = ref([]);
 const Wards = ref([]);
 const itemCart = ref([]);
 
 const payload = ref({
-    email: user.email
+    email: user.email,
+    paymentMethod: 'cod'
 });
 const PaymentOpts = ref([
     {
@@ -171,7 +173,7 @@ onMounted(async () => {
 });
 const totalComputed = computed(() => {
     return itemCart.value?.items?.reduce((total, el) => {
-        return total + el.price * el.quantity;
+        return total + el.price - ((el.price * el.discount) / 100) * el.quantity;
     }, 0);
 });
 const formatPrice = (price) => {
@@ -277,7 +279,9 @@ const confirmOrder = async () => {
         coupon: couponData.value.couponId,
         items
     };
-
+    submited.value = true;
+    if (!validateData(data)) return;
+    submited.value = true;
     try {
         const res = await API.create(`order/CheckoutWithPayload`, data);
 
@@ -307,6 +311,13 @@ const getMe = async () => {
         Object.assign(payload.value, res.data.metadata);
         payload.value.fullName = res.data.metadata.name;
     } catch (error) {}
+};
+const validateData = (data) => {
+    if (!data.province && !data.district && !data.ward && !data.addressLine && !data.phone) {
+        proxy.$notify('E', 'Vui lòng nhập đủ thông tin!', toast);
+        return false;
+    }
+    return true;
 };
 watch(route, (newVal, oldVal) => {
     location.reload();

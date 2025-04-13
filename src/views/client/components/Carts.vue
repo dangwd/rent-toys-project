@@ -22,7 +22,7 @@
                                 <InputNumber :pt:pcInput:root:style="'width: 40px; text-align:center'" :min="1" v-model="item.quantity" @input="onQuantityChange($event, item)" showButtons buttonLayout="horizontal"> </InputNumber>
                             </div>
                             <span
-                                >Giá sản phẩm: <strong class="text-primary">{{ formatPrice(item.price) }}đ</strong></span
+                                >Giá sản phẩm: <strong class="text-primary">{{ formatPrice(item.finalSubTotal) }}đ</strong></span
                             >
                         </div>
                     </div>
@@ -94,7 +94,7 @@ const onQuantityChange = async (e, data) => {
         quantity: e.value
     };
     const res = await cartStore.updateCart(payload);
-    totalCartValue.value = res.data.metadata.totalPrice;
+    totalCartValue.value = res.data.metadata.finalPrice;
 };
 const directPayment = () => {
     if (!itemInCart.value.items?.length) {

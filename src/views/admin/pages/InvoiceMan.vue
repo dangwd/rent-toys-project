@@ -1,18 +1,20 @@
 <script setup>
 import API from '@/api/api-main';
-import { useToast } from 'primevue/usetoast';
-import { formatStatusOrder } from '@/helper/formatStatusOrder';
-import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
 import DetailOrder from '@/components/DetailOrder.vue';
 import { formatPrice } from '@/helper/formatPrice';
+import { formatStatusOrder } from '@/helper/formatStatusOrder';
 import { format } from 'date-fns';
+import { useToast } from 'primevue/usetoast';
+import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 
 onMounted(() => {
-    fetchAllOrders();
+    fetchAllOrder();
 });
-
+const filter = reactive({
+    status: ''
+});
 const paginator = reactive({
     rows: 5,
     page: 0,
@@ -24,12 +26,33 @@ const filterDialog = ref(false);
 const orderDetail = ref({});
 
 const submitted = ref(false);
-
-const fetchAllOrders = async () => {
+const statusOpts = ref([
+    {
+        label: 'Đã đặt hàng',
+        value: 'pending'
+    },
+    {
+        label: 'Đã thanh toán',
+        value: 'paid'
+    },
+    {
+        label: 'Đã hủy',
+        value: 'cancelled'
+    },
+    {
+        label: 'Đã giao hàng',
+        value: 'delivered'
+    },
+    {
+        label: 'Đã hủy',
+        value: 'cancelled'
+    }
+]);
+const fetchAllOrder = async (query = '') => {
     try {
-        const res = await API.get(`order?skip=${paginator.page}&limit=1000`);
+        const res = await API.get(`order?skip=0&limit=20&status=${query}`);
         Invoices.value = res.data.metadata.result;
-        // paginator.total = res.data.metadata.total;
+        paginator.total = res.data.metadata.total;
     } catch (error) {
         console.log(error);
     }
@@ -50,7 +73,7 @@ const saveGenre = async () => {
         if (res.data) {
             orderDialog.value = false;
             proxy.$notify('S', 'Thành công!', toast);
-            fetchAllOrders();
+            fetchAllOrder();
         }
     } catch (error) {
         console.log(error);
@@ -59,10 +82,13 @@ const saveGenre = async () => {
 const openFilter = () => {
     filterDialog.value = true;
 };
-const onPageChange = (e) => {
-    paginator.page = e.page;
-    paginator.rows = e.rows;
-    fetchAllOrders();
+const handleFilter = () => {
+    let queryArr = [];
+    if (filter.status) {
+        queryArr.push(`status=${filter.status}`);
+    }
+    let queryStr = queryArr.join('');
+    fetchAllOrder(queryStr);
 };
 </script>
 
@@ -78,7 +104,7 @@ const onPageChange = (e) => {
                 </template>
             </Toolbar>
 
-            <DataTable :value="Invoices" show-gridlines paginator @page="onPageChange" :rows="paginator.rows" :page="paginator.page">
+            <DataTable :value="Invoices" show-gridlines paginator :rows="paginator.rows" :page="paginator.page" :total-records="paginator.total" lazy>
                 <Column header="#">
                     <template #body="{ index }">
                         {{ index + 1 }}
@@ -94,9 +120,19 @@ const onPageChange = (e) => {
                         {{ data.items.map((el) => el.quantity).join(', ') }}
                     </template>
                 </Column>
-                <Column header="KM">
+                <Column header="Tên khách hàng">
                     <template #body="{ data }">
-                        {{ data.coupon ? `${data?.coupon?.CouponName} (${formatPrice(data?.coupon?.CouponValue)}đ)` : `Không KM` }}
+                        {{ data.user?.name }}
+                    </template>
+                </Column>
+                <Column header="Số điện thoại">
+                    <template #body="{ data }">
+                        {{ data.user?.phone }}
+                    </template>
+                </Column>
+                <Column header="Phương thức thanh toán">
+                    <template #body="{ data }">
+                        {{ data.paymentMethod == 'cod' ? `COD` : `Zalopay` }}
                     </template>
                 </Column>
                 <Column header="Giá trị đơn hàng">
@@ -147,7 +183,11 @@ const onPageChange = (e) => {
         </Dialog>
 
         <Dialog v-model:visible="filterDialog" :style="{ width: '450px' }" header="Bộ lọc" :modal="true">
-            <Dropdown :options="statusOpts"></Dropdown>
+            <label for="">Trạng thái đơn hàng</label>
+            <Dropdown v-model="filter.status" optionValue="value" optionLabel="label" class="w-full" :options="statusOpts"></Dropdown>
+            <template #footer>
+                <Button @click="handleFilter()" label="Lọc"></Button>
+            </template>
         </Dialog>
     </div>
 </template>
