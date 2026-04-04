@@ -22,10 +22,10 @@ export const useCartStore = defineStore('cart', () => {
             if (!res) {
                 return proxy.$notify("E", "Có lỗi xảy ra!", toast)
             }
-            proxy.$notify("S", res.data.message, toast)
+            proxy.$notify("S", res.data.message || "Sản phẩm đã được thêm vào giỏ hàng!", toast)
             return res
         } catch (error) {
-            throw new Error({ error })
+            throw new Error(error || "Có lỗi xảy ra!");
         }
     };
     const updateCart = async (product) => {

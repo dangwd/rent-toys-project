@@ -20,7 +20,7 @@ router.beforeEach(async (to, from, next) => {
             return;
         }
         if (to.meta.roles) {
-            let roleUser = user.metadata.user.role;
+            let roleUser = user.metadata?.user?.role;
             if (to.meta.roles.includes(roleUser)) {
                 next();
             } else {

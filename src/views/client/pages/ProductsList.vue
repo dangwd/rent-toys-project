@@ -79,9 +79,9 @@
     </div>
 </template>
 <script setup>
-import { onMounted, ref, reactive, computed } from 'vue';
-import ProductsGrid from '../components/ProductsGrid.vue';
 import API from '@/api/api-main';
+import { computed, onMounted, reactive, ref } from 'vue';
+import ProductsGrid from '../components/ProductsGrid.vue';
 
 const Products = ref([]);
 const Brands = ref([]);

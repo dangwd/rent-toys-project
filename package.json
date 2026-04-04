@@ -14,6 +14,7 @@
         "axios": "^1.7.9",
         "chart.js": "3.3.2",
         "date-fns": "^4.1.0",
+        "gitnexus": "^1.5.3",
         "pinia": "^2.3.0",
         "primeicons": "^6.0.1",
         "primevue": "^4.0.0",
