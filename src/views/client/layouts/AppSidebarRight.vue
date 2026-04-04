@@ -92,7 +92,7 @@
                 </div>
             </li>
             <li class="pt-1">
-                <a href="#" class="px-5 py-2.5 bg-primary hover:bg-red-700 rounded-lg text-center font-medium block text-white">See More</a>
+                <a href="#" class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 rounded-lg text-center font-medium block text-white">See More</a>
             </li>
         </ul>
     </div>
@@ -181,7 +181,7 @@
                 </div>
             </li>
             <li class="pt-1">
-                <a href="#" class="px-5 py-2.5 bg-primary hover:bg-red-700 rounded-lg text-center font-medium block text-white">See More</a>
+                <a href="#" class="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 rounded-lg text-center font-medium block text-white">See More</a>
             </li>
         </ul>
     </div>

@@ -7,7 +7,7 @@
         :loop="true"
         :autoplay="{ delay: 5000, disableOnInteraction: false }"
         :pagination="{ clickable: true }"
-        class="mySwiper mt-10"
+        class="mySwiper"
     >
         <swiper-slide v-for="(image, index) in images" :key="index">
             <img :src="image" alt="Slide image" class="slide-image" />
@@ -41,6 +41,7 @@ const fetchBanners = async () => {
     width: 90%;
     height: 100%;
     border-radius: 25px;
+    margin: 0 auto;
 }
 .slide-image {
     width: 100%;

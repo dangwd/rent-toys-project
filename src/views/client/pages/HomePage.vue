@@ -1,99 +1,111 @@
 <script setup>
 import API from '@/api/api-main';
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import ProductsGrid from '../components/ProductsGrid.vue';
 import SlidesItem from '../components/SlidesItem.vue';
 
+// --- Reactive Data ---
+const allProducts = ref([]);
+const categories = ref([
+    { name: 'Đồ chơi sáng tạo', img: '/src/assets/img/1.webp', path: '/client/products-list', color: 'from-sky-400 to-blue-500' },
+    { name: 'Đồ chơi bé gái', img: '/src/assets/img/2.webp', path: '/client/products-list', color: 'from-pink-400 to-rose-500' },
+    { name: 'Siêu xe Hot Wheels', img: '/src/assets/img/3.webp', path: '/client/products-list', color: 'from-amber-400 to-orange-500' },
+    { name: 'Ba lô & Phụ kiện', img: '/src/assets/img/4.webp', path: '/client/products-list', color: 'from-lime-400 to-green-500' }
+]);
+
+// --- Lifecycle Hooks ---
 onMounted(() => {
     fetchAllProducts();
 });
-const Products = ref([]);
-const SectionData = ref([
-    {
-        title: ''
-    },
-    {
-        title: 'Danh mục HOT'
-    }
-]);
+
+// --- Computed Properties ---
+const newProducts = computed(() => allProducts.value.slice(0, 8));
+const bestSellers = computed(() => allProducts.value.slice(8, 16));
+
+// --- API Methods ---
 const fetchAllProducts = async () => {
     try {
-        const res = await API.get(`products?skip=0&limit=2000`);
-        Products.value = res.data.metadata.result;
+        // This fetch should be optimized in a real-world scenario
+        const res = await API.get(`products?skip=0&limit=50`);
+        allProducts.value = res.data.metadata.result;
     } catch (error) {
-        console.log(error);
+        console.error('Failed to fetch products:', error);
     }
 };
 </script>
-<template>
-    <body class="font-montserrat text-sm bg-white dark:bg-zinc-900 flex flex-col gap-5">
-        <div class="pb-5">
-            <SlidesItem></SlidesItem>
-        </div>
-        <div class="flex flex-col gap-5">
-            <section class="w-full container mx-auto">
-                <div class="flex gap-2">
-                    <router-link to="/client/products-list">
-                        <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/1_8b41d900-903d-47fc-849b-522ca3603914.png?v=1741857899'" class="hover:scale-110 transition-all ease-in-out duration-300" />
-                    </router-link>
-                    <router-link to="/client/new-products">
-                        <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/2_540def28-5e1a-4196-b99c-3bac9ec59131.png?v=1741768720'" class="hover:scale-110 transition-all ease-in-out duration-300" />
-                    </router-link>
 
-                    <router-link to="/client/new-products">
-                        <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/3_473dccab-4bc2-4b62-851d-4e2ab7911eab.png?v=1741857899'" class="hover:scale-110 transition-all ease-in-out duration-300" />
-                    </router-link>
-                    <router-link to="/client/new-products">
-                        <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/4_02934ac5-9a95-4c9e-8a35-f0db314254fb.png?v=1741857899'" class="hover:scale-110 transition-all ease-in-out duration-300" />
-                    </router-link>
+<template>
+    <div class="bg-gray-50 dark:bg-zinc-900">
+        <!-- Hero Slides -->
+        <section class="pt-8 mb-12 md:pt-12 md:mb-20">
+            <SlidesItem />
+        </section>
+
+        <!-- New Products Section -->
+        <section class="py-12 md:py-16">
+            <div class="container mx-auto px-4">
+                <div class="mb-10 text-center md:mb-12">
+                    <h2 class="mb-3 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white md:text-4xl">✨ Đồ Chơi Mới Về</h2>
+                    <p class="mx-auto max-w-2xl text-base text-gray-500 dark:text-gray-400 md:text-lg">Khám phá những món đồ chơi mới nhất và thú vị nhất cho bé yêu của bạn.</p>
                 </div>
-            </section>
-            <div class="text-2xl text-center uppercase font-semibold">Ưu Đãi Độc Quyền Website</div>
-            <div class="flex min-h-screen container mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto 2xl:border-x-2 2xl:border-gray-200 dark:2xl:border-zinc-700">
-                <div class="py-10">
-                    <ProductsGrid :data="Products"></ProductsGrid>
-                </div>
-            </div>
-            <section class="w-full container mx-auto">
-                <div class="flex gap-3">
-                    <router-link to="#" class="flex flex-col gap-2 text-center">
-                        <div class="overflow-hidden rounded-lg">
-                            <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/D_ch_i_sang_t_o_3377bcb0-e505-4dd0-b9e6-f5ca11b032b0_296x.jpg?v=1741833151'" class="hover:scale-110 transition-all ease-in-out duration-300" />
-                        </div>
-                        <span class="text-xl font-semibold">Đồ chơi bé trai</span>
+                <ProductsGrid :data="newProducts" />
+                <div class="mt-10 text-center md:mt-12">
+                    <router-link
+                        to="/client/products-list"
+                        class="transform-gpu inline-flex items-center gap-2 rounded-full bg-indigo-600 px-6 py-3 font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-indigo-500/40"
+                    >
+                        <span>Xem Tất Cả</span>
+                        <i class="pi pi-arrow-right text-sm"></i>
                     </router-link>
-                    <router-link to="#" class="flex flex-col gap-2 text-center">
-                        <div class="overflow-hidden rounded-lg">
-                            <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/D_ch_i_be_gai_b3ab4bd5-f01c-4f9d-b4bf-5d626cec6d7b_296x.jpg?v=1741769125'" class="hover:scale-110 transition-all ease-in-out duration-300" />
-                        </div>
-                        <span class="text-xl font-semibold">Đồ chơi bé gái</span>
-                    </router-link>
-                    <router-link to="#" class="flex flex-col gap-2 text-center">
-                        <div class="overflow-hidden rounded-lg">
-                            <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/Hotwheels_9c0aa4d6-39dd-4087-a7f0-1485f14a2588_296x.jpg?v=1741769125'" class="hover:scale-110 transition-all ease-in-out duration-300" />
-                        </div>
-                        <span class="text-xl font-semibold">Hot Wheels</span>
-                    </router-link>
-                    <router-link to="#" class="flex flex-col gap-2 text-center">
-                        <div class="overflow-hidden rounded-lg">
-                            <img width="300" :src="'//www.mykingdom.com.vn/cdn/shop/files/Balo_tui_deo_vali_f2c9b528-4467-4d54-afd5-0097ff32a262_296x.jpg?v=1741769125'" class="hover:scale-110 transition-all ease-in-out duration-300" />
-                        </div>
-                        <span class="text-xl font-semibold">Ba lô, Túi</span>
-                    </router-link>
-                </div>
-            </section>
-            <div class="text-2xl text-center uppercase font-semibold">Ưu Đãi Độc Quyền Website</div>
-            <div class="flex min-h-screen container mx-auto 2xl:max-w-screen-2xl 2xl:mx-auto 2xl:border-x-2 2xl:border-gray-200 dark:2xl:border-zinc-700">
-                <div class="py-10">
-                    <ProductsGrid :data="Products"></ProductsGrid>
                 </div>
             </div>
-            <img
-                height="100"
-                class="object-cover"
-                src="//www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=375 375w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=550 550w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=750 750w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=1100 1100w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=1500 1500w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=1780 1780w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=2000 2000w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=3000 3000w, //www.mykingdom.com.vn/cdn/shop/files/Xay_d_ng_d_i_dua_F1_trong_m_4459342e-2fd9-4f93-a8e0-d0162dc4b478.jpg?v=1742370384&width=3840 3840w"
-                alt=""
-            />
-        </div>
-    </body>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="py-12 md:py-16">
+            <div class="container mx-auto px-4">
+                <div class="mb-10 text-center md:mb-12">
+                    <h2 class="mb-3 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white md:text-4xl">🎯 Khám Phá Danh Mục</h2>
+                    <p class="text-base text-gray-500 dark:text-gray-400 md:text-lg">Tìm kiếm theo loại sản phẩm bé yêu thích.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
+                    <router-link v-for="category in categories" :key="category.name" :to="category.path" class="group-hover:shadow-2xl group block transform-gpu overflow-hidden rounded-2xl transition-all duration-300 ease-out hover:-translate-y-1.5">
+                        <div class="relative">
+                            <div class="aspect-w-1 aspect-h-1 w-full overflow-hidden">
+                                <img :src="category.img" :alt="category.name" class="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-110" />
+                            </div>
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                            <div class="absolute bottom-0 left-0 right-0 p-4 md:p-5">
+                                <h3 class="text-base font-bold text-white transition-colors duration-300 md:text-lg">{{ category.name }}</h3>
+                            </div>
+                            <div class="absolute left-0 top-0 h-1 w-full origin-left scale-x-0 bg-gradient-to-r transition-transform duration-300 ease-in-out group-hover:scale-x-100" :class="category.color"></div>
+                        </div>
+                    </router-link>
+                </div>
+            </div>
+        </section>
+
+        <!-- Best Sellers Section -->
+        <section class="py-12 md:py-16">
+            <div class="container mx-auto px-4">
+                <div class="mb-10 text-center md:mb-12">
+                    <h2 class="mb-3 text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white md:text-4xl">🔥 Bán Chạy Nhất Tuần</h2>
+                    <p class="mx-auto max-w-2xl text-base text-gray-500 dark:text-gray-400 md:text-lg">Những sản phẩm được các bạn nhỏ và phụ huynh yêu thích nhất.</p>
+                </div>
+                <ProductsGrid :data="bestSellers" />
+            </div>
+        </section>
+
+        <!-- Promotional Banner -->
+        <section class="container mx-auto px-4 py-12 md:py-16">
+            <router-link to="/client/products-list" class="group relative block overflow-hidden rounded-3xl">
+                <img src="/src/assets/img/banner2.webp" class="h-72 w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105" />
+                <div class="absolute inset-0 bg-black/40"></div>
+                <div class="absolute inset-0 z-10 flex flex-col items-center justify-center text-center text-white">
+                    <h3 class="mb-3 text-3xl font-extrabold drop-shadow-lg md:text-5xl">🎉 Ưu Đãi Độc Quyền</h3>
+                    <p class="text-lg font-semibold drop-shadow-md md:text-2xl">Giảm giá lên đến 50% cho khách hàng mới</p>
+                </div>
+            </router-link>
+        </section>
+    </div>
 </template>

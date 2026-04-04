@@ -1,12 +1,14 @@
 <script setup>
 import AppTopbar from './AppTopbar.vue';
 import AppFooter from './AppFooter.vue';
+import Snowfall from '@/components/effects/Snowfall.vue';
 </script>
 <template>
     <Toast />
+    <Snowfall />
     <AppTopbar></AppTopbar>
-    <body class="font-montserrat h-auto text-sm bg-white">
+    <div class="h-auto text-sm bg-white">
         <router-view></router-view>
-    </body>
+    </div>
     <AppFooter></AppFooter>
 </template>
