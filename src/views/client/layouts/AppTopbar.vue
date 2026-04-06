@@ -92,7 +92,7 @@ watch(
                     <!-- Desktop Search Bar -->
                     <div class="relative hidden sm:block">
                         <!-- <InputText v-model="value" @input="search" placeholder="Tìm kiếm..." class="w-40 rounded-full bg-gray-100 px-4 py-2 text-sm transition-all duration-300 focus:w-64 dark:bg-zinc-800" /> -->
-                        <i class="pi pi-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                        <!-- <i class="pi pi-search absolute right-4 top-1/2 -translate-y-1/2 text-gray-400"></i> -->
                         <!-- Autocomplete Panel for Search -->
                         <div v-if="value && itemSearch.length" class="absolute right-0 top-full z-10 mt-2 w-80 max-h-96 overflow-y-auto rounded-xl border bg-white p-2 shadow-xl dark:border-zinc-700 dark:bg-zinc-800">
                             <div

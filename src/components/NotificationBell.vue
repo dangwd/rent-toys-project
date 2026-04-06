@@ -1,18 +1,8 @@
 <template>
     <div v-if="isLoggedIn" class="relative">
-        <Button
-            :text="!isScrolled"
-            rounded
-            icon="pi pi-bell"
-            aria-label="Thông báo"
-            @click="toggle"
-            class="relative"
-        />
+        <Button :text="!isScrolled" rounded icon="pi pi-bell" aria-label="Thông báo" @click="toggle" class="relative" />
 
-        <span
-            v-if="unreadCount > 0"
-            class="absolute -right-0.5 -top-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary-600 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white shadow"
-        >
+        <span v-if="unreadCount > 0" class="absolute -right-0.5 -top-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-primary-600 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white shadow">
             {{ unreadCount > 99 ? '99+' : unreadCount }}
         </span>
 
@@ -21,28 +11,12 @@
                 <div class="flex items-center justify-between gap-3 border-b border-surface-200 dark:border-surface-700 px-4 py-3">
                     <div class="min-w-0">
                         <p class="m-0 text-sm font-semibold text-surface-900 dark:text-surface-0">Thông báo</p>
-                        <p class="m-0 mt-0.5 text-xs text-muted-color">
-                            {{ total }} thông báo • {{ unreadCount }} chưa đọc
-                        </p>
+                        <p class="m-0 mt-0.5 text-xs text-muted-color">{{ total }} thông báo • {{ unreadCount }} chưa đọc</p>
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <Button
-                            icon="pi pi-refresh"
-                            text
-                            rounded
-                            aria-label="Tải lại"
-                            :loading="loading"
-                            @click="refresh"
-                        />
-                        <Button
-                            v-if="unreadCount > 0"
-                            label="Đã đọc"
-                            icon="pi pi-check"
-                            size="small"
-                            text
-                            @click="markAllReadLocal"
-                        />
+                        <Button icon="pi pi-refresh" text rounded aria-label="Tải lại" :loading="loading" @click="refresh" />
+                        <Button v-if="unreadCount > 0" label="Đã đọc" icon="pi pi-check" size="small" text @click="markAllReadLocal" />
                     </div>
                 </div>
 
@@ -51,9 +25,7 @@
                         {{ error }}
                     </div>
 
-                    <div v-else-if="loading && items.length === 0" class="px-3 py-8 text-center text-sm text-muted-color">
-                        Đang tải thông báo…
-                    </div>
+                    <div v-else-if="loading && items.length === 0" class="px-3 py-8 text-center text-sm text-muted-color">Đang tải thông báo…</div>
 
                     <div v-else-if="items.length === 0" class="px-3 py-10 text-center">
                         <i class="pi pi-inbox mb-3 text-2xl text-muted-color" aria-hidden="true" />
@@ -69,18 +41,28 @@
                             class="group flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition hover:bg-surface-50 dark:hover:bg-surface-800/40"
                             @click="markReadLocal(n)"
                         >
-                            <span
-                                class="mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full"
-                                :class="isUnread(n) ? 'bg-primary-600' : 'bg-surface-300 dark:bg-surface-700'"
-                                aria-hidden="true"
-                            />
+                            <span class="mt-1 inline-flex h-2.5 w-2.5 shrink-0 rounded-full" :class="isUnread(n) ? 'bg-primary-600' : 'bg-surface-300 dark:bg-surface-700'" aria-hidden="true" />
                             <div class="min-w-0 flex-1">
-                                <p class="m-0 text-sm font-medium text-surface-900 dark:text-surface-0">
-                                    {{ n.title || n.subject || 'Thông báo' }}
-                                </p>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="m-0 text-sm font-semibold text-surface-900 dark:text-surface-0">
+                                        {{ n.title || n.subject || 'Thông báo' }}
+                                    </p>
+                                    <span
+                                        v-if="n.type"
+                                        class="inline-flex items-center rounded-full border border-surface-200 bg-surface-50 px-2 py-0.5 text-[11px] font-semibold text-surface-700 dark:border-surface-700 dark:bg-surface-800/40 dark:text-surface-200"
+                                    >
+                                        {{ n.type }}
+                                    </span>
+                                    <span v-if="isUnread(n)" class="inline-flex items-center rounded-full bg-primary-50 px-2 py-0.5 text-[11px] font-semibold text-primary-700 dark:bg-primary-950/30 dark:text-primary-200"> Chưa đọc </span>
+                                </div>
                                 <p class="m-0 mt-0.5 text-xs leading-relaxed text-surface-600 dark:text-surface-300">
                                     {{ n.content || n.message || n.body || '' }}
                                 </p>
+
+                                <div v-if="n.data?.orderId || n.data?.status" class="mt-2 flex flex-wrap items-center gap-2 text-[11px]">
+                                    <span v-if="n.data?.status" class="inline-flex items-center rounded-full bg-primary-100 px-2 py-0.5 font-semibold text-primary-700 dark:bg-primary-900/40 dark:text-primary-200"> status: {{ n.data.status }} </span>
+                                </div>
+
                                 <p v-if="n.createdAt" class="m-0 mt-1 text-[11px] text-muted-color">
                                     {{ formatTime(n.createdAt) }}
                                 </p>
@@ -90,13 +72,7 @@
                 </div>
 
                 <div class="border-t border-surface-200 dark:border-surface-700 px-4 py-3">
-                    <Button
-                        label="Xem tất cả"
-                        icon="pi pi-external-link"
-                        text
-                        class="w-full justify-center"
-                        @click="goToAll"
-                    />
+                    <Button label="Xem tất cả" icon="pi pi-external-link" text class="w-full justify-center" @click="goToAll" />
                 </div>
             </div>
         </Popover>
@@ -145,9 +121,11 @@ function formatTime(dt) {
 
 function normalizeMeta(res) {
     const meta = res?.data?.metadata;
-    items.value = meta?.result || [];
-    total.value = meta?.total || 0;
-    unreadCount.value = meta?.unreadCount || 0;
+    const direct = Array.isArray(res?.data) ? res.data : null;
+
+    items.value = direct || meta?.result || [];
+    total.value = (direct ? direct.length : meta?.total) || 0;
+    unreadCount.value = meta?.unreadCount ?? items.value.filter((n) => isUnread(n)).length;
 }
 
 async function refresh() {
@@ -178,12 +156,14 @@ function markReadLocal(n) {
     if (n.read === false) n.read = true;
     if (n.isRead === false) n.isRead = true;
     if (n.seen === false) n.seen = true;
+    if (n.readAt == null) n.readAt = new Date().toISOString();
     // cập nhật unreadCount local (không gọi API — vì backend chưa cung cấp endpoint mark-read)
     unreadCount.value = Math.max(0, unreadCount.value - 1);
 }
 
 function markAllReadLocal() {
-    items.value = (items.value || []).map((n) => ({ ...n, read: true, isRead: true, seen: true }));
+    const now = new Date().toISOString();
+    items.value = (items.value || []).map((n) => ({ ...n, read: true, isRead: true, seen: true, readAt: n.readAt ?? now }));
     unreadCount.value = 0;
     proxy?.$notify?.('S', 'Đã đánh dấu đã đọc (local).', toast);
 }
@@ -214,7 +194,7 @@ function bindSocket() {
         const n = payload?.notification || payload;
         if (!n) return;
         items.value = [n, ...(items.value || [])].slice(0, 50);
-        unreadCount.value = Number.isFinite(payload?.unreadCount) ? payload.unreadCount : unreadCount.value + 1;
+        unreadCount.value = Number.isFinite(payload?.unreadCount) ? payload.unreadCount : isUnread(n) ? unreadCount.value + 1 : unreadCount.value;
         total.value = Math.max(total.value, items.value.length);
         proxy?.$notify?.('I', n?.message || 'Bạn có thông báo mới', toast);
     };
