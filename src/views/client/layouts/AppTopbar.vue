@@ -5,6 +5,7 @@ import { onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Carts from '../components/Carts.vue';
 import LoginModal from '../components/LoginModal.vue';
+import NotificationBell from '@/components/NotificationBell.vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -116,6 +117,7 @@ watch(
                     </div>
 
                     <!-- Login & Cart -->
+                    <NotificationBell :isScrolled="isScrolled" />
                     <LoginModal :isScrolled="isScrolled"></LoginModal>
                     <Carts :isScrolled="isScrolled"></Carts>
 
