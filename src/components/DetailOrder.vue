@@ -20,11 +20,7 @@
                         <div>
                             <p class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Trạng thái</p>
                             <div class="mt-1">
-                                <Tag 
-                                    :severity="getStatusSeverity(detailOrder.status)" 
-                                    :value="getStatusLabel(detailOrder.status)"
-                                    class="inline-block"
-                                ></Tag>
+                                <Tag :severity="getStatusSeverity(detailOrder.status)" :value="getStatusLabel(detailOrder.status)" class="inline-block"></Tag>
                             </div>
                         </div>
                     </div>
@@ -36,18 +32,17 @@
                     <div class="space-y-3">
                         <div v-for="(item, index) in detailOrder.items || []" :key="index" class="flex gap-4 rounded-[16px] border border-slate-200 p-4 transition hover:bg-slate-50 dark:border-zinc-800 dark:hover:bg-zinc-900">
                             <div class="flex-shrink-0">
-                                <img 
-                                    crossorigin="anonymous" 
-                                    :src="item.images?.[0]" 
-                                    :alt="item.productName"
-                                    class="h-20 w-20 rounded-[12px] object-cover"
-                                />
+                                <img crossorigin="anonymous" :src="item.images?.[0]" :alt="item.productName" class="h-20 w-20 rounded-[12px] object-cover" />
                             </div>
                             <div class="flex-1 min-w-0">
                                 <p class="font-semibold text-slate-900 dark:text-white">{{ item.productName }}</p>
                                 <div class="mt-2 flex flex-wrap gap-4 text-sm text-slate-600 dark:text-slate-400">
-                                    <span>Giá: <strong class="text-slate-900 dark:text-white">{{ formatPrice(item.price) }}đ</strong></span>
-                                    <span>Số lượng: <strong class="text-slate-900 dark:text-white">x{{ item.quantity }}</strong></span>
+                                    <span
+                                        >Giá: <strong class="text-slate-900 dark:text-white">{{ formatPrice(item.price) }}đ</strong></span
+                                    >
+                                    <span
+                                        >Số lượng: <strong class="text-slate-900 dark:text-white">x{{ item.quantity }}</strong></span
+                                    >
                                     <span class="font-semibold text-indigo-600 dark:text-indigo-400">Tổng: {{ formatPrice(item.price * item.quantity) }}đ</span>
                                 </div>
                             </div>
@@ -82,20 +77,8 @@
                         <div v-if="detailOrder.status !== 'confirmed' && !client" class="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                             <h3 class="mb-4 text-lg font-semibold text-slate-900 dark:text-white">Thao tác</h3>
                             <div class="flex flex-wrap gap-3">
-                                <Button 
-                                    @click="aceptOrder(detailOrder._id)" 
-                                    icon="pi pi-check"
-                                    label="Xác nhận đơn hàng" 
-                                    severity="success"
-                                    class="flex-1 min-w-[150px]"
-                                />
-                                <Button 
-                                    @click="cancelOrder(detailOrder._id)" 
-                                    icon="pi pi-times"
-                                    label="Hủy đơn" 
-                                    severity="danger"
-                                    class="flex-1 min-w-[150px]"
-                                />
+                                <Button @click="aceptOrder(detailOrder._id)" icon="pi pi-check" label="Xác nhận đơn hàng" severity="success" class="flex-1 min-w-[150px]" />
+                                <Button @click="cancelOrder(detailOrder._id)" icon="pi pi-times" label="Hủy đơn" severity="danger" class="flex-1 min-w-[150px]" />
                             </div>
                         </div>
 
@@ -123,9 +106,10 @@
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Địa chỉ giao hàng</p>
                                 <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
-                                    {{ detailOrder.shippingAddress ? 
-                                        `${detailOrder.shippingAddress.addressLine || ''}, ${detailOrder.shippingAddress.ward}, ${detailOrder.shippingAddress.district}, ${detailOrder.shippingAddress.province}`.trim() 
-                                        : 'N/A' 
+                                    {{
+                                        detailOrder.shippingAddress
+                                            ? `${detailOrder.shippingAddress.addressLine || ''}, ${detailOrder.shippingAddress.ward}, ${detailOrder.shippingAddress.district}, ${detailOrder.shippingAddress.province}`.trim()
+                                            : 'N/A'
                                     }}
                                 </p>
                             </div>
@@ -163,26 +147,21 @@ const detailOrder = ref({});
 // Helper function to extract error message from API response
 const getErrorMessage = (error) => {
     if (!error) return 'Có lỗi xảy ra!';
-    
-    const message = 
-        error?.response?.data?.metadata?.message ||
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.message ||
-        'Có lỗi xảy ra, vui lòng thử lại!';
-    
+
+    const message = error?.response?.data?.metadata?.message || error?.response?.data?.message || error?.response?.data?.error || error?.message || 'Có lỗi xảy ra, vui lòng thử lại!';
+
     return typeof message === 'string' ? message : JSON.stringify(message);
 };
 
 // Get status label
 const getStatusLabel = (status) => {
     const statusMap = {
-        'pending': 'Chờ xác nhận',
-        'confirmed': 'Đã xác nhận',
-        'shipped': 'Đang giao hàng',
-        'delivered': 'Đã giao',
-        'cancelled': 'Đã hủy',
-        'paid': 'Đã thanh toán'
+        pending: 'Chờ xác nhận',
+        confirmed: 'Đã xác nhận',
+        shipped: 'Đang giao hàng',
+        delivered: 'Đã giao',
+        cancelled: 'Đã hủy',
+        paid: 'Đã thanh toán'
     };
     return statusMap[status] || status;
 };
@@ -190,12 +169,12 @@ const getStatusLabel = (status) => {
 // Get status severity color
 const getStatusSeverity = (status) => {
     const severityMap = {
-        'pending': 'warning',
-        'confirmed': 'info',
-        'shipped': 'primary',
-        'delivered': 'success',
-        'cancelled': 'danger',
-        'paid': 'success'
+        pending: 'warning',
+        confirmed: 'info',
+        shipped: 'primary',
+        delivered: 'success',
+        cancelled: 'danger',
+        paid: 'success'
     };
     return severityMap[status] || 'secondary';
 };
@@ -221,9 +200,6 @@ const aceptOrder = async (id) => {
         const res = await API.create(`order/${id}/status`);
         if (res.data) {
             proxy.$notify('S', 'Xác nhận đơn hàng thành công!', toast);
-            setTimeout(() => {
-                location.reload();
-            }, 500);
         }
     } catch (error) {
         const errorMsg = getErrorMessage(error);

@@ -8,8 +8,9 @@ import vueDevTools from 'vite-plugin-vue-devtools';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+    // noDiscovery: true khiến socket.io-client / debug không được pre-bundle → lỗi CJS "no default export"
     optimizeDeps: {
-        noDiscovery: true
+        include: ['socket.io-client', 'engine.io-client', 'debug']
     },
     plugins: [
         vue(),
