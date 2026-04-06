@@ -1,5 +1,5 @@
 <template>
-    <div class="h-auto container mx-auto">
+    <div class="h-auto container w-full px-4 py-6 sm:px-6 lg:py-8">
         <Tabs value="0">
             <TabList>
                 <Tab value="0">Thông tin tài khoản</Tab>
@@ -7,8 +7,8 @@
             </TabList>
             <TabPanels>
                 <TabPanel value="0">
-                    <div class="grid grid-cols-12">
-                        <div class="col-span-3 flex flex-col gap-3 items-center">
+                    <div class="grid grid-cols-12 gap-6 lg:gap-8">
+                        <div class="col-span-12 lg:col-span-3 flex flex-col gap-3 items-center text-center lg:text-left">
                             <img class="rounded-full w-32 h-32 object-cover" :src="userDetail.thumbnail ? userDetail.thumbnail : 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'" alt="" />
 
                             <strong> {{ User.name }}</strong>
@@ -16,69 +16,110 @@
                             <Button label="Chọn ảnh" icon="pi pi-cloud-upload" class="text-white btn-up-file" raised @click="Openfile(index)" />
                             <input type="file" class="hidden click-file" @change="UploadFileLocal($event, 0)" />
                         </div>
-                        <div class="col-span-9 flex flex-col gap-3">
-                            <div class="border border-gray-300 p-4 rounded-md">
-                                <h4 class="font-bold mb-4 text-xl">Thông tin người dùng</h4>
-                                <div class="grid mt-1 m-0">
-                                    <div class="m-0">
-                                        <div class="flex flex-col gap-3">
-                                            <div class="flex gap-2">
-                                                <label class="w-30">Họ tên: </label>
-                                                <strong class="w-30"> {{ User.name }} </strong>
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <label class="w-30">Tên đăng nhập: </label>
-                                                <strong class="w-30">{{ User.email }}</strong>
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <label class="w-10rem">Email: </label>
-                                                <strong class="w-30rem"> {{ User.email }}</strong>
-                                            </div>
-                                            <div class="flex gap-2">
-                                                <label class="w-10rem">Số điện thoại: </label>
-                                                <strong class="w-30rem">{{ User.phone }}</strong>
-                                            </div>
+                        <div class="col-span-12 lg:col-span-9 flex flex-col gap-5">
+                            <div class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+                                <div class="flex flex-col gap-1 border-b border-surface-200 dark:border-surface-700 px-5 py-4 md:px-6 bg-surface-50/80 dark:bg-surface-800/40">
+                                    <div class="flex items-center gap-2 text-lg font-semibold text-surface-900 dark:text-surface-0">
+                                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300">
+                                            <i class="pi pi-user text-base"></i>
+                                        </span>
+                                        Thông tin người dùng
+                                    </div>
+                                    <p class="text-sm text-muted-color m-0 pl-[2.75rem]">Thông tin hiển thị trên tài khoản của bạn</p>
+                                </div>
+                                <div class="p-5 md:p-6">
+                                    <div class="grid gap-3 sm:grid-cols-2">
+                                        <div class="rounded-xl border border-surface-100 dark:border-surface-800 bg-surface-50 dark:bg-surface-800/30 px-4 py-3">
+                                            <span class="text-xs font-semibold uppercase tracking-wide text-muted-color">Họ tên</span>
+                                            <p class="m-0 mt-1 font-semibold text-surface-900 dark:text-surface-0 break-words">{{ User.name || '—' }}</p>
+                                        </div>
+                                        <div class="rounded-xl border border-surface-100 dark:border-surface-800 bg-surface-50 dark:bg-surface-800/30 px-4 py-3">
+                                            <span class="text-xs font-semibold uppercase tracking-wide text-muted-color">Tên đăng nhập</span>
+                                            <p class="m-0 mt-1 font-semibold text-primary break-all">{{ User.email || '—' }}</p>
+                                        </div>
+                                        <div class="rounded-xl border border-surface-100 dark:border-surface-800 bg-surface-50 dark:bg-surface-800/30 px-4 py-3 sm:col-span-2">
+                                            <span class="text-xs font-semibold uppercase tracking-wide text-muted-color">Email</span>
+                                            <p class="m-0 mt-1 font-medium text-surface-800 dark:text-surface-100 break-all">{{ User.email || '—' }}</p>
+                                        </div>
+                                        <div class="rounded-xl border border-surface-100 dark:border-surface-800 bg-surface-50 dark:bg-surface-800/30 px-4 py-3 sm:col-span-2">
+                                            <span class="text-xs font-semibold uppercase tracking-wide text-muted-color">Số điện thoại</span>
+                                            <p class="m-0 mt-1 font-medium text-surface-800 dark:text-surface-100">{{ User.phone || '—' }}</p>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="flex flex-end justify-end w-full">
-                                    <Button @click="openUpdateUser" label="Cập nhật thông tin"></Button>
+                                    <div class="mt-6 flex justify-end border-t border-surface-200 dark:border-surface-700 pt-5">
+                                        <Button icon="pi pi-pencil" label="Cập nhật thông tin" @click="openUpdateUser" />
+                                    </div>
                                 </div>
                             </div>
-                            <div class="border border-gray-300 p-4 rounded-md">
-                                <h4 class="font-bold mb-4 text-xl">Đổi mật khẩu</h4>
-                                <div class="grid grid-cols-2 gap-3 mt-1 m-0">
-                                    <div class="col flex flex-col gap-3">
-                                        <div class="flex flex-col gap-2">
-                                            <label for="">Mật khẩu hiện tại</label>
-                                            <Password v-model.trim="changePassword.password" :autocomplete="false" fluid toggleMask />
-                                        </div>
-                                        <div class="flex flex-col gap-2">
-                                            <label for="">Mật khẩu mới</label>
-                                            <Password v-model.trim="changePassword.newPassword" fluid toggleMask />
-                                        </div>
-                                        <div class="flex flex-col gap-2">
-                                            <label for="">Nhập lại mật khẩu</label>
-                                            <Password v-model.trim="changePassword.cfPassword" fluid toggleMask />
-                                        </div>
+
+                            <div class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden">
+                                <div class="flex flex-col gap-1 border-b border-surface-200 dark:border-surface-700 px-5 py-4 md:px-6 bg-surface-50/80 dark:bg-surface-800/40">
+                                    <div class="flex items-center gap-2 text-lg font-semibold text-surface-900 dark:text-surface-0">
+                                        <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-300">
+                                            <i class="pi pi-key text-base"></i>
+                                        </span>
+                                        Đổi mật khẩu
                                     </div>
-                                    <div class="col flex flex-col gap-3">
-                                        <div class="flex gap-2 items-center">
-                                            <i class="pi pi-lock"></i>
-                                            <p>Bạn nên sử dụng mật khẩu mạnh mà mình chưa sử dụng ở đâu khác</p>
+                                    <p class="text-sm text-muted-color m-0 pl-[2.75rem]">Bảo vệ tài khoản bằng mật khẩu đủ mạnh</p>
+                                </div>
+                                <div class="p-5 md:p-6">
+                                    <div class="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:gap-8">
+                                        <div class="flex flex-col gap-4">
+                                            <div class="flex flex-col gap-2">
+                                                <label for="pwd-current" class="text-sm font-medium text-surface-700 dark:text-surface-200">Mật khẩu hiện tại</label>
+                                                <Password v-model.trim="changePassword.password" input-id="pwd-current" :autocomplete="false" fluid toggle-mask />
+                                            </div>
+                                            <div class="flex flex-col gap-2">
+                                                <label for="pwd-new" class="text-sm font-medium text-surface-700 dark:text-surface-200">Mật khẩu mới</label>
+                                                <Password v-model.trim="changePassword.newPassword" input-id="pwd-new" fluid toggle-mask />
+                                            </div>
+                                            <div class="flex flex-col gap-2">
+                                                <label for="pwd-confirm" class="text-sm font-medium text-surface-700 dark:text-surface-200">Nhập lại mật khẩu</label>
+                                                <Password v-model.trim="changePassword.cfPassword" input-id="pwd-confirm" fluid toggle-mask />
+                                            </div>
+                                            <div class="flex justify-end pt-2 xl:hidden">
+                                                <Button icon="pi pi-check" label="Đổi mật khẩu" @click="confirmChangePassword" />
+                                            </div>
                                         </div>
-                                        <div class="flex gap-2 items-center">
-                                            <i class="pi pi-exclamation-triangle"></i>
-                                            <p>Mật khẩu tài khoản của bạn phải đáp ứng các yêu cầu sau:</p>
-                                        </div>
-                                        <ul class="flex flex-col list-disc list-inside gap-3 m-0">
-                                            <li>Có ít nhất 8 ký tự</li>
-                                            <li>Có ít nhất một chữ hoa và một chữ thường</li>
-                                            <li>Có ít nhất một chữ số</li>
-                                            <li>Có ít nhất một ký tự đặc biệt</li>
-                                        </ul>
-                                        <div class="flex justify-end">
-                                            <Button @click="confirmChangePassword" label="Đổi mật khẩu"></Button>
+
+                                        <div class="flex flex-col gap-4 rounded-xl border border-dashed border-primary-200 dark:border-primary-800/60 bg-primary-50/60 dark:bg-primary-950/25 p-5">
+                                            <div class="flex gap-3">
+                                                <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-600 dark:text-primary-300">
+                                                    <i class="pi pi-shield text-sm"></i>
+                                                </span>
+                                                <p class="m-0 text-sm leading-relaxed text-surface-700 dark:text-surface-200">
+                                                    Bạn nên dùng mật khẩu mạnh và <strong class="font-semibold text-surface-900 dark:text-surface-0">chưa từng dùng ở dịch vụ khác</strong>.
+                                                </p>
+                                            </div>
+                                            <div class="flex gap-3">
+                                                <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300">
+                                                    <i class="pi pi-info-circle text-sm"></i>
+                                                </span>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="m-0 text-sm font-semibold text-surface-900 dark:text-surface-0">Yêu cầu mật khẩu</p>
+                                                    <ul class="mt-3 flex flex-col gap-2.5 m-0 list-none p-0 text-sm text-surface-700 dark:text-surface-200">
+                                                        <li class="flex gap-2">
+                                                            <i class="pi pi-check-circle mt-0.5 text-primary-500 text-xs shrink-0"></i>
+                                                            <span>Có ít nhất 8 ký tự</span>
+                                                        </li>
+                                                        <li class="flex gap-2">
+                                                            <i class="pi pi-check-circle mt-0.5 text-primary-500 text-xs shrink-0"></i>
+                                                            <span>Có ít nhất một chữ hoa và một chữ thường</span>
+                                                        </li>
+                                                        <li class="flex gap-2">
+                                                            <i class="pi pi-check-circle mt-0.5 text-primary-500 text-xs shrink-0"></i>
+                                                            <span>Có ít nhất một chữ số</span>
+                                                        </li>
+                                                        <li class="flex gap-2">
+                                                            <i class="pi pi-check-circle mt-0.5 text-primary-500 text-xs shrink-0"></i>
+                                                            <span>Có ít nhất một ký tự đặc biệt</span>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="hidden justify-end pt-2 xl:flex">
+                                                <Button icon="pi pi-check" label="Đổi mật khẩu" @click="confirmChangePassword" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

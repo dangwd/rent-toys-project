@@ -31,8 +31,8 @@ app.use(PrimeVue, {
             cssVariables: {
                 light: {
                     primary: {
-                        50: '#f0f4ff',
-                        100: '#e0e9fe',
+                        50: '#eef2ff',
+                        100: '#e0e7ff',
                         200: '#c7d2fe',
                         300: '#a5b4fc',
                         400: '#818cf8',
@@ -46,8 +46,8 @@ app.use(PrimeVue, {
                 },
                 dark: {
                     primary: {
-                        50: '#f0f4ff',
-                        100: '#e0e9fe',
+                        50: '#eef2ff',
+                        100: '#e0e7ff',
                         200: '#c7d2fe',
                         300: '#a5b4fc',
                         400: '#818cf8',

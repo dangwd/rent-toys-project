@@ -4,6 +4,10 @@ module.exports = {
     content: ['./index.html', './src/**/*.{vue,js,ts,jsx,tsx}'],
     plugins: [require('tailwindcss-primeui')],
     theme: {
+        // Căn giữa mặc định cho `.container` (margin-left/right: auto). Giữ padding qua class px-* từng trang để tránh trùng lặp.
+        container: {
+            center: true
+        },
         screens: {
             sm: '576px',
             md: '768px',
@@ -14,8 +18,8 @@ module.exports = {
         extend: {
             colors: {
                 primary: {
-                    50: '#f0f4ff',
-                    100: '#e0e9fe',
+                    50: '#eef2ff',
+                    100: '#e0e7ff',
                     200: '#c7d2fe',
                     300: '#a5b4fc',
                     400: '#818cf8',

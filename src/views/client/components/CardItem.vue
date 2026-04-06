@@ -18,9 +18,7 @@ const handleAddToCart = () => {
 </script>
 
 <template>
-    <div
-        class="group relative flex h-full w-full flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-sm transition duration-300 ease-in-out hover:-translate-y-1 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-950"
-    >
+    <div class="group relative flex h-full w-full flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-sm transition duration-300 ease-in-out hover:-translate-y-1 hover:shadow-2xl dark:border-zinc-800 dark:bg-zinc-950">
         <!-- Product Image -->
         <router-link :to="`/client/detail/${props.data._id}`" class="relative block h-48 overflow-hidden rounded-t-[32px] sm:h-56 md:h-64">
             <img
@@ -30,9 +28,7 @@ const handleAddToCart = () => {
                 crossorigin="anonymous"
             />
             <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/80 to-transparent"></div>
-            <div v-if="props.data.discount" class="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-yellow-400 px-3 py-2 text-sm font-semibold text-slate-950 shadow-md">
-                -{{ props.data.discount }}%
-            </div>
+            <div v-if="props.data.discount" class="absolute right-3 top-3 inline-flex items-center justify-center rounded-full bg-yellow-400 px-3 py-2 text-sm font-semibold text-slate-950 shadow-md">-{{ props.data.discount }}%</div>
         </router-link>
 
         <!-- Product Info -->
@@ -58,16 +54,7 @@ const handleAddToCart = () => {
                     @click="handleAddToCart"
                     class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition duration-300 ease-in-out hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-950 active:scale-[0.98]"
                 >
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="h-5 w-5"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
                         <line x1="3" y1="6" x2="21" y2="6"></line>
                         <path d="M16 10a4 4 0 0 1-8 0"></path>

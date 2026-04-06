@@ -23,7 +23,7 @@ const handleLogin = async () => {
     if (res.status === 1) {
         router.push({ name: 'home' });
     } else {
-        proxy.$notify('E', res, toast);
+        proxy.$notify('E', res.message?.response.data?.message || 'Lỗi hệ thống', toast);
     }
 };
 
@@ -38,7 +38,7 @@ const handleRegister = async () => {
         proxy.$notify('S', 'Tạo tài khoản thành công!', toast);
     } else {
         console.log(res);
-        proxy.$notify('E', 'Có lỗi xảy ra!', toast);
+        proxy.$notify('E', res.message?.response.data?.message || 'Lỗi hệ thống', toast);
     }
 };
 </script>
