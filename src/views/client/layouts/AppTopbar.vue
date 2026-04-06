@@ -1,11 +1,12 @@
 <script setup>
 import API from '@/api/api-main';
 import { formatPrice } from '@/helper/formatPrice';
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Carts from '../components/Carts.vue';
 import LoginModal from '../components/LoginModal.vue';
 import NotificationBell from '@/components/NotificationBell.vue';
+import { useAuthStore } from '@/store';
 
 const router = useRouter();
 const route = useRoute();
@@ -13,6 +14,24 @@ const isScrolled = ref(false);
 const itemSearch = ref([]);
 const value = ref('');
 const showMobileNav = ref(false); // Changed from showMobileSearch
+const showQuickMenu = ref(false);
+const quickMenuRef = ref(null);
+const authStore = useAuthStore();
+
+const currentUser = computed(() => authStore?.user?.metadata?.user || null);
+const avatarUrl = computed(() => currentUser.value?.thumbnail || null);
+const displayName = computed(() => currentUser.value?.name || currentUser.value?.email || 'Tài khoản');
+
+const logout = async () => {
+    try {
+        await authStore.logout?.();
+    } catch (e) {
+        // ignore
+    }
+    localStorage.removeItem('user');
+    showQuickMenu.value = false;
+    router.push('/auth/login');
+};
 
 const navLinks = ref([
     { to: '/client', label: 'Trang chủ', icon: 'pi pi-home' },
@@ -41,17 +60,26 @@ const search = async () => {
 
 onMounted(() => {
     window.addEventListener('scroll', handleScroll);
+    window.addEventListener('click', onGlobalClick);
 });
 
 onUnmounted(() => {
     window.removeEventListener('scroll', handleScroll);
+    window.removeEventListener('click', onGlobalClick);
 });
+
+const onGlobalClick = (e) => {
+    if (!showQuickMenu.value) return;
+    const el = quickMenuRef.value;
+    if (el && !el.contains(e.target)) showQuickMenu.value = false;
+};
 
 // Close mobile nav on route change
 watch(
     () => route.path,
     () => {
         showMobileNav.value = false;
+        showQuickMenu.value = false;
     }
 );
 </script>
@@ -118,8 +146,84 @@ watch(
 
                     <!-- Login & Cart -->
                     <NotificationBell :isScrolled="isScrolled" />
-                    <LoginModal :isScrolled="isScrolled"></LoginModal>
-                    <Carts :isScrolled="isScrolled"></Carts>
+
+                    <!-- Avatar menu (Account + Cart) -->
+                    <div ref="quickMenuRef" class="relative">
+                        <button
+                            type="button"
+                            @click.stop="showQuickMenu = !showQuickMenu"
+                            class="flex items-center gap-2 rounded-full p-1.5 text-gray-700 transition-all duration-300 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-zinc-800"
+                            aria-label="Mở menu tài khoản"
+                        >
+                            <Avatar
+                                v-if="avatarUrl"
+                                crossorigin="anonymous"
+                                :image="avatarUrl"
+                                shape="circle"
+                                class="h-9 w-9 overflow-hidden object-cover"
+                            />
+                            <Avatar v-else icon="pi pi-user" shape="circle" class="h-9 w-9" />
+                            <span class="hidden max-w-36 truncate text-sm font-semibold sm:block">{{ displayName }}</span>
+                            <i class="pi pi-angle-down text-xs opacity-70"></i>
+                        </button>
+
+                        <div
+                            v-if="showQuickMenu"
+                            class="absolute right-0 top-full z-20 mt-2 w-80 rounded-2xl border border-gray-200 bg-white p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
+                        >
+                            <div v-if="currentUser" class="mb-3 flex items-center gap-3 rounded-xl bg-gray-50 p-3 dark:bg-zinc-800/70">
+                                <Avatar
+                                    v-if="avatarUrl"
+                                    crossorigin="anonymous"
+                                    :image="avatarUrl"
+                                    size="large"
+                                    shape="circle"
+                                    class="overflow-hidden object-cover"
+                                />
+                                <Avatar v-else icon="pi pi-user" size="large" shape="circle" />
+                                <div class="min-w-0">
+                                    <p class="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{{ currentUser?.name || 'Khách hàng' }}</p>
+                                    <p class="truncate text-xs text-gray-600 dark:text-gray-300">{{ currentUser?.email }}</p>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-2">
+                                <template v-if="currentUser">
+                                    <button
+                                        v-if="currentUser?.role === 'A'"
+                                        type="button"
+                                        @click="router.push('/'); showQuickMenu = false"
+                                        class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-zinc-800"
+                                    >
+                                        <i class="pi pi-chart-pie"></i>
+                                        <span>Trang quản trị</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="router.push('/client/order-list'); showQuickMenu = false"
+                                        class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-zinc-800"
+                                    >
+                                        <i class="pi pi-user"></i>
+                                        <span>Thông tin tài khoản</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        @click="logout"
+                                        class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    >
+                                        <i class="pi pi-sign-out"></i>
+                                        <span>Đăng xuất</span>
+                                    </button>
+                                </template>
+                                <template v-else>
+                                    <LoginModal :isScrolled="isScrolled" />
+                                </template>
+
+                                <div class="h-px bg-gray-200 dark:bg-zinc-700"></div>
+                                <Carts :isScrolled="isScrolled" />
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Mobile Hamburger Menu -->
                     <button @click="showMobileNav = !showMobileNav" class="p-2.5 text-gray-700 transition-all duration-300 dark:text-gray-200 lg:hidden">
