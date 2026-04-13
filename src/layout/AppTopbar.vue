@@ -35,14 +35,6 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
         </div>
 
         <div class="layout-topbar-actions">
-            <!-- Search Bar -->
-            <div class="relative mr-4">
-                <span class="absolute top-1/2 -mt-3 left-3">
-                    <i class="pi pi-search"></i>
-                </span>
-                <InputText placeholder="Search" class="pl-10 w-full md:w-64" />
-            </div>
-
             <!-- Action Icons -->
             <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
                 <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
@@ -57,17 +49,14 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
                 </button>
                 <AppConfigurator />
             </div>
-             <button type="button" class="layout-topbar-action p-overlay-badge">
+            <button type="button" class="layout-topbar-action p-overlay-badge">
                 <i class="pi pi-bell"></i>
                 <Badge value="4" severity="danger"></Badge>
             </button>
 
             <!-- User Menu -->
             <div class="relative">
-                 <button
-                    class="layout-topbar-action"
-                    v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }"
-                >
+                <button class="layout-topbar-action" v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'animate-scalein', leaveToClass: 'hidden', leaveActiveClass: 'animate-fadeout', hideOnOutsideClick: true }">
                     <img src="https://placehold.co/40x40" alt="Profile" class="h-8 w-8 rounded-full" />
                 </button>
 
@@ -77,7 +66,7 @@ const { onMenuToggle, toggleDarkMode, isDarkTheme } = useLayout();
                             <i class="pi pi-user"></i>
                             <span>Profile</span>
                         </button>
-                         <button type="button" class="layout-topbar-action">
+                        <button type="button" class="layout-topbar-action">
                             <i class="pi pi-cog"></i>
                             <span>Settings</span>
                         </button>

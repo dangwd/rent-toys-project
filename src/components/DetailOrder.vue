@@ -97,7 +97,7 @@
                         <div class="space-y-4">
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Họ tên</p>
-                                <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ detailOrder.shippingAddress?.fullName || 'N/A' }}</p>
+                                <p class="mt-1 font-semibold text-slate-900 dark:text-white">{{ detailOrder.user?.name || 'N/A' }}</p>
                             </div>
                             <div>
                                 <p class="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">Email</p>
@@ -224,6 +224,4 @@ const cancelOrder = async (id) => {
     }
 };
 </script>
-<style scoped>
-</style>
-
+<style scoped></style>

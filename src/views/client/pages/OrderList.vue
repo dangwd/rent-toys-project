@@ -173,7 +173,7 @@
                             <template #body="{ data }">
                                 <div class="flex gap-2">
                                     <DetailOrder :client="true" :data="data"></DetailOrder>
-                                    <Button icon="pi pi-trash" text></Button>
+                                    <!-- <Button icon="pi pi-trash" text></Button> -->
                                 </div>
                             </template>
                         </Column>

@@ -1,8 +1,8 @@
 <script setup>
 import API from '@/api/api-main';
+import { formatPrice } from '@/helper/formatPrice';
 import { usePrimeVue } from 'primevue/config';
 import { useToast } from 'primevue/usetoast';
-import { formatPrice } from '@/helper/formatPrice';
 import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
@@ -202,6 +202,29 @@ const fetchNations = async () => {
         Nations.value = res.data.metadata;
     } catch (error) {}
 };
+
+const imageFileName = (url) => {
+    if (!url || typeof url !== 'string') return '';
+    try {
+        const path = decodeURIComponent(new URL(url).pathname);
+        return path.split('/').pop() || url;
+    } catch {
+        const seg = url.split('/').pop() || url;
+        return seg.split('?')[0];
+    }
+};
+
+const onFileSelect = () => {};
+
+const onRemoveTemplatingFile = (file, removeFileCallback, index) => {
+    removeFileCallback(index);
+};
+
+const removeImages = (imageUrl) => {
+    if (!productDetail.value.images?.length) return;
+    const i = productDetail.value.images.indexOf(imageUrl);
+    if (i !== -1) productDetail.value.images.splice(i, 1);
+};
 </script>
 
 <template>
@@ -290,52 +313,81 @@ const fetchNations = async () => {
             </DataTable>
         </div>
 
-        <Dialog v-model:visible="prodDialog" :style="{ width: '70%' }" header="Sản phẩm" :modal="true">
-            <div class="flex flex-col gap-2">
-                <div class="grid grid-cols-12 gap-3">
-                    <div class="col-span-5">
-                        <div class="flex flex-col gap-3">
-                            <label class="block font-bold">Ảnh sản phẩm</label>
-                            <FileUpload name="files" :multiple="true" :auto="false" :customUpload="true" uploadLabel="Đăng bài" :showUploadButton="false" @uploader="onCustomUpload" @select="onFileSelect">
+        <Dialog v-model:visible="prodDialog" :style="{ width: 'min(96vw,70%)' }" header="Sản phẩm" :modal="true" :pt="{ content: { class: 'pt-2' } }">
+            <div class="flex flex-col gap-6">
+                <div class="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
+                    <div class="lg:col-span-5">
+                        <div class="flex h-full flex-col gap-3 rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm dark:border-surface-700 dark:bg-surface-900">
+                            <div class="flex items-start gap-3">
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-50 text-primary dark:bg-primary-400/10">
+                                    <i class="pi pi-images text-lg"></i>
+                                </span>
+                                <div>
+                                    <span class="block font-semibold leading-tight">Ảnh sản phẩm</span>
+                                    <span class="text-muted-color mt-1 block text-sm leading-snug">Chọn nhiều ảnh; có thể kéo thả trực tiếp vào khung bên dưới.</span>
+                                </div>
+                            </div>
+                            <FileUpload
+                                name="files"
+                                class="product-fileupload [&_.p-fileupload-content]:border-0 [&_.p-fileupload-content]:p-0 [&_.p-fileupload-header]:border-b-0 [&_.p-fileupload-header]:bg-transparent [&_.p-fileupload-header]:pb-0"
+                                :multiple="true"
+                                :auto="false"
+                                :customUpload="true"
+                                uploadLabel="Đăng bài"
+                                :showUploadButton="false"
+                                @uploader="onCustomUpload"
+                                @select="onFileSelect"
+                            >
                                 <template #empty>
-                                    <div class="p-2 text-center">
-                                        <span class="text-center">Chọn hoặc kéo thả ảnh vào đây!</span>
+                                    <div class="flex flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed border-surface-300 bg-surface-50 px-4 py-10 dark:border-surface-600 dark:bg-surface-800/40">
+                                        <i class="pi pi-cloud-upload text-4xl text-primary opacity-80"></i>
+                                        <p class="m-0 text-center text-sm text-muted-color">Kéo thả ảnh vào đây hoặc dùng nút chọn ảnh phía trên</p>
                                     </div>
                                 </template>
                                 <template #header="{ chooseCallback, uploadCallback, clearCallback, files }">
-                                    <div class="flex flex-wrap justify-between items-center flex-1 gap-4">
-                                        <div class="flex gap-2">
-                                            <Button @click="chooseCallback()" icon="pi pi-images" rounded outlined severity="secondary"></Button>
-                                            <Button style="display: none" id="onUpload" @click="uploadCallback()" icon="pi pi-cloud-upload" rounded outlined severity="success" :disabled="!files || files.length === 0"></Button>
-                                            <Button @click="clearCallback()" icon="pi pi-times" rounded outlined severity="danger" :disabled="!files || files.length === 0"></Button>
+                                    <div class="flex flex-wrap items-center justify-between gap-3">
+                                        <div class="flex flex-wrap gap-2">
+                                            <Button title="Chọn ảnh" type="button" @click="chooseCallback()" icon="pi pi-images" rounded outlined severity="secondary" />
+                                            <Button style="display: none" id="onUpload" type="button" @click="uploadCallback()" icon="pi pi-cloud-upload" rounded outlined severity="success" :disabled="!files || files.length === 0" />
+                                            <Button title="Xóa ảnh đang chọn" type="button" @click="clearCallback()" icon="pi pi-times" rounded outlined severity="danger" :disabled="!files || files.length === 0" />
                                         </div>
                                     </div>
                                 </template>
-                                <template #content="{ files, uploadedFiles, removeUploadedFileCallback, removeFileCallback, messages }">
-                                    <div class="flex flex-col gap-4 w-full">
-                                        <div class="w-full" v-if="files.length > 0">
-                                            <div class="flex flex-col w-full gap-4">
-                                                <div v-for="(file, index) of files" :key="index" class="p-4 rounded-border justify-between flex w-full border border-surface items-center gap-4">
-                                                    <div>
-                                                        <img role="presentation" :alt="file.name" :src="file.objectURL" width="100" height="50" />
+                                <template #content="{ files, removeFileCallback }">
+                                    <div class="flex w-full flex-col gap-3">
+                                        <div v-if="files.length > 0" class="flex flex-col gap-2">
+                                            <span class="text-xs font-semibold uppercase tracking-wide text-muted-color">Ảnh mới</span>
+                                            <div v-for="(file, index) of files" :key="'new-' + index" class="flex flex-col gap-3 rounded-lg border border-surface-200 p-3 sm:flex-row sm:items-center sm:justify-between dark:border-surface-700">
+                                                <div class="flex min-w-0 flex-1 items-center gap-3">
+                                                    <img class="h-14 w-20 shrink-0 rounded-md object-cover shadow-sm" role="presentation" :alt="file.name" :src="file.objectURL" />
+                                                    <div class="min-w-0 flex-1">
+                                                        <p class="m-0 truncate font-medium">{{ file.name }}</p>
+                                                        <p class="m-0 text-sm text-muted-color">{{ formatSize(file.size) }}</p>
                                                     </div>
-                                                    <span class="font-semibold text-ellipsis max-w-96 whitespace-nowrap overflow-hidden">{{ file.name }}</span>
-                                                    <div>{{ formatSize(file.size) }}</div>
-                                                    <Badge value="Đang xử lý" severity="warn" />
-                                                    <Button icon="pi pi-times" @click="onRemoveTemplatingFile(file, removeFileCallback, index)" outlined rounded severity="danger" />
+                                                </div>
+                                                <div class="flex shrink-0 items-center gap-2 self-end sm:self-center">
+                                                    <Badge value="Chờ gửi" severity="warn" />
+                                                    <Button type="button" icon="pi pi-times" @click="onRemoveTemplatingFile(file, removeFileCallback, index)" outlined rounded severity="danger" />
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="w-full" v-if="productDetail.images?.length > 0">
-                                            <div class="flex flex-col w-full gap-4">
-                                                <div v-for="(file, index) of productDetail.images" :key="index" class="p-4 rounded-border justify-between flex w-full border border-surface items-center gap-4">
-                                                    <div>
-                                                        <img crossorigin="anonymous" role="presentation" :alt="file" :src="file" width="100" height="50" />
+                                        <div v-if="productDetail.images?.length > 0" class="flex flex-col gap-2">
+                                            <span class="text-xs font-semibold uppercase tracking-wide text-muted-color">Ảnh đã lưu</span>
+                                            <div
+                                                v-for="(file, index) of productDetail.images"
+                                                :key="'saved-' + index"
+                                                class="flex flex-col gap-3 rounded-lg border border-surface-200 p-3 sm:flex-row sm:items-center sm:justify-between dark:border-surface-700"
+                                            >
+                                                <div class="flex min-w-0 flex-1 items-center gap-3">
+                                                    <img class="h-14 w-20 shrink-0 rounded-md object-cover shadow-sm" crossorigin="anonymous" role="presentation" :alt="imageFileName(file)" :src="file" />
+                                                    <div class="min-w-0 flex-1">
+                                                        <p class="m-0 truncate font-medium">{{ imageFileName(file) }}</p>
+                                                        <p class="m-0 text-sm text-muted-color">Đã tải lên</p>
                                                     </div>
-                                                    <span class="font-semibold text-ellipsis max-w-96 whitespace-nowrap overflow-hidden">{{ file.name }}</span>
-                                                    <div>{{ formatSize(file.size || 0) }}</div>
-                                                    <Badge value="Hoàn thành" severity="success" />
-                                                    <Button icon="pi pi-times" @click="removeImages(file)" outlined rounded severity="danger" />
+                                                </div>
+                                                <div class="flex shrink-0 items-center gap-2 self-end sm:self-center">
+                                                    <Badge value="Đã lưu" severity="success" />
+                                                    <Button type="button" icon="pi pi-times" @click="removeImages(file)" outlined rounded severity="danger" />
                                                 </div>
                                             </div>
                                         </div>
@@ -344,67 +396,83 @@ const fetchNations = async () => {
                             </FileUpload>
                         </div>
                     </div>
-                    <div class="col-span-7">
+                    <div class="lg:col-span-7">
                         <div class="flex flex-col gap-6">
-                            <div>
-                                <label for="name" class="block font-bold mb-3">Tên sản phẩm</label>
-                                <InputText id="name" v-model="productDetail.productName" required="true" autofocus :invalid="submitted && !productDetail.actorName" fluid />
-                            </div>
-                            <div>
-                                <label for="description" class="block font-bold mb-3">Mô tả</label>
-                                <Textarea v-model="productDetail.descriptions" required="true" rows="3" cols="20" fluid />
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-3">Giá tiền</label>
-                                <InputNumber v-model="productDetail.price" required="true" autofocus :invalid="submitted && !productDetail.price" fluid />
-                            </div>
-                            <div>
-                                <label class="block font-bold mb-3">Giảm giá</label>
-                                <InputNumber v-model="productDetail.discount" :min="0" :max="100" suffix="%" required="true" autofocus fluid />
-                            </div>
-                            <div class="flex gap-2 justify-between items-center">
-                                <div class="w-full">
-                                    <label class="block font-bold mb-3">Thể loại</label>
-                                    <!-- <InputText v-model="productDetail.genre" required="true" autofocus :invalid="submitted && !productDetail.genre" fluid /> -->
-                                    <Select v-model="productDetail.genre" :options="GenresOpt" optionLabel="genreName" class="w-full" optionValue="_id"></Select>
+                            <Fieldset legend="Thông tin chung" :toggleable="false" class="rounded-xl border-surface-200 dark:border-surface-700">
+                                <div class="flex flex-col gap-4">
+                                    <div class="flex flex-col gap-2">
+                                        <label for="name" class="font-semibold">Tên sản phẩm <span class="text-red-500">*</span></label>
+                                        <InputText id="name" v-model="productDetail.productName" required autofocus :invalid="submitted && !productDetail.productName" fluid placeholder="Nhập tên sản phẩm" />
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <label for="description" class="font-semibold">Mô tả <span class="text-red-500">*</span></label>
+                                        <Textarea id="description" v-model="productDetail.descriptions" required rows="4" fluid placeholder="Mô tả ngắn gọn về sản phẩm" />
+                                    </div>
                                 </div>
-                                <div class="w-full">
-                                    <label class="block font-bold mb-3">Thương hiệu</label>
-                                    <Select v-model="productDetail.brand" class="w-full" :options="BrandOpts" optionLabel="brandName" optionValue="_id"></Select>
+                            </Fieldset>
+
+                            <Fieldset legend="Giá & khuyến mãi" :toggleable="false" class="rounded-xl border-surface-200 dark:border-surface-700">
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="flex flex-col gap-2">
+                                        <label for="price" class="font-semibold">Giá <span class="text-red-500">*</span></label>
+                                        <InputNumber id="price" v-model="productDetail.price" required :invalid="submitted && !productDetail.price" fluid placeholder="0" />
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <label for="discount" class="font-semibold">Giảm giá (%)</label>
+                                        <InputNumber id="discount" v-model="productDetail.discount" :min="0" :max="100" suffix="%" fluid placeholder="0" />
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="flex gap-2 justify-between items-center">
-                                <div class="w-full">
-                                    <label class="block font-bold mb-3">Số lượng</label>
-                                    <InputNumber v-model="productDetail.quantity" required="true" autofocus :invalid="submitted && !productDetail.quantity" fluid />
+                            </Fieldset>
+
+                            <Fieldset legend="Phân loại & kho" :toggleable="false" class="rounded-xl border-surface-200 dark:border-surface-700">
+                                <div class="flex flex-col gap-4">
+                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div class="flex flex-col gap-2">
+                                            <label for="genre" class="font-semibold">Thể loại</label>
+                                            <Select id="genre" v-model="productDetail.genre" :options="GenresOpt" optionLabel="genreName" class="w-full" optionValue="_id" placeholder="Chọn thể loại" fluid />
+                                        </div>
+                                        <div class="flex flex-col gap-2">
+                                            <label for="brand" class="font-semibold">Thương hiệu</label>
+                                            <Select id="brand" v-model="productDetail.brand" class="w-full" :options="BrandOpts" optionLabel="brandName" optionValue="_id" placeholder="Chọn thương hiệu" fluid />
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                        <div class="flex flex-col gap-2">
+                                            <label for="quantity" class="font-semibold">Số lượng <span class="text-red-500">*</span></label>
+                                            <InputNumber id="quantity" v-model="productDetail.quantity" required :invalid="submitted && !productDetail.quantity" fluid :min="0" placeholder="0" />
+                                        </div>
+                                        <div class="flex flex-col gap-2">
+                                            <label for="madeIn" class="font-semibold">Xuất xứ <span class="text-red-500">*</span></label>
+                                            <Select id="madeIn" v-model="productDetail.madeIn" :options="Nations" option-value="niceName" option-label="niceName" :invalid="submitted && !productDetail.madeIn" fluid placeholder="Chọn quốc gia" />
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="w-full">
-                                    <label class="block font-bold mb-3">Xuất xứ</label>
-                                    <Select v-model="productDetail.madeIn" :options="Nations" option-value="niceName" option-label="niceName" :invalid="submitted && !productDetail.madeIn" fluid />
+                            </Fieldset>
+
+                            <Fieldset legend="Đối tượng" :toggleable="false" class="rounded-xl border-surface-200 dark:border-surface-700">
+                                <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                                    <div class="flex flex-col gap-2">
+                                        <label for="age" class="font-semibold">Độ tuổi phù hợp <span class="text-red-500">*</span></label>
+                                        <InputNumber id="age" v-model="productDetail.age" required :invalid="submitted && !productDetail.age" fluid :min="0" placeholder="Tuổi" />
+                                    </div>
+                                    <div class="flex flex-col gap-2">
+                                        <label for="sex" class="font-semibold">Giới tính</label>
+                                        <Dropdown id="sex" v-model="productDetail.sex" class="w-full" :options="GenderOpts" optionValue="value" optionLabel="label" placeholder="Chọn" />
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="flex gap-2 justify-between items-center">
-                                <div class="w-full">
-                                    <label class="block font-bold mb-3">Tuổi</label>
-                                    <InputNumber v-model="productDetail.age" required="true" autofocus :invalid="submitted && !productDetail.age" fluid />
+                                <div class="mt-4 flex items-center gap-3 rounded-lg border border-surface-200 bg-surface-50 px-4 py-3 dark:border-surface-700 dark:bg-surface-800/50">
+                                    <Checkbox inputId="monopoly" v-model="productDetail.type" value="monopoly" binary />
+                                    <label for="monopoly" class="m-0 cursor-pointer font-semibold">Hàng độc quyền</label>
                                 </div>
-                                <div class="w-full">
-                                    <label class="block font-bold mb-3">Giới tính</label>
-                                    <Dropdown v-model="productDetail.sex" class="w-full" :options="GenderOpts" optionValue="value" optionLabel="label"></Dropdown>
-                                </div>
-                            </div>
-                            <div class="flex gap-2 items-center">
-                                <Checkbox v-model="productDetail.type" value="monopoly" binary></Checkbox>
-                                <label for="" class="font-bold">Hàng độc quyền</label>
-                            </div>
+                            </Fieldset>
                         </div>
                     </div>
                 </div>
             </div>
 
             <template #footer>
-                <Button label="Hủy" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Xác nhận" icon="pi pi-check" @click="saveProduct()" />
+                <Button label="Hủy" icon="pi pi-times" text severity="secondary" @click="hideDialog" />
+                <Button label="Lưu sản phẩm" icon="pi pi-check" @click="saveProduct()" />
             </template>
         </Dialog>
 
