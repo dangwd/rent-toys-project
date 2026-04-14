@@ -34,6 +34,11 @@ export default [
                 component: () => import('@/views/client/pages/OrderList.vue')
             },
             {
+                path: '/client/orders',
+                name: 'orders',
+                component: () => import('@/views/client/pages/Orders.vue')
+            },
+            {
                 path: '/client/payment-ing',
                 name: 'payment-ing',
                 component: () => import('@/views/client/pages/PaymentPage.vue')
@@ -52,7 +57,7 @@ export default [
                 path: '/client/payment-check',
                 name: 'payment-check',
                 component: () => import('@/components/PaymentSuccess.vue')
-            },
+            }
         ]
     }
 ];

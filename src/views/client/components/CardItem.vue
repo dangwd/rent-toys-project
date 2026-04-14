@@ -1,20 +1,12 @@
 <script setup>
 import { formatPrice } from '@/helper/formatPrice.js';
 import { computed } from 'vue';
-import { useRoute } from 'vue-router';
-import { useCartStore } from '../store/carts';
 
 const props = defineProps(['data']);
-const route = useRoute();
-const cartStore = useCartStore();
 
 const discountedPrice = computed(() => {
     return props.data.price - (props.data.price * props.data.discount) / 100;
 });
-
-const handleAddToCart = () => {
-    cartStore.addToCart(props.data);
-};
 </script>
 
 <template>
@@ -33,43 +25,45 @@ const handleAddToCart = () => {
 
         <!-- Product Info -->
         <div class="flex flex-1 flex-col p-4 sm:p-5">
-            <router-link :to="`/client/detail/${props.data._id}`" class="flex-1 min-w-0">
-                <h5 class="text-base font-semibold text-slate-900 line-clamp-2 break-words transition-colors duration-300 group-hover:text-indigo-600 dark:text-white sm:text-lg">
+            <router-link :to="`/client/detail/${props.data._id}`" class="min-w-0 flex-1">
+                <h5 class="line-clamp-2 break-words text-base font-semibold text-slate-900 transition-colors duration-300 group-hover:text-indigo-600 dark:text-white sm:text-lg">
                     {{ props.data.productName }}
                 </h5>
             </router-link>
 
-            <div class="mt-3 flex items-center justify-between gap-3">
+            <p v-if="props.data.descriptions" class="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                {{ props.data.descriptions }}
+            </p>
+
+            <div v-if="props.data.genre?.genreName || props.data.brand?.brandName || props.data.age != null" class="mt-3 flex flex-wrap gap-2">
+                <span v-if="props.data.genre?.genreName" class="inline-flex max-w-full items-center rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300">
+                    {{ props.data.genre.genreName }}
+                </span>
+                <span v-if="props.data.brand?.brandName" class="inline-flex max-w-full items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700 dark:bg-zinc-800 dark:text-zinc-200">
+                    {{ props.data.brand.brandName }}
+                </span>
+                <span v-if="props.data.age != null" class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-900 dark:bg-amber-950/40 dark:text-amber-200"> {{ props.data.age }}+ tuổi </span>
+            </div>
+
+            <div class="mt-4 flex items-end justify-between gap-3 border-t border-slate-100 pt-4 dark:border-zinc-800">
                 <div class="min-w-0">
-                    <p class="text-sm text-slate-500 dark:text-slate-400">Giá từ</p>
-                    <div class="flex items-center gap-2">
+                    <p class="text-xs font-medium uppercase tracking-wide text-slate-400 dark:text-slate-500">Giá từ</p>
+                    <div class="mt-0.5 flex flex-wrap items-baseline gap-2">
                         <span class="text-xl font-extrabold text-slate-900 dark:text-white sm:text-2xl">{{ formatPrice(discountedPrice) }}đ</span>
                         <span v-if="props.data.discount > 0" class="text-xs text-slate-500 line-through dark:text-slate-400 sm:text-sm">{{ formatPrice(props.data.price) }}đ</span>
                     </div>
                 </div>
-            </div>
-
-            <div class="mt-5 flex items-center justify-between gap-3">
-                <button
-                    @click="handleAddToCart"
-                    class="inline-flex w-full items-center justify-center gap-2 rounded-full bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition duration-300 ease-in-out hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2 dark:focus:ring-offset-zinc-950 active:scale-[0.98]"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <path d="M16 10a4 4 0 0 1-8 0"></path>
-                    </svg>
-                    <span>Thêm vào giỏ</span>
-                </button>
+                <router-link :to="`/client/detail/${props.data._id}`" class="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-indigo-600 transition hover:text-indigo-500 dark:text-indigo-400 dark:hover:text-indigo-300">
+                    Chi tiết
+                    <i class="pi pi-arrow-right text-xs"></i>
+                </router-link>
             </div>
         </div>
     </div>
 </template>
 
 <style scoped>
-/* Add smooth transitions */
 .group {
     position: relative;
 }
 </style>
-

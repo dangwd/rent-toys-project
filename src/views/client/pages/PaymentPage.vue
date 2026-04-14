@@ -42,7 +42,7 @@
 
                     <div class="mt-8 flex w-full flex-col gap-3 sm:flex-row sm:justify-center">
                         <Button label="Về trang chủ" icon="pi pi-home" severity="secondary" outlined class="w-full sm:w-auto" @click="router.push({ name: 'home' })" />
-                        <Button label="Xem đơn hàng" icon="pi pi-list" class="w-full sm:w-auto" @click="router.push({ name: 'orderlist' })" />
+                        <Button label="Xem đơn hàng" icon="pi pi-list" class="w-full sm:w-auto" @click="router.push({ name: 'orders' })" />
                     </div>
                 </div>
             </div>

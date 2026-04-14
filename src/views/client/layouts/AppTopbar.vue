@@ -1,12 +1,12 @@
 <script setup>
 import API from '@/api/api-main';
+import NotificationBell from '@/components/NotificationBell.vue';
 import { formatPrice } from '@/helper/formatPrice';
+import { useAuthStore } from '@/store';
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import Carts from '../components/Carts.vue';
 import LoginModal from '../components/LoginModal.vue';
-import NotificationBell from '@/components/NotificationBell.vue';
-import { useAuthStore } from '@/store';
 
 const router = useRouter();
 const route = useRoute();
@@ -155,31 +155,15 @@ watch(
                             class="flex items-center gap-2 rounded-full p-1.5 text-gray-700 transition-all duration-300 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-zinc-800"
                             aria-label="Mở menu tài khoản"
                         >
-                            <Avatar
-                                v-if="avatarUrl"
-                                crossorigin="anonymous"
-                                :image="avatarUrl"
-                                shape="circle"
-                                class="h-9 w-9 overflow-hidden object-cover"
-                            />
+                            <Avatar v-if="avatarUrl" crossorigin="anonymous" :image="avatarUrl" shape="circle" class="h-9 w-9 overflow-hidden object-cover" />
                             <Avatar v-else icon="pi pi-user" shape="circle" class="h-9 w-9" />
                             <span class="hidden max-w-36 truncate text-sm font-semibold sm:block">{{ displayName }}</span>
                             <i class="pi pi-angle-down text-xs opacity-70"></i>
                         </button>
 
-                        <div
-                            v-if="showQuickMenu"
-                            class="absolute right-0 top-full z-20 mt-2 w-80 rounded-2xl border border-gray-200 bg-white p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900"
-                        >
+                        <div v-if="showQuickMenu" class="absolute right-0 top-full z-20 mt-2 w-80 rounded-2xl border border-gray-200 bg-white p-3 shadow-xl dark:border-zinc-700 dark:bg-zinc-900">
                             <div v-if="currentUser" class="mb-3 flex items-center gap-3 rounded-xl bg-gray-50 p-3 dark:bg-zinc-800/70">
-                                <Avatar
-                                    v-if="avatarUrl"
-                                    crossorigin="anonymous"
-                                    :image="avatarUrl"
-                                    size="large"
-                                    shape="circle"
-                                    class="overflow-hidden object-cover"
-                                />
+                                <Avatar v-if="avatarUrl" crossorigin="anonymous" :image="avatarUrl" size="large" shape="circle" class="overflow-hidden object-cover" />
                                 <Avatar v-else icon="pi pi-user" size="large" shape="circle" />
                                 <div class="min-w-0">
                                     <p class="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">{{ currentUser?.name || 'Khách hàng' }}</p>
@@ -192,7 +176,10 @@ watch(
                                     <button
                                         v-if="currentUser?.role === 'A'"
                                         type="button"
-                                        @click="router.push('/'); showQuickMenu = false"
+                                        @click="
+                                            router.push('/');
+                                            showQuickMenu = false;
+                                        "
                                         class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-zinc-800"
                                     >
                                         <i class="pi pi-chart-pie"></i>
@@ -200,7 +187,10 @@ watch(
                                     </button>
                                     <button
                                         type="button"
-                                        @click="router.push('/client/order-list'); showQuickMenu = false"
+                                        @click="
+                                            router.push('/client/order-list');
+                                            showQuickMenu = false;
+                                        "
                                         class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-zinc-800"
                                     >
                                         <i class="pi pi-user"></i>
@@ -208,9 +198,16 @@ watch(
                                     </button>
                                     <button
                                         type="button"
-                                        @click="logout"
-                                        class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:hover:bg-red-900/20"
+                                        @click="
+                                            router.push('/client/orders');
+                                            showQuickMenu = false;
+                                        "
+                                        class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold text-gray-700 transition hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-zinc-800"
                                     >
+                                        <i class="pi pi-list"></i>
+                                        <span>Đơn hàng của bạn</span>
+                                    </button>
+                                    <button type="button" @click="logout" class="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-semibold text-red-600 transition hover:bg-red-50 dark:hover:bg-red-900/20">
                                         <i class="pi pi-sign-out"></i>
                                         <span>Đăng xuất</span>
                                     </button>
@@ -286,4 +283,3 @@ watch(
     opacity: 0;
 }
 </style>
-
