@@ -1,18 +1,74 @@
 .layout-sidebar {
     position: fixed;
     width: 20rem;
-    height: calc(100vh - 8rem);
+    height: calc(100vh - 5.5rem);
     z-index: 999;
     overflow-y: auto;
+    overflow-x: hidden;
     user-select: none;
-    top: 6rem;
-    left: 2rem;
+    top: 5rem;
+    left: 1.5rem;
     transition:
         transform var(--layout-section-transition-duration),
         left var(--layout-section-transition-duration);
     background-color: var(--surface-overlay);
-    border-radius: var(--content-border-radius);
-    padding: 0.5rem 1.5rem;
+    border-radius: 0.875rem;
+    border: 1px solid var(--surface-border);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    // Sidebar brand header
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1.125rem 1.25rem 1rem;
+        border-bottom: 1px solid var(--surface-border);
+        text-decoration: none;
+
+        .sidebar-logo {
+            width: 2.25rem;
+            height: 2.25rem;
+            object-fit: contain;
+            border-radius: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.0625rem;
+            overflow: hidden;
+        }
+
+        .sidebar-brand-name {
+            font-size: 0.9375rem;
+            font-weight: 700;
+            color: var(--text-color);
+            letter-spacing: -0.01em;
+            white-space: nowrap;
+        }
+
+        .sidebar-brand-sub {
+            font-size: 0.6875rem;
+            color: var(--text-color-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+    }
+
+    .sidebar-menu-wrap {
+        padding: 0.75rem 0.75rem;
+    }
+
+    // Custom scrollbar
+    &::-webkit-scrollbar { width: 3px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb {
+        background-color: var(--surface-border);
+        border-radius: 2px;
+    }
 }
 
 .layout-menu {
@@ -22,34 +78,43 @@
 
     .layout-root-menuitem {
         > .layout-menuitem-root-text {
-            font-size: 0.857rem;
+            display: flex;
+            align-items: center;
+            font-size: 0.6875rem;
             text-transform: uppercase;
             font-weight: 700;
-            color: var(--text-color);
-            margin: 0.75rem 0;
+            letter-spacing: 0.09em;
+            color: var(--text-color-secondary);
+            padding: 1rem 0.5rem 0.4rem;
+            margin: 0;
+            gap: 0.5rem;
+            opacity: 0.7;
+
+            &::after {
+                content: '';
+                flex: 1;
+                height: 1px;
+                background-color: var(--surface-border);
+            }
         }
 
-        > a {
-            display: none;
+        &:first-child > .layout-menuitem-root-text {
+            padding-top: 0.25rem;
         }
+
+        > a { display: none; }
     }
 
     a {
         user-select: none;
 
-        &.active-menuitem {
-            > .layout-submenu-toggler {
-                transform: rotate(-180deg);
-            }
+        &.active-menuitem > .layout-submenu-toggler {
+            transform: rotate(-180deg);
         }
     }
 
-    li.active-menuitem {
-        > a {
-            .layout-submenu-toggler {
-                transform: rotate(-180deg);
-            }
-        }
+    li.active-menuitem > a .layout-submenu-toggler {
+        transform: rotate(-180deg);
     }
 
     ul {
@@ -62,77 +127,69 @@
             align-items: center;
             position: relative;
             outline: 0 none;
-            color: var(--text-color);
+            color: var(--text-color-secondary);
             cursor: pointer;
-            padding: 0.75rem 1rem;
-            border-radius: var(--content-border-radius);
+            padding: 0.5625rem 0.625rem;
+            border-radius: 0.5rem;
             transition:
                 background-color var(--element-transition-duration),
-                box-shadow var(--element-transition-duration);
+                color var(--element-transition-duration);
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 1px;
 
             .layout-menuitem-icon {
-                margin-right: 0.5rem;
+                margin-right: 0.625rem;
+                font-size: 0.9375rem;
+                width: 1.125rem;
+                text-align: center;
+                flex-shrink: 0;
+                transition: color var(--element-transition-duration);
+            }
+
+            .layout-menuitem-text {
+                flex: 1;
+                line-height: 1;
             }
 
             .layout-submenu-toggler {
-                font-size: 75%;
+                font-size: 68%;
                 margin-left: auto;
                 transition: transform var(--element-transition-duration);
             }
 
             &.active-route {
-                font-weight: 700;
+                font-weight: 600;
                 color: var(--primary-color);
+                background-color: color-mix(in srgb, var(--primary-color) 9%, transparent);
+                box-shadow: inset 3px 0 0 var(--primary-color);
+
+                .layout-menuitem-icon {
+                    color: var(--primary-color);
+                }
             }
 
             &:hover {
                 background-color: var(--surface-hover);
+                color: var(--text-color);
+
+                .layout-menuitem-icon { color: var(--text-color); }
             }
 
-            &:focus {
-                @include focused-inset();
-            }
+            &:focus { @include focused-inset(); }
         }
 
         ul {
             overflow: hidden;
             border-radius: var(--content-border-radius);
+            margin-top: 1px;
 
-            li {
-                a {
-                    margin-left: 1rem;
-                }
-
-                li {
-                    a {
-                        margin-left: 2rem;
-                    }
-
-                    li {
-                        a {
-                            margin-left: 2.5rem;
-                        }
-
-                        li {
-                            a {
-                                margin-left: 3rem;
-                            }
-
-                            li {
-                                a {
-                                    margin-left: 3.5rem;
-                                }
-
-                                li {
-                                    a {
-                                        margin-left: 4rem;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            li a { margin-left: 1rem; }
+            li li a { margin-left: 2rem; }
+            li li li a { margin-left: 2.5rem; }
+            li li li li a { margin-left: 3rem; }
+            li li li li li a { margin-left: 3.5rem; }
+            li li li li li li a { margin-left: 4rem; }
         }
     }
 }

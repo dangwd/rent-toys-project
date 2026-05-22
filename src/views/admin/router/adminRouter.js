@@ -43,6 +43,12 @@ export default [
                 path: '/man/banners',
                 name: 'banners',
                 component: () => import('@/views/admin/pages/BannerMan.vue')
+            },
+            {
+                path: '/man/revenue-report',
+                name: 'revenueReport',
+                component: () => import('@/views/admin/pages/RevenueReport.vue'),
+                meta: { requiresAuth: true, roles: 'A' }
             }
         ]
     },

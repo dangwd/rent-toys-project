@@ -1,341 +1,405 @@
 <script setup>
+import API from '@/api/api-main';
 import { useLayout } from '@/layout/composables/layout';
-import { ProductService } from '@/service/ProductService';
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 
 const { getPrimary, getSurface, isDarkTheme } = useLayout();
 
-const products = ref(null);
-const chartData = ref(null);
-const chartOptions = ref(null);
+const loading = ref(true);
+const dashboardData = ref(null);
 
-const items = ref([
-    { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-    { label: 'Remove', icon: 'pi pi-fw pi-trash' }
-]);
+const revenue = computed(() => dashboardData.value?.revenue || {});
+const orders = computed(() => dashboardData.value?.orders || {});
+const users = computed(() => dashboardData.value?.users || {});
+const products = computed(() => dashboardData.value?.products || {});
+const last7Days = computed(() => dashboardData.value?.last7DaysRevenue || []);
+const topProducts = computed(() => dashboardData.value?.topSellingProducts || []);
+const recentOrders = computed(() => dashboardData.value?.recentOrders || []);
 
-onMounted(() => {
-    ProductService.getProductsSmall().then((data) => (products.value = data));
-    chartData.value = setChartData();
-    chartOptions.value = setChartOptions();
-});
+const revenueChartData = ref(null);
+const revenueChartOptions = ref(null);
+const orderStatusChartData = ref(null);
+const orderStatusChartOptions = ref(null);
 
-function setChartData() {
+async function fetchDashboard() {
+    loading.value = true;
+    try {
+        const res = await API.get('dashboard');
+        if (res?.data?.metadata) {
+            dashboardData.value = res.data.metadata;
+            buildCharts();
+        }
+    } finally {
+        loading.value = false;
+    }
+}
+
+function buildCharts() {
+    buildRevenueChart();
+    buildOrderStatusChart();
+}
+
+function buildRevenueChart() {
     const documentStyle = getComputedStyle(document.documentElement);
+    const data = last7Days.value;
 
-    return {
-        labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+    revenueChartData.value = {
+        labels: data.map((d) => {
+            const date = new Date(d.date);
+            return `${date.getDate()}/${date.getMonth() + 1}`;
+        }),
         datasets: [
             {
-                type: 'bar',
-                label: 'Subscriptions',
-                backgroundColor: documentStyle.getPropertyValue('--p-primary-400'),
-                data: [4000, 10000, 15000, 4000],
-                barThickness: 32
-            },
-            {
-                type: 'bar',
-                label: 'Advertising',
-                backgroundColor: documentStyle.getPropertyValue('--p-primary-300'),
-                data: [2100, 8400, 2400, 7500],
-                barThickness: 32
-            },
-            {
-                type: 'bar',
-                label: 'Affiliate',
-                backgroundColor: documentStyle.getPropertyValue('--p-primary-200'),
-                data: [4100, 5200, 3400, 7400],
-                borderRadius: {
-                    topLeft: 8,
-                    topRight: 8
-                },
-                borderSkipped: true,
-                barThickness: 32
+                label: 'Doanh thu (₫)',
+                data: data.map((d) => d.revenue),
+                fill: true,
+                backgroundColor: documentStyle.getPropertyValue('--p-primary-100') + '80',
+                borderColor: documentStyle.getPropertyValue('--p-primary-500'),
+                tension: 0.4,
+                pointBackgroundColor: documentStyle.getPropertyValue('--p-primary-500'),
+                pointRadius: 4
             }
         ]
     };
-}
 
-function setChartOptions() {
-    const documentStyle = getComputedStyle(document.documentElement);
     const borderColor = documentStyle.getPropertyValue('--surface-border');
     const textMutedColor = documentStyle.getPropertyValue('--text-color-secondary');
 
-    return {
+    revenueChartOptions.value = {
         maintainAspectRatio: false,
-        aspectRatio: 0.8,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: (ctx) => ` ${formatVND(ctx.raw)}`
+                }
+            }
+        },
         scales: {
             x: {
-                stacked: true,
-                ticks: {
-                    color: textMutedColor
-                },
-                grid: {
-                    color: 'transparent',
-                    borderColor: 'transparent'
-                }
+                ticks: { color: textMutedColor },
+                grid: { color: 'transparent', borderColor: 'transparent' }
             },
             y: {
-                stacked: true,
                 ticks: {
-                    color: textMutedColor
+                    color: textMutedColor,
+                    callback: (v) => formatVNDShort(v)
                 },
-                grid: {
-                    color: borderColor,
-                    borderColor: 'transparent',
-                    drawTicks: false
-                }
+                grid: { color: borderColor, borderColor: 'transparent', drawTicks: false }
             }
         }
     };
 }
 
-const formatCurrency = (value) => {
-    return value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+function buildOrderStatusChart() {
+    const documentStyle = getComputedStyle(document.documentElement);
+    const byStatus = orders.value.byStatus || {};
+
+    orderStatusChartData.value = {
+        labels: ['Chờ xác nhận', 'Đã xác nhận', 'Đang giao', 'Đã giao', 'Đã hủy'],
+        datasets: [
+            {
+                data: [byStatus.pending || 0, byStatus.confirmed || 0, byStatus.shipped || 0, byStatus.delivered || 0, byStatus.cancelled || 0],
+                backgroundColor: [
+                    documentStyle.getPropertyValue('--p-orange-400'),
+                    documentStyle.getPropertyValue('--p-blue-400'),
+                    documentStyle.getPropertyValue('--p-cyan-400'),
+                    documentStyle.getPropertyValue('--p-green-400'),
+                    documentStyle.getPropertyValue('--p-red-400')
+                ],
+                borderWidth: 0
+            }
+        ]
+    };
+
+    orderStatusChartOptions.value = {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--text-color'),
+                    padding: 16,
+                    font: { size: 12 }
+                }
+            }
+        },
+        cutout: '65%'
+    };
+}
+
+const formatVND = (value) => {
+    if (!value && value !== 0) return '0 ₫';
+    return new Intl.NumberFormat('vi-VN').format(value) + ' ₫';
 };
 
+const formatVNDShort = (value) => {
+    if (value >= 1_000_000) return (value / 1_000_000).toFixed(1) + 'M';
+    if (value >= 1_000) return (value / 1_000).toFixed(0) + 'K';
+    return value;
+};
+
+const formatDate = (iso) => {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+};
+
+const orderStatusMap = {
+    pending: { label: 'Chờ xác nhận', severity: 'warn' },
+    confirmed: { label: 'Đã xác nhận', severity: 'info' },
+    shipped: { label: 'Đang giao', severity: 'secondary' },
+    delivered: { label: 'Đã giao', severity: 'success' },
+    cancelled: { label: 'Đã hủy', severity: 'danger' }
+};
+
+const paymentStatusMap = {
+    paid: { label: 'Đã thanh toán', severity: 'success' },
+    pending: { label: 'Chưa thanh toán', severity: 'warn' },
+    failed: { label: 'Thất bại', severity: 'danger' }
+};
+
+onMounted(fetchDashboard);
+
 watch([getPrimary, getSurface, isDarkTheme], () => {
-    chartData.value = setChartData();
-    chartOptions.value = setChartOptions();
+    if (dashboardData.value) buildCharts();
 });
 </script>
 
 <template>
-    <div class="grid grid-cols-12 gap-8">
+    <div class="grid grid-cols-12 gap-6">
+        <!-- Stat Cards -->
         <div class="col-span-12 lg:col-span-6 xl:col-span-3">
-            <div class="card mb-0">
-                <div class="flex justify-between mb-4">
+            <div class="card mb-0 h-full">
+                <div class="flex justify-between items-start mb-4">
                     <div>
-                        <span class="block text-muted-color font-medium mb-4">Orders</span>
-                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">152</div>
+                        <span class="block text-muted-color font-medium mb-2 text-sm">Doanh thu hôm nay</span>
+                        <div class="text-surface-900 dark:text-surface-0 font-bold text-2xl">
+                            <Skeleton v-if="loading" width="8rem" height="2rem" />
+                            <span v-else>{{ formatVND(revenue.today) }}</span>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-shopping-cart text-blue-500 !text-xl"></i>
+                    <div class="flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-xl" style="width: 3rem; height: 3rem">
+                        <i class="pi pi-dollar text-blue-500 text-xl"></i>
                     </div>
                 </div>
-                <span class="text-primary font-medium">24 new </span>
-                <span class="text-muted-color">since last visit</span>
-            </div>
-        </div>
-        <div class="col-span-12 lg:col-span-6 xl:col-span-3">
-            <div class="card mb-0">
-                <div class="flex justify-between mb-4">
-                    <div>
-                        <span class="block text-muted-color font-medium mb-4">Revenue</span>
-                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">$2.100</div>
-                    </div>
-                    <div class="flex items-center justify-center bg-orange-100 dark:bg-orange-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-dollar text-orange-500 !text-xl"></i>
-                    </div>
+                <div class="flex items-center gap-2 mt-2">
+                    <span v-if="!loading" :class="[revenue.todayGrowth >= 0 ? 'text-green-500' : 'text-red-500', 'font-semibold text-sm flex items-center gap-1']">
+                        <i :class="revenue.todayGrowth >= 0 ? 'pi pi-arrow-up' : 'pi pi-arrow-down'" class="text-xs"></i>
+                        {{ Math.abs(revenue.todayGrowth) }}%
+                    </span>
+                    <span class="text-muted-color text-sm">so với hôm qua ({{ formatVND(revenue.yesterday) }})</span>
                 </div>
-                <span class="text-primary font-medium">%52+ </span>
-                <span class="text-muted-color">since last week</span>
-            </div>
-        </div>
-        <div class="col-span-12 lg:col-span-6 xl:col-span-3">
-            <div class="card mb-0">
-                <div class="flex justify-between mb-4">
-                    <div>
-                        <span class="block text-muted-color font-medium mb-4">Customers</span>
-                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">28441</div>
-                    </div>
-                    <div class="flex items-center justify-center bg-cyan-100 dark:bg-cyan-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-users text-cyan-500 !text-xl"></i>
-                    </div>
-                </div>
-                <span class="text-primary font-medium">520 </span>
-                <span class="text-muted-color">newly registered</span>
-            </div>
-        </div>
-        <div class="col-span-12 lg:col-span-6 xl:col-span-3">
-            <div class="card mb-0">
-                <div class="flex justify-between mb-4">
-                    <div>
-                        <span class="block text-muted-color font-medium mb-4">Comments</span>
-                        <div class="text-surface-900 dark:text-surface-0 font-medium text-xl">152 Unread</div>
-                    </div>
-                    <div class="flex items-center justify-center bg-purple-100 dark:bg-purple-400/10 rounded-border" style="width: 2.5rem; height: 2.5rem">
-                        <i class="pi pi-comment text-purple-500 !text-xl"></i>
-                    </div>
-                </div>
-                <span class="text-primary font-medium">85 </span>
-                <span class="text-muted-color">responded</span>
             </div>
         </div>
 
-        <div class="col-span-12 xl:col-span-6">
+        <div class="col-span-12 lg:col-span-6 xl:col-span-3">
+            <div class="card mb-0 h-full">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="block text-muted-color font-medium mb-2 text-sm">Tổng đơn hàng</span>
+                        <div class="text-surface-900 dark:text-surface-0 font-bold text-2xl">
+                            <Skeleton v-if="loading" width="5rem" height="2rem" />
+                            <span v-else>{{ orders.total }}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center bg-orange-100 dark:bg-orange-400/10 rounded-xl" style="width: 3rem; height: 3rem">
+                        <i class="pi pi-shopping-cart text-orange-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="text-primary font-semibold text-sm">+{{ orders.newToday }} hôm nay</span>
+                    <span class="text-muted-color text-sm">· {{ orders.newThisMonth }} tháng này</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6 xl:col-span-3">
+            <div class="card mb-0 h-full">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="block text-muted-color font-medium mb-2 text-sm">Người dùng</span>
+                        <div class="text-surface-900 dark:text-surface-0 font-bold text-2xl">
+                            <Skeleton v-if="loading" width="5rem" height="2rem" />
+                            <span v-else>{{ users.total }}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center bg-cyan-100 dark:bg-cyan-400/10 rounded-xl" style="width: 3rem; height: 3rem">
+                        <i class="pi pi-users text-cyan-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                    <span class="text-primary font-semibold text-sm">+{{ users.newToday }} hôm nay</span>
+                    <span class="text-muted-color text-sm">· {{ users.newThisMonth }} tháng này</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-12 lg:col-span-6 xl:col-span-3">
+            <div class="card mb-0 h-full">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <span class="block text-muted-color font-medium mb-2 text-sm">Sản phẩm</span>
+                        <div class="text-surface-900 dark:text-surface-0 font-bold text-2xl">
+                            <Skeleton v-if="loading" width="5rem" height="2rem" />
+                            <span v-else>{{ products.total }}</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-center bg-purple-100 dark:bg-purple-400/10 rounded-xl" style="width: 3rem; height: 3rem">
+                        <i class="pi pi-box text-purple-500 text-xl"></i>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                    <span v-if="products.outOfStock > 0" class="text-red-500 font-semibold text-sm">{{ products.outOfStock }} hết hàng</span>
+                    <span v-if="products.lowStock > 0" class="text-orange-500 font-semibold text-sm">· {{ products.lowStock }} sắp hết</span>
+                    <span v-if="!products.outOfStock && !products.lowStock" class="text-green-500 font-semibold text-sm">Tồn kho ổn định</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Revenue Chart -->
+        <div class="col-span-12 xl:col-span-8">
+            <div class="card h-full">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <div class="font-semibold text-xl">Doanh thu 7 ngày qua</div>
+                        <div class="text-muted-color text-sm mt-1">Tháng này: {{ formatVND(revenue.thisMonth) }}</div>
+                    </div>
+                    <div class="text-right">
+                        <div :class="[revenue.monthGrowth >= 0 ? 'text-green-500' : 'text-red-500', 'font-bold text-lg flex items-center gap-1 justify-end']">
+                            <i :class="revenue.monthGrowth >= 0 ? 'pi pi-trending-up' : 'pi pi-trending-down'"></i>
+                            {{ revenue.monthGrowth }}%
+                        </div>
+                        <div class="text-muted-color text-sm">so với tháng trước</div>
+                    </div>
+                </div>
+                <div v-if="loading" class="flex items-center justify-center" style="height: 280px">
+                    <i class="pi pi-spin pi-spinner text-4xl text-muted-color"></i>
+                </div>
+                <Chart v-else type="line" :data="revenueChartData" :options="revenueChartOptions" style="height: 280px" />
+            </div>
+        </div>
+
+        <!-- Order Status Doughnut -->
+        <div class="col-span-12 xl:col-span-4">
+            <div class="card h-full">
+                <div class="font-semibold text-xl mb-2">Trạng thái đơn hàng</div>
+                <div class="text-muted-color text-sm mb-6">Tổng {{ orders.total }} đơn</div>
+                <div v-if="loading" class="flex items-center justify-center" style="height: 280px">
+                    <i class="pi pi-spin pi-spinner text-4xl text-muted-color"></i>
+                </div>
+                <div v-else>
+                    <Chart type="doughnut" :data="orderStatusChartData" :options="orderStatusChartOptions" style="height: 220px" />
+                    <div class="grid grid-cols-2 gap-2 mt-4">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-orange-400 shrink-0"></span>
+                            <span class="text-sm text-muted-color"
+                                >Chờ: <span class="font-semibold text-surface-900 dark:text-surface-0">{{ orders.byStatus?.pending || 0 }}</span></span
+                            >
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-blue-400 shrink-0"></span>
+                            <span class="text-sm text-muted-color"
+                                >Xác nhận: <span class="font-semibold text-surface-900 dark:text-surface-0">{{ orders.byStatus?.confirmed || 0 }}</span></span
+                            >
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-cyan-400 shrink-0"></span>
+                            <span class="text-sm text-muted-color"
+                                >Giao: <span class="font-semibold text-surface-900 dark:text-surface-0">{{ orders.byStatus?.shipped || 0 }}</span></span
+                            >
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-green-400 shrink-0"></span>
+                            <span class="text-sm text-muted-color"
+                                >Hoàn thành: <span class="font-semibold text-surface-900 dark:text-surface-0">{{ orders.byStatus?.delivered || 0 }}</span></span
+                            >
+                        </div>
+                        <div class="flex items-center gap-2 col-span-2">
+                            <span class="w-3 h-3 rounded-full bg-red-400 shrink-0"></span>
+                            <span class="text-sm text-muted-color"
+                                >Hủy: <span class="font-semibold text-surface-900 dark:text-surface-0">{{ orders.byStatus?.cancelled || 0 }}</span></span
+                            >
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="col-span-12 xl:col-span-7">
             <div class="card">
-                <div class="font-semibold text-xl mb-4">Recent Sales</div>
-                <DataTable :value="products" :rows="5" :paginator="true" responsiveLayout="scroll">
-                    <Column style="width: 15%" header="Image">
-                        <template #body="slotProps">
-                            <img :src="`https://primefaces.org/cdn/primevue/images/product/${slotProps.data.image}`" :alt="slotProps.data.image" width="50" class="shadow" />
+                <div class="font-semibold text-xl mb-6">Đơn hàng gần đây</div>
+                <div v-if="loading">
+                    <Skeleton v-for="i in 3" :key="i" height="3rem" class="mb-2" />
+                </div>
+                <DataTable v-else :value="recentOrders" :rows="5" responsiveLayout="scroll" class="text-sm">
+                    <Column header="Khách hàng" style="min-width: 140px">
+                        <template #body="{ data }">
+                            <div class="flex items-center gap-3">
+                                <Avatar :image="data.customerAvatar || undefined" :label="data.customerAvatar ? undefined : data.customer?.[0]?.toUpperCase()" class="shrink-0" size="small" shape="circle" />
+                                <span class="font-medium">{{ data.customer }}</span>
+                            </div>
                         </template>
                     </Column>
-                    <Column field="name" header="Name" :sortable="true" style="width: 35%"></Column>
-                    <Column field="price" header="Price" :sortable="true" style="width: 35%">
-                        <template #body="slotProps">
-                            {{ formatCurrency(slotProps.data.price) }}
+                    <Column header="Trạng thái" style="min-width: 130px">
+                        <template #body="{ data }">
+                            <Tag :value="orderStatusMap[data.status]?.label || data.status" :severity="orderStatusMap[data.status]?.severity" />
                         </template>
                     </Column>
-                    <Column style="width: 15%" header="View">
-                        <template #body>
-                            <Button icon="pi pi-search" type="button" class="p-button-text"></Button>
+                    <Column header="Thanh toán" style="min-width: 130px">
+                        <template #body="{ data }">
+                            <Tag :value="paymentStatusMap[data.paymentStatus]?.label || data.paymentStatus" :severity="paymentStatusMap[data.paymentStatus]?.severity" />
+                        </template>
+                    </Column>
+                    <Column header="Tổng tiền" style="min-width: 120px">
+                        <template #body="{ data }">
+                            <span class="font-semibold text-primary">{{ formatVND(data.finalPrice) }}</span>
+                        </template>
+                    </Column>
+                    <Column header="Thời gian" style="min-width: 130px">
+                        <template #body="{ data }">
+                            <span class="text-muted-color">{{ formatDate(data.createdAt) }}</span>
                         </template>
                     </Column>
                 </DataTable>
             </div>
-            <div class="card">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="font-semibold text-xl">Best Selling Products</div>
-                    <div>
-                        <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu2.toggle($event)"></Button>
-                        <Menu ref="menu2" :popup="true" :model="items" class="!min-w-40"></Menu>
-                    </div>
-                </div>
-                <ul class="list-none p-0 m-0">
-                    <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                        <div>
-                            <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Space T-Shirt</span>
-                            <div class="mt-1 text-muted-color">Clothing</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 flex items-center">
-                            <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                                <div class="bg-orange-500 h-full" style="width: 50%"></div>
-                            </div>
-                            <span class="text-orange-500 ml-4 font-medium">%50</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                        <div>
-                            <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Portal Sticker</span>
-                            <div class="mt-1 text-muted-color">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-20 flex items-center">
-                            <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                                <div class="bg-cyan-500 h-full" style="width: 16%"></div>
-                            </div>
-                            <span class="text-cyan-500 ml-4 font-medium">%16</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                        <div>
-                            <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Supernova Sticker</span>
-                            <div class="mt-1 text-muted-color">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-20 flex items-center">
-                            <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                                <div class="bg-pink-500 h-full" style="width: 67%"></div>
-                            </div>
-                            <span class="text-pink-500 ml-4 font-medium">%67</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                        <div>
-                            <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Wonders Notebook</span>
-                            <div class="mt-1 text-muted-color">Office</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-20 flex items-center">
-                            <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                                <div class="bg-green-500 h-full" style="width: 35%"></div>
-                            </div>
-                            <span class="text-primary ml-4 font-medium">%35</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                        <div>
-                            <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Mat Black Case</span>
-                            <div class="mt-1 text-muted-color">Accessories</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-20 flex items-center">
-                            <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                                <div class="bg-purple-500 h-full" style="width: 75%"></div>
-                            </div>
-                            <span class="text-purple-500 ml-4 font-medium">%75</span>
-                        </div>
-                    </li>
-                    <li class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-                        <div>
-                            <span class="text-surface-900 dark:text-surface-0 font-medium mr-2 mb-1 md:mb-0">Robots T-Shirt</span>
-                            <div class="mt-1 text-muted-color">Clothing</div>
-                        </div>
-                        <div class="mt-2 md:mt-0 ml-0 md:ml-20 flex items-center">
-                            <div class="bg-surface-300 dark:bg-surface-500 rounded-border overflow-hidden w-40 lg:w-24" style="height: 8px">
-                                <div class="bg-teal-500 h-full" style="width: 40%"></div>
-                            </div>
-                            <span class="text-teal-500 ml-4 font-medium">%40</span>
-                        </div>
-                    </li>
-                </ul>
-            </div>
         </div>
-        <div class="col-span-12 xl:col-span-6">
-            <div class="card">
-                <div class="font-semibold text-xl mb-4">Revenue Stream</div>
-                <Chart type="bar" :data="chartData" :options="chartOptions" class="h-80" />
-            </div>
-            <div class="card">
-                <div class="flex items-center justify-between mb-6">
-                    <div class="font-semibold text-xl">Notifications</div>
-                    <div>
-                        <Button icon="pi pi-ellipsis-v" class="p-button-text p-button-plain p-button-rounded" @click="$refs.menu1.toggle($event)"></Button>
-                        <Menu ref="menu1" :popup="true" :model="items" class="!min-w-40"></Menu>
-                    </div>
+
+        <!-- Top Selling Products -->
+        <div class="col-span-12 xl:col-span-5">
+            <div class="card h-full">
+                <div class="font-semibold text-xl mb-6">Sản phẩm bán chạy</div>
+                <div v-if="loading">
+                    <Skeleton v-for="i in 3" :key="i" height="3.5rem" class="mb-3" />
                 </div>
-
-                <span class="block text-muted-color font-medium mb-4">TODAY</span>
-                <ul class="p-0 mx-0 mt-0 mb-6 list-none">
-                    <li class="flex items-center py-2 border-b border-surface">
-                        <div class="w-12 h-12 flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-full mr-4 shrink-0">
-                            <i class="pi pi-dollar !text-xl text-blue-500"></i>
+                <div v-else-if="topProducts.length === 0" class="flex flex-col items-center justify-center py-12 text-muted-color">
+                    <i class="pi pi-inbox text-4xl mb-3"></i>
+                    <span>Chưa có dữ liệu</span>
+                </div>
+                <ul v-else class="list-none p-0 m-0">
+                    <li v-for="(product, index) in topProducts" :key="product.productId" class="flex items-center gap-4 py-3" :class="{ 'border-b border-surface': index < topProducts.length - 1 }">
+                        <div
+                            class="flex items-center justify-center font-bold text-sm rounded-lg shrink-0"
+                            :class="[
+                                index === 0 ? 'bg-yellow-100 text-yellow-600 dark:bg-yellow-400/10' : index === 1 ? 'bg-surface-200 dark:bg-surface-600 text-surface-600 dark:text-surface-200' : 'bg-orange-100 text-orange-600 dark:bg-orange-400/10'
+                            ]"
+                            style="width: 2rem; height: 2rem"
+                        >
+                            {{ index + 1 }}
                         </div>
-                        <span class="text-surface-900 dark:text-surface-0 leading-normal"
-                            >Richard Jones
-                            <span class="text-surface-700 dark:text-surface-100">has purchased a blue t-shirt for <span class="text-primary font-bold">$79.00</span></span>
-                        </span>
-                    </li>
-                    <li class="flex items-center py-2">
-                        <div class="w-12 h-12 flex items-center justify-center bg-orange-100 dark:bg-orange-400/10 rounded-full mr-4 shrink-0">
-                            <i class="pi pi-download !text-xl text-orange-500"></i>
+                        <img v-if="product.images?.length" :src="product.images[0]" :alt="product.productName" class="w-10 h-10 rounded-lg object-cover shrink-0 bg-surface-100" />
+                        <div v-else class="w-10 h-10 rounded-lg shrink-0 bg-surface-100 dark:bg-surface-700 flex items-center justify-center">
+                            <i class="pi pi-image text-muted-color"></i>
                         </div>
-                        <span class="text-surface-700 dark:text-surface-100 leading-normal">Your request for withdrawal of <span class="text-primary font-bold">$2500.00</span> has been initiated.</span>
-                    </li>
-                </ul>
-
-                <span class="block text-muted-color font-medium mb-4">YESTERDAY</span>
-                <ul class="p-0 m-0 list-none mb-6">
-                    <li class="flex items-center py-2 border-b border-surface">
-                        <div class="w-12 h-12 flex items-center justify-center bg-blue-100 dark:bg-blue-400/10 rounded-full mr-4 shrink-0">
-                            <i class="pi pi-dollar !text-xl text-blue-500"></i>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-medium text-surface-900 dark:text-surface-0 truncate">{{ product.productName }}</div>
+                            <div class="text-muted-color text-xs mt-0.5">{{ formatVND(product.price) }} / đơn</div>
                         </div>
-                        <span class="text-surface-900 dark:text-surface-0 leading-normal"
-                            >Keyser Wick
-                            <span class="text-surface-700 dark:text-surface-100">has purchased a black jacket for <span class="text-primary font-bold">$59.00</span></span>
-                        </span>
-                    </li>
-                    <li class="flex items-center py-2 border-b border-surface">
-                        <div class="w-12 h-12 flex items-center justify-center bg-pink-100 dark:bg-pink-400/10 rounded-full mr-4 shrink-0">
-                            <i class="pi pi-question !text-xl text-pink-500"></i>
+                        <div class="text-right shrink-0">
+                            <div class="font-bold text-primary">{{ product.totalSold }}</div>
+                            <div class="text-muted-color text-xs">lượt mua</div>
                         </div>
-                        <span class="text-surface-900 dark:text-surface-0 leading-normal"
-                            >Jane Davis
-                            <span class="text-surface-700 dark:text-surface-100">has posted a new questions about your product.</span>
-                        </span>
-                    </li>
-                </ul>
-                <span class="block text-muted-color font-medium mb-4">LAST WEEK</span>
-                <ul class="p-0 m-0 list-none">
-                    <li class="flex items-center py-2 border-b border-surface">
-                        <div class="w-12 h-12 flex items-center justify-center bg-green-100 dark:bg-green-400/10 rounded-full mr-4 shrink-0">
-                            <i class="pi pi-arrow-up !text-xl text-green-500"></i>
-                        </div>
-                        <span class="text-surface-900 dark:text-surface-0 leading-normal">Your revenue has increased by <span class="text-primary font-bold">%25</span>.</span>
-                    </li>
-                    <li class="flex items-center py-2 border-b border-surface">
-                        <div class="w-12 h-12 flex items-center justify-center bg-purple-100 dark:bg-purple-400/10 rounded-full mr-4 shrink-0">
-                            <i class="pi pi-heart !text-xl text-purple-500"></i>
-                        </div>
-                        <span class="text-surface-900 dark:text-surface-0 leading-normal"><span class="text-primary font-bold">12</span> users have added your products to their wishlist.</span>
                     </li>
                 </ul>
             </div>

@@ -1,4 +1,6 @@
 <template>
+    <ConfirmDialog />
+    <Toast position="top-right" />
     <div class="mx-auto min-h-[60vh] w-full max-w-5xl px-4 py-6 sm:px-6 lg:py-10">
         <!-- Header -->
         <div class="mb-8">
@@ -90,7 +92,20 @@
                             <p class="text-xl font-black text-indigo-600 dark:text-indigo-400">{{ formatPrice(data.finalPrice) }}đ</p>
                             <p v-if="data.totalPrice != null && data.totalPrice !== data.finalPrice" class="text-xs text-slate-400 line-through">{{ formatPrice(data.totalPrice) }}đ</p>
                         </div>
-                        <DetailOrder :client="true" :data="data" />
+                        <div class="flex items-center gap-2">
+                            <Button
+                                v-if="isCancellable(data)"
+                                icon="pi pi-times"
+                                label="Huỷ đơn"
+                                severity="danger"
+                                size="small"
+                                outlined
+                                rounded
+                                :loading="cancellingId === data._id"
+                                @click.stop="quickCancel(data)"
+                            />
+                            <DetailOrder :client="true" :data="data" @updated="fetchAllOrder" />
+                        </div>
                     </div>
                 </div>
             </article>
@@ -113,9 +128,14 @@
 import API from '@/api/api-main';
 import DetailOrder from '@/components/DetailOrder.vue';
 import { formatPrice } from '@/helper/formatPrice';
-import { formatStatusOrder } from '@/helper/formatStatusOrder';
+import { canTransitionTo, formatStatusOrder } from '@/helper/formatStatusOrder';
 import { format } from 'date-fns';
+import { useConfirm } from 'primevue/useconfirm';
+import { useToast } from 'primevue/usetoast';
 import { onMounted, reactive, ref } from 'vue';
+
+const confirm = useConfirm();
+const toast = useToast();
 
 const Orders = ref([]);
 const isLoading = ref(true);
@@ -199,6 +219,36 @@ const onPageChange = (e) => {
     paginator.rows = e.rows;
     paginator.page = e.page;
     fetchAllOrder();
+};
+
+const cancellingId = ref(null);
+
+// client chỉ huỷ khi chờ xác nhận HOẶC chưa thanh toán (và status cho phép cancel)
+const isCancellable = (order) =>
+    canTransitionTo(order.status, 'cancelled') &&
+    (order.status === 'pending' || order.paymentStatus !== 'paid');
+
+const quickCancel = (order) => {
+    confirm.require({
+        message: `Bạn có chắc muốn huỷ đơn hàng này không?`,
+        header: 'Xác nhận huỷ đơn',
+        icon: 'pi pi-exclamation-triangle',
+        rejectLabel: 'Không',
+        acceptLabel: 'Huỷ đơn',
+        acceptSeverity: 'danger',
+        accept: async () => {
+            cancellingId.value = order._id;
+            try {
+                await API.updatev2(`order/${order._id}/status`, { status: 'cancelled' });
+                toast.add({ severity: 'success', summary: 'Đã huỷ đơn', detail: 'Đơn hàng đã được huỷ thành công.', life: 3000 });
+                await fetchAllOrder();
+            } catch {
+                toast.add({ severity: 'error', summary: 'Lỗi', detail: 'Không thể huỷ đơn hàng, vui lòng thử lại.', life: 3000 });
+            } finally {
+                cancellingId.value = null;
+            }
+        }
+    });
 };
 </script>
 

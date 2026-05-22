@@ -2,192 +2,209 @@
 import API from '@/api/api-main';
 import DetailOrder from '@/components/DetailOrder.vue';
 import { formatPrice } from '@/helper/formatPrice';
-import { formatStatusOrder } from '@/helper/formatStatusOrder';
+import { formatStatusOrder, getOrderStatusSeverity, getPaymentStatusSeverity } from '@/helper/formatStatusOrder';
 import { format } from 'date-fns';
 import { useToast } from 'primevue/usetoast';
 import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
+
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 
-onMounted(() => {
-    fetchAllOrder();
-});
-const filter = reactive({
-    status: ''
-});
-const paginator = reactive({
-    rows: 5,
-    page: 0,
-    total: 0
-});
-const Invoices = ref();
-const orderDialog = ref(false);
+const LIMIT = 10;
+const loading = ref(false);
+const invoices = ref([]);
+const totalRecords = ref(0);
+const currentPage = ref(1);
 const filterDialog = ref(false);
-const orderDetail = ref({});
 
-const submitted = ref(false);
-const statusOpts = ref([
-    {
-        label: 'Đã đặt hàng',
-        value: 'pending'
-    },
-    {
-        label: 'Đã thanh toán',
-        value: 'paid'
-    },
-    {
-        label: 'Đã hủy',
-        value: 'cancelled'
-    },
-    {
-        label: 'Đã giao hàng',
-        value: 'delivered'
-    },
-    {
-        label: 'Đã hủy',
-        value: 'cancelled'
-    }
-]);
-const fetchAllOrder = async (query = '') => {
+const filter = reactive({ status: null, search: '' });
+
+const statusOpts = [
+    { label: 'Tất cả', value: null },
+    { label: 'Chờ xác nhận', value: 'pending' },
+    { label: 'Đã xác nhận', value: 'confirmed' },
+    { label: 'Đang giao', value: 'shipped' },
+    { label: 'Đã giao', value: 'delivered' },
+    { label: 'Đã hủy', value: 'cancelled' }
+];
+
+async function fetchAllOrder() {
+    loading.value = true;
     try {
-        const res = await API.get(`order?skip=0&limit=20&status=${query}`);
-        Invoices.value = res.data.metadata.result;
-        paginator.total = res.data.metadata.total;
-    } catch (error) {
-        console.log(error);
-    }
-};
+        const skip = (currentPage.value - 1) * LIMIT;
+        const params = new URLSearchParams({ skip, limit: LIMIT });
+        if (filter.status) params.append('status', filter.status);
+        if (filter.search.trim()) params.append('search', filter.search.trim());
 
-function hideDialog() {
-    orderDialog.value = false;
-    submitted.value = false;
+        const res = await API.get(`order?${params.toString()}`);
+        invoices.value = res.data.metadata.result;
+        totalRecords.value = res.data.metadata.total;
+    } catch (error) {
+        proxy.$notify('E', 'Không thể tải danh sách đơn hàng', toast);
+    } finally {
+        loading.value = false;
+    }
 }
 
-const saveGenre = async () => {
-    let data = { ...orderDetail.value };
-    submitted.value = true;
-    let API_EP = data._id ? `genre/${data._id}` : `genre`;
-    let FUNC_API = data._id ? API.updatev2(API_EP, data) : API.create(API_EP, data);
-    try {
-        const res = await FUNC_API;
-        if (res.data) {
-            orderDialog.value = false;
-            proxy.$notify('S', 'Thành công!', toast);
-            fetchAllOrder();
-        }
-    } catch (error) {
-        console.log(error);
-    }
-};
-const openFilter = () => {
-    filterDialog.value = true;
-};
-const handleFilter = () => {
-    let queryArr = [];
-    if (filter.status) {
-        queryArr.push(`status=${filter.status}`);
-    }
-    let queryStr = queryArr.join('');
-    fetchAllOrder(queryStr);
-};
+function onPageChange(event) {
+    currentPage.value = event.page + 1;
+    fetchAllOrder();
+}
+
+function applyFilter() {
+    currentPage.value = 1;
+    filterDialog.value = false;
+    fetchAllOrder();
+}
+
+function resetFilter() {
+    filter.status = null;
+    filter.search = '';
+    currentPage.value = 1;
+    filterDialog.value = false;
+    fetchAllOrder();
+}
+
+const paymentMethodLabel = (method) => (method === 'cod' ? 'COD' : method === 'zalo' ? 'ZaloPay' : method ?? '—');
+
+onMounted(fetchAllOrder);
 </script>
 
 <template>
-    <div>
-        <div class="card">
-            <Toolbar class="mb-6">
-                <template #start>
-                    <strong class="text-lg">Đơn hàng</strong>
-                </template>
-                <template #end>
-                    <Button label="Bộ lọc" icon="pi pi-filter" @click="openFilter()" />
-                </template>
-            </Toolbar>
-
-            <DataTable :value="Invoices" show-gridlines paginator :rows="paginator.rows" :page="paginator.page" :total-records="paginator.total" lazy>
-                <Column header="#">
-                    <template #body="{ index }">
-                        {{ index + 1 }}
-                    </template>
-                </Column>
-                <Column header="Sản phẩm" style="max-width: 200px">
-                    <template #body="{ data }">
-                        {{ data.items.map((el) => el.productName).join(', ') }}
-                    </template>
-                </Column>
-                <Column header="Số lượng">
-                    <template #body="{ data }">
-                        {{ data.items.map((el) => el.quantity).join(', ') }}
-                    </template>
-                </Column>
-                <Column header="Tên khách hàng">
-                    <template #body="{ data }">
-                        {{ data.user?.name }}
-                    </template>
-                </Column>
-                <Column header="Số điện thoại">
-                    <template #body="{ data }">
-                        {{ data.user?.phone }}
-                    </template>
-                </Column>
-                <Column header="Phương thức thanh toán">
-                    <template #body="{ data }">
-                        {{ data.paymentMethod == 'cod' ? `COD` : `Zalopay` }}
-                    </template>
-                </Column>
-                <Column header="Giá trị đơn hàng">
-                    <template #body="{ data }">
-                        {{ formatPrice(data.totalPrice) }}
-                    </template>
-                </Column>
-                <Column header="Đơn giá sau KM">
-                    <template #body="{ data }">
-                        {{ formatPrice(data.finalPrice) }}
-                    </template>
-                </Column>
-                <Column header="Ngày đặt hàng">
-                    <template #body="{ data }">
-                        {{ format(data.createdAt, 'dd/MM/yyyy') }}
-                    </template>
-                </Column>
-                <Column header="Trạng thái">
-                    <template #body="{ data }">
-                        <Tag :severity="data.status == 'confirmed' ? `success` : `primary`" :value="formatStatusOrder(data.status)"></Tag>
-                    </template>
-                </Column>
-                <Column header="Thao tác">
-                    <template #body="{ data }">
-                        <DetailOrder :data="data"></DetailOrder>
-                    </template>
-                </Column>
-            </DataTable>
-        </div>
-
-        <Dialog v-model:visible="orderDialog" :style="{ width: '450px' }" header="Thể loại" :modal="true">
-            <div class="flex flex-col gap-6">
-                <div>
-                    <label for="name" class="block font-bold mb-3">Thể loại</label>
-                    <InputText id="name" v-model="orderDetail.genreName" required="true" autofocus :invalid="submitted && !orderDetail.genreName" fluid />
-                    <small v-if="submitted && !orderDetail.genreName" class="text-red-500">Tên không được để trống</small>
+    <ConfirmDialog />
+    <div class="card">
+        <Toolbar class="mb-5">
+            <template #start>
+                <div class="flex items-center gap-3">
+                    <strong class="text-lg">Quản lý đơn hàng</strong>
+                    <Tag v-if="totalRecords" :value="`${totalRecords} đơn`" severity="secondary" />
                 </div>
-                <div>
-                    <label for="description" class="block font-bold mb-3">Mô tả</label>
-                    <Textarea id="description" v-model="orderDetail.genreDescription" required="true" rows="3" cols="20" fluid />
+            </template>
+            <template #end>
+                <div class="flex items-center gap-2">
+                    <InputText
+                        v-model="filter.search"
+                        placeholder="Tìm kiếm..."
+                        class="w-48"
+                        @keyup.enter="applyFilter"
+                    />
+                    <Button icon="pi pi-search" severity="secondary" outlined @click="applyFilter" />
+                    <Button
+                        icon="pi pi-filter"
+                        :label="filter.status ? 'Đang lọc' : 'Bộ lọc'"
+                        :severity="filter.status ? 'primary' : 'secondary'"
+                        outlined
+                        @click="filterDialog = true"
+                    />
+                    <Button v-if="filter.status || filter.search" icon="pi pi-times" severity="secondary" text @click="resetFilter" title="Xoá bộ lọc" />
                 </div>
-            </div>
-
-            <template #footer>
-                <Button label="Hủy" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Xác nhận" icon="pi pi-check" @click="saveGenre" />
             </template>
-        </Dialog>
+        </Toolbar>
 
-        <Dialog v-model:visible="filterDialog" :style="{ width: '450px' }" header="Bộ lọc" :modal="true">
-            <label for="">Trạng thái đơn hàng</label>
-            <Dropdown v-model="filter.status" optionValue="value" optionLabel="label" class="w-full" :options="statusOpts"></Dropdown>
-            <template #footer>
-                <Button @click="handleFilter()" label="Lọc"></Button>
+        <DataTable
+            :value="invoices"
+            :loading="loading"
+            show-gridlines
+            stripedRows
+            lazy
+            :rows="LIMIT"
+            :total-records="totalRecords"
+            :first="(currentPage - 1) * LIMIT"
+            paginator
+            @page="onPageChange"
+            class="text-sm"
+        >
+            <template #empty>
+                <div class="flex flex-col items-center justify-center py-12 text-muted-color gap-3">
+                    <i class="pi pi-inbox text-4xl"></i>
+                    <span>Không có đơn hàng nào</span>
+                </div>
             </template>
-        </Dialog>
+
+            <Column header="#" style="width: 50px; text-align: center">
+                <template #body="{ index }">
+                    <span class="text-muted-color">{{ (currentPage - 1) * LIMIT + index + 1 }}</span>
+                </template>
+            </Column>
+
+            <Column header="Khách hàng" style="min-width: 140px">
+                <template #body="{ data }">
+                    <div class="flex flex-col gap-0.5">
+                        <span class="font-medium">{{ data.user?.name ?? '—' }}</span>
+                        <span class="text-xs text-muted-color">{{ data.user?.phone ?? '' }}</span>
+                    </div>
+                </template>
+            </Column>
+
+            <Column header="Sản phẩm" style="min-width: 180px">
+                <template #body="{ data }">
+                    <div class="flex flex-col gap-0.5">
+                        <span class="line-clamp-2">{{ data.items?.map((el) => el.productName).join(', ') }}</span>
+                        <span class="text-xs text-muted-color">{{ data.items?.length }} sản phẩm</span>
+                    </div>
+                </template>
+            </Column>
+
+            <Column header="Thanh toán" style="min-width: 120px">
+                <template #body="{ data }">
+                    <div class="flex flex-col gap-1">
+                        <Tag :severity="getPaymentStatusSeverity(data.paymentStatus)" :value="formatStatusOrder(data.paymentStatus)" />
+                        <span class="text-xs text-muted-color">{{ paymentMethodLabel(data.paymentMethod) }}</span>
+                    </div>
+                </template>
+            </Column>
+
+            <Column header="Giá trị" style="min-width: 130px">
+                <template #body="{ data }">
+                    <div class="flex flex-col gap-0.5">
+                        <span class="font-semibold text-primary">{{ formatPrice(data.finalPrice) }}đ</span>
+                        <span v-if="data.finalPrice !== data.totalPrice" class="text-xs text-muted-color line-through">{{ formatPrice(data.totalPrice) }}đ</span>
+                    </div>
+                </template>
+            </Column>
+
+            <Column header="Ngày đặt" style="min-width: 110px">
+                <template #body="{ data }">
+                    <span class="text-muted-color">{{ format(new Date(data.createdAt), 'dd/MM/yyyy HH:mm') }}</span>
+                </template>
+            </Column>
+
+            <Column header="Trạng thái đơn" style="min-width: 140px">
+                <template #body="{ data }">
+                    <Tag :severity="getOrderStatusSeverity(data.status)" :value="formatStatusOrder(data.status)" />
+                </template>
+            </Column>
+
+            <Column header="Thao tác" style="width: 80px; text-align: center">
+                <template #body="{ data }">
+                    <DetailOrder :data="data" @updated="fetchAllOrder" />
+                </template>
+            </Column>
+        </DataTable>
     </div>
+
+    <!-- Filter dialog -->
+    <Dialog v-model:visible="filterDialog" header="Bộ lọc đơn hàng" :style="{ width: '380px' }" modal>
+        <div class="flex flex-col gap-4 pt-2">
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium">Trạng thái đơn hàng</label>
+                <Select
+                    v-model="filter.status"
+                    :options="statusOpts"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="w-full"
+                    placeholder="Tất cả trạng thái"
+                />
+            </div>
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium">Tìm kiếm</label>
+                <InputText v-model="filter.search" placeholder="Tên khách hàng, mã đơn..." class="w-full" />
+            </div>
+        </div>
+        <template #footer>
+            <Button label="Đặt lại" severity="secondary" text @click="resetFilter" />
+            <Button label="Áp dụng" icon="pi pi-check" @click="applyFilter" />
+        </template>
+    </Dialog>
 </template>

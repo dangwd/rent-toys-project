@@ -1,3 +1,66 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Commands
+
+```bash
+npm run dev      # start Vite dev server (http://localhost:5173)
+npm run build    # production build
+npm run preview  # preview production build
+npm run lint     # ESLint with auto-fix (Vue, JS files)
+```
+
+No test suite is configured. Verify features manually via the dev server.
+
+## Architecture
+
+This is a **Vue 3 + Vite** toy rental platform built on the [Sakai PrimeVue](https://sakai.primevue.org) template. It has two completely separate UI surfaces that share the same router:
+
+### Two App Surfaces
+
+| Surface | Base path | Layout | Purpose |
+|---------|-----------|--------|---------|
+| **Admin** | `/` | `src/layout/AppLayout.vue` | Back-office management (products, brands, genres, invoices, coupons, banners) |
+| **Client** | `/client` | `src/views/client/layouts/AppLayout.vue` | Customer-facing storefront (browse, cart, payment, orders) |
+
+Routers are defined separately and merged in `src/router/index.js`:
+- `src/views/admin/router/adminRouter.js`
+- `src/views/client/router/clientRouter.js`
+
+### Auth Flow
+
+- JWT is stored in `localStorage` under the key `user` as `{ ExpireToken, metadata: { accessToken, user: { role, name } } }`.
+- `src/middleware/auth.middleware.js` — checks token existence and expiry; redirects to `/auth/login` if invalid.
+- Route guards use `meta.requiresAuth` and `meta.roles` (role `'A'` = admin).
+- Auth service uses `VITE_APP_API_LG` for login/register/logout (sends `application/x-www-form-urlencoded`); all other API calls use `VITE_APP_API` via the singleton in `src/api/api-main.js` with `Authorization: Bearer <token>` headers from `src/service/AuthHeader.js`.
+
+### State Management
+
+Both Vuex (`src/store/auth.module.js`) and Pinia (`src/store/index.js`) co-exist; prefer **Pinia** (`useAuthStore`) for new code.
+
+### Real-time / Socket.IO
+
+- Singleton socket instance in `src/service/socket.js` — lazily created via `getSocket()`, connects to `VITE_APP_SOCKET_URL` or falls back to the host of `VITE_APP_API`.
+- Composables: `useSocket()` / `useSocketEvent()` in `src/composables/useSocket.js`; `useOrderSocket()` in `src/composables/useOrderSocket.js`.
+- The socket sends JWT in the handshake `auth` object (`auth.token` / `auth.accessToken`). After login call `reconnectSocket()` to pick up the new token.
+
+### Environment Variables (`.env`)
+
+```
+VITE_APP_API        # base URL for all REST calls, e.g. http://localhost:3000/
+VITE_APP_API_LG     # auth endpoints (login/register/logout)
+VITE_APP_SOCKET_URL # optional explicit Socket.IO server URL
+VITE_APP_SOCKET_PATH# optional socket path (default /socket.io)
+```
+
+### Key Conventions
+
+- PrimeVue 4 with Aura theme. Dark mode toggled via `.app-dark` class on `<html>`.
+- Tailwind CSS and SCSS are both in use; global styles in `src/assets/styles.scss` and `src/assets/tailwind.css`.
+- Helper utilities: `src/helper/formatPrice.js` (currency), `src/helper/formatStatusOrder.js` (order status labels).
+- `src/api/api-main.js` exports a singleton `API` class — use it for all HTTP calls rather than raw `axios`.
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
