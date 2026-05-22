@@ -212,35 +212,16 @@ const paymentMethodLabel = (method) => (method === 'cod' ? 'COD' : method === 'z
                         </div>
 
                         <!-- Actions -->
-                        <div
-                            v-if="showActions"
-                            class="rounded-2xl border p-5 shadow-sm"
-                            :class="client
-                                ? 'border-rose-200 bg-rose-50 dark:border-rose-900/40 dark:bg-rose-950/30'
-                                : 'border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-950'"
-                        >
-                            <h3
-                                class="mb-1 text-base font-semibold"
-                                :class="client ? 'text-rose-800 dark:text-rose-300' : 'text-slate-900 dark:text-white'"
-                            >{{ client ? 'Huỷ đơn hàng' : 'Thao tác' }}</h3>
-                            <p v-if="client" class="mb-4 text-sm text-rose-600 dark:text-rose-400">
-                                Bạn chỉ có thể huỷ khi đơn chưa được giao đi. Sau khi huỷ không thể khôi phục.
-                            </p>
+                        <div v-if="showActions" class="rounded-2xl border p-5 shadow-sm" :class="client ? 'border-rose-200 bg-rose-50 dark:border-rose-900/40 dark:bg-rose-950/30' : 'border-slate-200 bg-white dark:border-zinc-800 dark:bg-zinc-950'">
+                            <h3 class="mb-1 text-base font-semibold" :class="client ? 'text-rose-800 dark:text-rose-300' : 'text-slate-900 dark:text-white'">{{ client ? 'Huỷ đơn hàng' : 'Thao tác' }}</h3>
+                            <p v-if="client" class="mb-4 text-sm text-rose-600 dark:text-rose-400">Bạn chỉ có thể huỷ khi đơn chưa được giao đi. Sau khi huỷ không thể khôi phục.</p>
                             <div :class="{ 'mt-4': !client }" class="flex flex-wrap gap-3">
                                 <template v-if="!client">
                                     <Button v-if="canConfirm" icon="pi pi-check" label="Xác nhận đơn" severity="success" :loading="updating" @click="updateStatus('confirmed')" />
                                     <Button v-if="canShip" icon="pi pi-truck" label="Bắt đầu giao" severity="info" :loading="updating" @click="updateStatus('shipped')" />
                                     <Button v-if="canDeliver" icon="pi pi-check-circle" label="Đã giao hàng" severity="success" :loading="updating" @click="updateStatus('delivered')" />
                                 </template>
-                                <Button
-                                    v-if="canCancel"
-                                    icon="pi pi-times"
-                                    :label="client ? 'Xác nhận huỷ đơn' : 'Huỷ đơn'"
-                                    severity="danger"
-                                    :outlined="!client"
-                                    :loading="updating"
-                                    @click="confirmCancel"
-                                />
+                                <Button v-if="canCancel" icon="pi pi-times" :label="client ? 'Xác nhận huỷ đơn' : 'Huỷ đơn'" severity="danger" :outlined="!client" :loading="updating" @click="confirmCancel" />
                             </div>
                         </div>
 
@@ -286,7 +267,6 @@ const paymentMethodLabel = (method) => (method === 'cod' ? 'COD' : method === 'z
                 <Button label="Đóng" severity="secondary" @click="visible = false" />
             </template>
         </Dialog>
-
     </div>
 </template>
 
