@@ -3,7 +3,7 @@ import API from '@/api/api-main';
 import { formatPrice } from '@/helper/formatPrice';
 import { usePrimeVue } from 'primevue/config';
 import { useToast } from 'primevue/usetoast';
-import { getCurrentInstance, onMounted, reactive, ref } from 'vue';
+import { computed, getCurrentInstance, onMounted, reactive, ref } from 'vue';
 const { proxy } = getCurrentInstance();
 const toast = useToast();
 const $primevue = usePrimeVue();
@@ -50,8 +50,35 @@ const productDetail = ref({});
 const filter = reactive({
     brand: null,
     genre: null,
-    age: null
+    sex: null,
+    madeIn: null,
+    inStock: null,
+    minAge: null,
+    maxAge: null,
+    minPrice: null,
+    maxPrice: null,
+    minDiscount: null,
+    sort: null
 });
+
+const hasActiveFilter = computed(() =>
+    !!(filter.brand || filter.genre || filter.sex || filter.madeIn ||
+       filter.inStock !== null || filter.minAge || filter.maxAge ||
+       filter.minPrice || filter.maxPrice || filter.minDiscount || filter.sort)
+);
+
+const sortOpts = [
+    { label: 'Mới nhất', value: 'newest' },
+    { label: 'Cũ nhất', value: 'oldest' },
+    { label: 'Giá tăng dần', value: 'price_asc' },
+    { label: 'Giá giảm dần', value: 'price_desc' },
+    { label: 'Giảm giá nhiều nhất', value: 'discount_desc' }
+];
+
+const inStockOpts = [
+    { label: 'Còn hàng', value: 'true' },
+    { label: 'Hết hàng', value: 'false' }
+];
 const submitted = ref(false);
 const paginator = reactive({
     rows: 10,
@@ -180,21 +207,28 @@ const openFilterDlg = () => {
     filterModal.value = true;
 };
 const confirmFilter = () => {
-    let queryArr = [];
-    if (filter.brand) {
-        queryArr.push(`brand=${filter.brand}`);
-    }
-    if (filter.genre) {
-        queryArr.push(`genre=${filter.genre}`);
-    }
-    if (filter.sex) {
-        queryArr.push(`sex=${filter.sex}`);
-    }
-    if (filter.age) {
-        queryArr.push(`age=${filter.age}`);
-    }
-    let queryStr = queryArr.join('&');
-    fetchAllProducts(queryStr);
+    const params = new URLSearchParams();
+    if (filter.brand) params.append('brand', filter.brand);
+    if (filter.genre) params.append('genre', filter.genre);
+    if (filter.sex) params.append('sex', filter.sex);
+    if (filter.madeIn) params.append('madeIn', filter.madeIn);
+    if (filter.inStock !== null) params.append('inStock', filter.inStock);
+    if (filter.minAge || filter.maxAge) params.append('age', `${filter.minAge ?? ''}:${filter.maxAge ?? ''}`);
+    if (filter.minPrice || filter.maxPrice) params.append('price', `${filter.minPrice ?? ''}:${filter.maxPrice ?? ''}`);
+    if (filter.minDiscount) params.append('minDiscount', filter.minDiscount);
+    if (filter.sort) params.append('sort', filter.sort);
+    filterModal.value = false;
+    fetchAllProducts(params.toString());
+};
+
+const resetFilter = () => {
+    Object.assign(filter, {
+        brand: null, genre: null, sex: null, madeIn: null,
+        inStock: null, minAge: null, maxAge: null,
+        minPrice: null, maxPrice: null, minDiscount: null, sort: null
+    });
+    filterModal.value = false;
+    fetchAllProducts();
 };
 const fetchNations = async () => {
     try {
@@ -250,7 +284,14 @@ const removeImages = (imageUrl) => {
                                 </InputIcon>
                                 <InputText v-model="keySearch" class="w-[300px]" @keyup.enter="fetchAllProducts()" placeholder="Tìm kiếm theo tên..." />
                             </IconField>
-                            <Button @click="openFilterDlg()" icon="pi pi-filter" label="Bộ lọc"></Button>
+                            <Button
+                                @click="openFilterDlg()"
+                                icon="pi pi-filter"
+                                :label="hasActiveFilter ? 'Đang lọc' : 'Bộ lọc'"
+                                :severity="hasActiveFilter ? 'primary' : 'secondary'"
+                                outlined
+                            />
+                            <Button v-if="hasActiveFilter" icon="pi pi-times" severity="secondary" text @click="resetFilter" title="Xoá bộ lọc" />
                         </div>
                     </div>
                 </template>
@@ -490,20 +531,73 @@ const removeImages = (imageUrl) => {
             </template>
         </Dialog>
 
-        <Dialog v-model:visible="filterModal" :style="{ width: '30%' }" header="Bộ lọc" :modal="true">
-            <div class="flex flex-col gap-3">
-                <div class="flex flex-col gap-2 w-full">
-                    <label for="">Thể loại</label>
-                    <Select v-model="filter.genre" :options="GenresOpt" optionLabel="genreName" class="w-full" optionValue="_id" fluid></Select>
+        <Dialog v-model:visible="filterModal" :style="{ width: 'min(96vw, 500px)' }" header="Bộ lọc sản phẩm" :modal="true">
+            <div class="flex flex-col gap-4 pt-2">
+                <!-- Danh mục -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium">Thể loại</label>
+                        <Select v-model="filter.genre" :options="GenresOpt" optionLabel="genreName" optionValue="_id" placeholder="Tất cả" class="w-full" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium">Thương hiệu</label>
+                        <Select v-model="filter.brand" :options="BrandOpts" optionLabel="brandName" optionValue="_id" placeholder="Tất cả" class="w-full" />
+                    </div>
                 </div>
-                <div class="flex flex-col gap-2 w-full">
-                    <label for="">Giới tính</label>
-                    <Select v-model="filter.sex" :options="SexOpts" optionLabel="label" optionValue="value" fluid></Select>
+
+                <!-- Thuộc tính -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium">Giới tính</label>
+                        <Select v-model="filter.sex" :options="GenderOpts" optionLabel="label" optionValue="value" placeholder="Tất cả" class="w-full" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium">Tình trạng kho</label>
+                        <Select v-model="filter.inStock" :options="inStockOpts" optionLabel="label" optionValue="value" placeholder="Tất cả" class="w-full" />
+                    </div>
+                </div>
+
+                <!-- Xuất xứ -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium">Xuất xứ</label>
+                    <Select v-model="filter.madeIn" :options="Nations" optionLabel="niceName" optionValue="niceName" placeholder="Tất cả quốc gia" class="w-full" filter />
+                </div>
+
+                <!-- Khoảng tuổi -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium">Độ tuổi</label>
+                    <div class="flex items-center gap-2">
+                        <InputNumber v-model="filter.minAge" :min="0" placeholder="Từ" class="flex-1" :useGrouping="false" />
+                        <span class="text-muted-color">—</span>
+                        <InputNumber v-model="filter.maxAge" :min="0" placeholder="Đến" class="flex-1" :useGrouping="false" />
+                    </div>
+                </div>
+
+                <!-- Khoảng giá -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-sm font-medium">Giá (đ)</label>
+                    <div class="flex items-center gap-2">
+                        <InputNumber v-model="filter.minPrice" :min="0" placeholder="Từ" class="flex-1" :useGrouping="false" />
+                        <span class="text-muted-color">—</span>
+                        <InputNumber v-model="filter.maxPrice" :min="0" placeholder="Đến" class="flex-1" :useGrouping="false" />
+                    </div>
+                </div>
+
+                <!-- Giảm giá tối thiểu + Sắp xếp -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium">Giảm giá tối thiểu (%)</label>
+                        <InputNumber v-model="filter.minDiscount" :min="0" :max="100" placeholder="0" class="w-full" suffix="%" :useGrouping="false" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium">Sắp xếp</label>
+                        <Select v-model="filter.sort" :options="sortOpts" optionLabel="label" optionValue="value" placeholder="Mặc định" class="w-full" />
+                    </div>
                 </div>
             </div>
             <template #footer>
-                <Button label="Hủy" icon="pi pi-times" severity="secondary" @click="filterModal = false" />
-                <Button label="Xác nhận" icon="pi pi-filter" @click="confirmFilter" />
+                <Button label="Đặt lại" severity="secondary" text @click="resetFilter" />
+                <Button label="Áp dụng" icon="pi pi-check" @click="confirmFilter" />
             </template>
         </Dialog>
     </div>

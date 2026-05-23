@@ -146,6 +146,7 @@ watch(
 
                     <!-- Login & Cart -->
                     <NotificationBell :isScrolled="isScrolled" />
+                    <Carts :isScrolled="isScrolled" />
 
                     <!-- Avatar menu (Account + Cart) -->
                     <div ref="quickMenuRef" class="relative">
@@ -215,9 +216,6 @@ watch(
                                 <template v-else>
                                     <LoginModal :isScrolled="isScrolled" />
                                 </template>
-
-                                <div class="h-px bg-gray-200 dark:bg-zinc-700"></div>
-                                <Carts :isScrolled="isScrolled" />
                             </div>
                         </div>
                     </div>

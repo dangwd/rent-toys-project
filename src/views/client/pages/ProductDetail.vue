@@ -14,15 +14,14 @@
                         <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-white md:text-3xl">{{ detail.productName }}</h1>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
-                        <span :class="detail.quantity > 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'" class="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider">
+                        <span
+                            :class="detail.quantity > 0 ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'"
+                            class="rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider"
+                        >
                             {{ detail.quantity > 0 ? 'Còn hàng' : 'Hết hàng' }}
                         </span>
-                        <span v-if="detail.discount" class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400">
-                            Giảm {{ detail.discount }}%
-                        </span>
-                        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-slate-700 dark:bg-zinc-800 dark:text-slate-300">
-                            Thương hiệu: {{ detail.brand?.brandName ?? 'Không rõ' }}
-                        </span>
+                        <span v-if="detail.discount" class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400"> Giảm {{ detail.discount }}% </span>
+                        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-slate-700 dark:bg-zinc-800 dark:text-slate-300"> Thương hiệu: {{ detail.brand?.brandName ?? 'Không rõ' }} </span>
                     </div>
                 </div>
             </div>
@@ -100,7 +99,13 @@
                                 <span class="font-semibold text-slate-900 dark:text-white">{{ User?.name || 'Thành viên' }}</span>
                             </div>
                             <Rating v-model="cmtPayload.rating" :cancel="false" class="custom-rating" />
-                            <Textarea v-model="cmtPayload.content" auto-resize placeholder="Chia sẻ cảm nghĩ của bạn về sản phẩm..." class="w-full !rounded-2xl !bg-slate-50 !border-none focus:!ring-2 focus:!ring-indigo-500 dark:!bg-zinc-900" rows="3" />
+                            <Textarea
+                                v-model="cmtPayload.content"
+                                auto-resize
+                                placeholder="Chia sẻ cảm nghĩ của bạn về sản phẩm..."
+                                class="w-full !rounded-2xl !bg-slate-50 !border-none focus:!ring-2 focus:!ring-indigo-500 dark:!bg-zinc-900"
+                                rows="3"
+                            />
                             <Button @click="confirmSubmit()" label="Gửi đánh giá" icon="pi pi-send" class="w-full !rounded-xl" />
                         </div>
                     </div>
@@ -167,9 +172,19 @@
                         <i class="pi pi-comments mb-3 text-4xl opacity-20"></i>
                         <p>Hiện chưa có đánh giá nào cho sản phẩm này.</p>
                     </div>
-                    <div v-for="(item, index) in detail.comments || []" :key="index" class="group relative rounded-3xl border border-slate-100 bg-white p-6 transition-all hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900">
+                    <div
+                        v-for="(item, index) in detail.comments || []"
+                        :key="index"
+                        class="group relative rounded-3xl border border-slate-100 bg-white p-6 transition-all hover:bg-slate-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:bg-zinc-900"
+                    >
                         <div class="flex items-center gap-4">
-                            <Avatar crossorigin="anonymous" :image="item.user?.thumbnail || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'" size="large" shape="circle" class="ring-2 ring-white ring-offset-2 dark:ring-zinc-800 dark:ring-offset-zinc-950" />
+                            <Avatar
+                                crossorigin="anonymous"
+                                :image="item.user?.thumbnail || 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'"
+                                size="large"
+                                shape="circle"
+                                class="ring-2 ring-white ring-offset-2 dark:ring-zinc-800 dark:ring-offset-zinc-950"
+                            />
                             <div>
                                 <p class="font-bold text-slate-900 dark:text-white">{{ item.user?.name || 'Khách hàng ẩn danh' }}</p>
                                 <Rating :value="item.rating" readonly stars="5" class="mt-1" />
@@ -237,15 +252,10 @@ const totalComments = computed(() => detail.value.comments?.length || 0);
 // Helper function to extract error message from API response
 const getErrorMessage = (error) => {
     if (!error) return 'Có lỗi xảy ra!';
-    
+
     // Try to extract message from API response
-    const message = 
-        error?.response?.data?.metadata?.message ||
-        error?.response?.data?.message ||
-        error?.response?.data?.error ||
-        error?.message ||
-        'Có lỗi xảy ra, vui lòng thử lại!';
-    
+    const message = error?.response?.data?.metadata?.message || error?.response?.data?.message || error?.response?.data?.error || error?.message || 'Có lỗi xảy ra, vui lòng thử lại!';
+
     return typeof message === 'string' ? message : JSON.stringify(message);
 };
 
@@ -271,7 +281,6 @@ const addToCart = async () => {
     };
     try {
         await cartStore.addToCart(data);
-        proxy.$notify('S', 'Đã thêm vào giỏ hàng!', toast);
     } catch (error) {
         console.error(error);
         const errorMsg = getErrorMessage(error);

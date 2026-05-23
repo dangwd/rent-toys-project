@@ -63,17 +63,24 @@
                 </aside>
 
                 <!-- Products Grid -->
-                <main v-if="Products?.length > 0" class="col-span-12 flex flex-col gap-8 lg:col-span-9">
-                    <ProductsGrid :data="Products" :layout="true"></ProductsGrid>
-                    <Paginator v-if="paginator.total > paginator.rows" @page="onPageChange($event)" :rows="paginator.rows" :totalRecords="paginator.total" class="mt-4"></Paginator>
-                </main>
-                <div class="col-span-12 text-center lg:col-span-9" v-else>
-                    <div class="flex flex-col items-center justify-center rounded-2xl bg-white p-12 shadow-lg dark:bg-zinc-800">
+                <main class="col-span-12 flex flex-col gap-8 lg:col-span-9">
+                    <!-- Loading -->
+                    <div v-if="loading" class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                        <Skeleton v-for="i in 9" :key="i" height="320px" borderRadius="16px" />
+                    </div>
+
+                    <template v-else-if="Products?.length > 0">
+                        <ProductsGrid :data="Products" :layout="true"></ProductsGrid>
+                        <Paginator v-if="paginator.total > paginator.rows" @page="onPageChange($event)" :rows="paginator.rows" :totalRecords="paginator.total" class="mt-4"></Paginator>
+                    </template>
+
+                    <div v-else class="flex flex-col items-center justify-center rounded-2xl bg-white p-12 shadow-lg dark:bg-zinc-800">
                         <i class="pi pi-search-plus text-6xl text-gray-400"></i>
                         <h3 class="mt-6 text-2xl font-bold text-gray-800 dark:text-white">Không tìm thấy sản phẩm</h3>
                         <p class="mt-2 text-gray-500">Vui lòng thử lại với bộ lọc khác.</p>
+                        <button @click="resetFilter" class="mt-4 rounded-full bg-indigo-600 px-5 py-2 text-sm font-bold text-white transition hover:bg-indigo-500">Xoá bộ lọc</button>
                     </div>
-                </div>
+                </main>
             </div>
         </div>
     </div>
@@ -85,6 +92,7 @@ import ProductsGrid from '../components/ProductsGrid.vue';
 
 const Products = ref([]);
 const Brands = ref([]);
+const loading = ref(false);
 const paginator = reactive({
     rows: 9,
     page: 0,
@@ -131,17 +139,27 @@ onMounted(() => {
 });
 
 const fetchAllProducts = async (query = '') => {
+    loading.value = true;
     let url = `products?skip=${paginator.page * paginator.rows}&limit=${paginator.rows}`;
-    if (query) {
-        url += `${query}`;
-    }
+    if (query) url += query;
     try {
         const res = await API.get(url);
         Products.value = res.data.metadata.result;
         paginator.total = res.data.metadata.total;
     } catch (error) {
         console.log(error);
+    } finally {
+        loading.value = false;
     }
+};
+
+const resetFilter = () => {
+    filter.price = '';
+    filter.genre = '';
+    filter.sex = '';
+    filter.age = '';
+    paginator.page = 0;
+    fetchAllProducts();
 };
 
 const fetchBrand = async () => {

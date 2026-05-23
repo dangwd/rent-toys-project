@@ -1,220 +1,319 @@
 <script setup>
 import API from '@/api/api-main';
-import { format } from 'date-fns';
+import { format, isPast } from 'date-fns';
+import { useConfirm } from 'primevue/useconfirm';
 import { useToast } from 'primevue/usetoast';
-import { getCurrentInstance, onMounted, ref } from 'vue';
+import { computed, getCurrentInstance, onMounted, ref } from 'vue';
+
 const { proxy } = getCurrentInstance();
 const toast = useToast();
+const confirm = useConfirm();
 
-onMounted(() => {
-    fetchAllGenres();
-});
+const couponTypeOpts = [
+    { label: 'Giảm theo %', value: 'percent' },
+    { label: 'Giảm số tiền cố định (₫)', value: 'fixed' }
+];
 
-const couponTypeOpts = ref([
-    {
-        name: '%',
-        value: 'percent'
-    },
-    {
-        name: 'fixed',
-        value: 'fixed'
-    }
-]);
 const keySearch = ref('');
-const Coupons = ref();
-const couponsDialog = ref(false);
-const deleteProductDialog = ref(false);
-const couponDetail = ref({});
-const selectedProducts = ref();
-
+const coupons = ref([]);
+const loading = ref(false);
+const dialogVisible = ref(false);
 const submitted = ref(false);
+const couponDetail = ref({});
+const isEdit = computed(() => !!couponDetail.value._id);
 
-const fetchAllGenres = async () => {
+const formatVND = (price) => new Intl.NumberFormat('vi-VN').format(price ?? 0);
+
+const couponValueDisplay = (item) => {
+    if (item.CouponType === 'percent') return `${item.CouponValue}%`;
+    return `${formatVND(item.CouponValue)} ₫`;
+};
+
+const isExpired = (date) => isPast(new Date(date));
+
+onMounted(fetchAll);
+
+async function fetchAll() {
+    loading.value = true;
     try {
         const res = await API.get(`coupon?skip=0&limit=200&search=${keySearch.value}`);
-        Coupons.value = res.data.metadata.result;
-    } catch (error) {
-        console.log(error);
+        coupons.value = res.data.metadata.result;
+    } catch {
+        proxy.$notify('E', 'Không thể tải danh sách coupon', toast);
+    } finally {
+        loading.value = false;
     }
-};
+}
 
-const openNew = async (data) => {
+function openNew() {
+    couponDetail.value = { CouponType: 'percent', usageLimit: 100 };
     submitted.value = false;
+    dialogVisible.value = true;
+}
 
-    if (!data._id) {
-        couponsDialog.value = true;
-        return (couponDetail.value = {});
-    }
+async function openEdit(data) {
+    submitted.value = false;
     try {
         const res = await API.get(`coupon/${data._id}`);
-        couponDetail.value = res.data.metadata;
-        couponDetail.value.expiryDate = new Date(res.data?.metadata.expiryDate);
-    } catch (error) {
-        console.log(error);
+        couponDetail.value = {
+            ...res.data.metadata,
+            expiryDate: new Date(res.data.metadata.expiryDate)
+        };
+        dialogVisible.value = true;
+    } catch {
+        proxy.$notify('E', 'Không thể tải thông tin coupon', toast);
     }
-    couponsDialog.value = true;
-};
+}
 
 function hideDialog() {
-    couponsDialog.value = false;
+    dialogVisible.value = false;
     submitted.value = false;
 }
-const validateData = (data) => {
-    if (!data.CouponName) {
-        proxy.$notify('W', 'Vui lòng nhập teen thể loại!', toast);
+
+function validateData(data) {
+    if (!data.CouponName?.trim()) {
+        proxy.$notify('W', 'Vui lòng nhập tên coupon!', toast);
+        return false;
+    }
+    if (!data.CouponType) {
+        proxy.$notify('W', 'Vui lòng chọn loại coupon!', toast);
+        return false;
+    }
+    if (!data.CouponValue || data.CouponValue <= 0) {
+        proxy.$notify('W', 'Vui lòng nhập giá trị hợp lệ!', toast);
+        return false;
+    }
+    if (data.CouponType === 'percent' && data.CouponValue > 100) {
+        proxy.$notify('W', 'Giảm theo % không thể vượt quá 100%!', toast);
+        return false;
+    }
+    if (!data.expiryDate) {
+        proxy.$notify('W', 'Vui lòng chọn ngày hết hạn!', toast);
         return false;
     }
     return true;
-};
-const saveCoupon = async () => {
-    let data = {
-        ...couponDetail.value,
-        CouponType: 'percent'
-    };
+}
+
+async function saveCoupon() {
     submitted.value = true;
+    const data = { ...couponDetail.value };
     if (!validateData(data)) return;
-    let API_EP = data._id ? `coupon/${data._id}` : `coupon`;
-    let FUNC_API = data._id ? API.updatev2(API_EP, data) : API.create(API_EP, data);
+
+    const endpoint = data._id ? `coupon/${data._id}` : 'coupon';
+    const call = data._id ? API.updatev2(endpoint, data) : API.create(endpoint, data);
+
     try {
-        const res = await FUNC_API;
-        if (res.data) {
-            couponsDialog.value = false;
-            proxy.$notify('S', 'Thành công!', toast);
-            fetchAllGenres();
+        const res = await call;
+        if (res?.data) {
+            proxy.$notify('S', data._id ? 'Cập nhật thành công!' : 'Tạo coupon thành công!', toast);
+            dialogVisible.value = false;
+            fetchAll();
+        } else {
+            const msg = res?.response?.data?.message ?? 'Có lỗi xảy ra';
+            proxy.$notify('E', msg, toast);
         }
     } catch (error) {
-        console.log(error);
+        proxy.$notify('E', error?.response?.data?.message ?? 'Có lỗi xảy ra', toast);
     }
-};
+}
 
-const deleteActorDlg = (data) => {
-    couponDetail.value = data;
-    deleteProductDialog.value = true;
-};
+function confirmDelete(data) {
+    confirm.require({
+        message: `Xác nhận xoá coupon "${data.CouponName}"?`,
+        header: 'Xoá coupon',
+        icon: 'pi pi-exclamation-triangle',
+        rejectLabel: 'Huỷ',
+        acceptLabel: 'Xoá',
+        acceptSeverity: 'danger',
+        accept: () => deleteCoupon(data._id)
+    });
+}
 
-const confirmDeleteSelected = async () => {
+async function deleteCoupon(id) {
     try {
-        const res = await API.delete(`coupon/${couponDetail.value._id}`);
-        if (res) {
-            fetchAllGenres();
-            proxy.$notify('S', 'Thành công!', toast);
-            deleteProductDialog.value = false;
-        }
-    } catch (error) {
-        console.log(error);
+        await API.delete(`coupon/${id}`);
+        proxy.$notify('S', 'Xoá thành công!', toast);
+        fetchAll();
+    } catch {
+        proxy.$notify('E', 'Xoá thất bại!', toast);
     }
-};
-const formatPrice = (price) => {
-    return new Intl.NumberFormat('en-US').format(price);
-};
+}
 </script>
 
 <template>
-    <div>
-        <div class="card">
-            <Toolbar class="mb-6">
-                <template #start>
-                    <strong class="text-lg">Coupon</strong>
-                </template>
-                <template #end>
+    <ConfirmDialog />
+    <div class="card">
+        <Toolbar class="mb-5">
+            <template #start>
+                <div class="flex items-center gap-3">
+                    <strong class="text-lg">Quản lý Coupon</strong>
+                    <Tag v-if="coupons.length" :value="`${coupons.length} coupon`" severity="secondary" />
+                </div>
+            </template>
+            <template #end>
+                <div class="flex items-center gap-2">
+                    <IconField>
+                        <InputIcon><i class="pi pi-search" /></InputIcon>
+                        <InputText v-model="keySearch" placeholder="Tìm theo tên..." class="w-52" @keydown.enter="fetchAll" />
+                    </IconField>
                     <Button label="Thêm mới" icon="pi pi-plus" @click="openNew" />
-                </template>
-            </Toolbar>
+                </div>
+            </template>
+        </Toolbar>
 
-            <DataTable v-model:selection="selectedProducts" showGridlines :value="Coupons" dataKey="id" :paginator="true" :rows="10" :rowsPerPageOptions="[5, 10, 25]">
-                <template #header>
-                    <div class="flex flex-wrap gap-2 items-center justify-between">
-                        <h4 class="m-0">Danh Sách Coupon</h4>
-                        <IconField>
-                            <InputIcon>
-                                <i class="pi pi-search" />
-                            </InputIcon>
-                            <InputText v-model="keySearch" class="w-[300px]" @keydown.enter="fetchAllGenres(s)" placeholder="Tìm kiếm  theo tên..." />
-                        </IconField>
+        <DataTable :value="coupons" :loading="loading" showGridlines stripedRows :rows="10" paginator class="text-sm">
+            <template #empty>
+                <div class="flex flex-col items-center justify-center py-10 text-muted-color gap-2">
+                    <i class="pi pi-ticket text-4xl"></i>
+                    <span>Không có coupon nào</span>
+                </div>
+            </template>
+
+            <Column header="STT" style="width: 52px; text-align: center">
+                <template #body="{ index }">
+                    <span class="text-muted-color">{{ index + 1 }}</span>
+                </template>
+            </Column>
+
+            <Column field="CouponName" header="Mã coupon" style="min-width: 140px">
+                <template #body="{ data }">
+                    <span class="font-mono font-bold text-primary">{{ data.CouponName }}</span>
+                </template>
+            </Column>
+
+            <Column header="Loại" style="min-width: 120px">
+                <template #body="{ data }">
+                    <Tag
+                        :value="data.CouponType === 'percent' ? 'Phần trăm' : 'Cố định'"
+                        :severity="data.CouponType === 'percent' ? 'info' : 'secondary'"
+                    />
+                </template>
+            </Column>
+
+            <Column header="Giá trị" style="min-width: 130px">
+                <template #body="{ data }">
+                    <span class="font-semibold text-green-600 dark:text-green-400">{{ couponValueDisplay(data) }}</span>
+                </template>
+            </Column>
+
+            <Column header="Đơn tối thiểu" style="min-width: 140px">
+                <template #body="{ data }">
+                    <span>{{ formatVND(data.minOrderValue) }} ₫</span>
+                </template>
+            </Column>
+
+            <Column header="Còn lại" style="min-width: 90px; text-align: center">
+                <template #body="{ data }">
+                    <Tag
+                        :value="String(data.usageLimit)"
+                        :severity="data.usageLimit === 0 ? 'danger' : data.usageLimit <= 10 ? 'warn' : 'success'"
+                    />
+                </template>
+            </Column>
+
+            <Column header="Hết hạn" style="min-width: 140px">
+                <template #body="{ data }">
+                    <div class="flex flex-col gap-1">
+                        <span :class="isExpired(data.expiryDate) ? 'text-red-500 line-through' : ''">
+                            {{ format(new Date(data.expiryDate), 'dd/MM/yyyy') }}
+                        </span>
+                        <Tag v-if="isExpired(data.expiryDate)" value="Hết hạn" severity="danger" class="w-fit" />
+                        <Tag v-else value="Còn hạn" severity="success" class="w-fit" />
                     </div>
                 </template>
-                <template #empty>
-                    <div class="text-center p-2">Dữ liệu trống</div>
+            </Column>
+
+            <Column header="Thao tác" style="width: 100px; text-align: center">
+                <template #body="{ data }">
+                    <div class="flex gap-1 justify-center">
+                        <Button @click="openEdit(data)" text rounded icon="pi pi-pencil" severity="info" />
+                        <Button @click="confirmDelete(data)" text rounded icon="pi pi-trash" severity="danger" />
+                    </div>
                 </template>
-                <Column header="STT">
-                    <template #body="sp">
-                        {{ sp.index + 1 }}
-                    </template>
-                </Column>
-                <Column field="CouponName" header="Coupon"></Column>
-                <!-- <Column field="CouponType" header="Loại"> </Column> -->
-                <Column field="CouponValue" header="Giá trị Coupon">
-                    <template #body="{ data }">
-                        {{ formatPrice(data.CouponValue) }}
-                    </template>
-                </Column>
-                <Column field="minOrderValue" header="Giá trị tối thiểu">
-                    <template #body="{ data }">
-                        {{ formatPrice(data.minOrderValue) }}
-                    </template>
-                </Column>
-                <Column field="expiryDate" header="Thời hạn áp dụng">
-                    <template #body="{ data }">
-                        {{ format(data.expiryDate, 'dd/MM/yyyy') }}
-                    </template>
-                </Column>
-                <Column field="" header="Thao tác">
-                    <template #body="sp">
-                        <div class="flex gap-2">
-                            <Button @click="openNew(sp.data)" text icon="pi pi-eye"></Button>
-                            <Button @click="deleteActorDlg(sp.data)" text icon="pi pi-trash" severity="danger"></Button>
-                        </div>
-                    </template>
-                </Column>
-            </DataTable>
+            </Column>
+        </DataTable>
+    </div>
+
+    <!-- Create / Edit dialog -->
+    <Dialog v-model:visible="dialogVisible" :style="{ width: '480px' }" :header="isEdit ? 'Chỉnh sửa coupon' : 'Tạo coupon mới'" modal>
+        <div class="flex flex-col gap-5 pt-2">
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-semibold">Tên coupon <span class="text-red-500">*</span></label>
+                <InputText
+                    v-model="couponDetail.CouponName"
+                    :invalid="submitted && !couponDetail.CouponName"
+                    placeholder="VD: SUMMER10"
+                    :disabled="isEdit"
+                    class="font-mono uppercase"
+                    fluid
+                />
+                <small v-if="isEdit" class="text-muted-color">Không thể thay đổi tên coupon sau khi tạo</small>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-sm font-semibold">Loại giảm giá <span class="text-red-500">*</span></label>
+                    <Select
+                        v-model="couponDetail.CouponType"
+                        :options="couponTypeOpts"
+                        optionLabel="label"
+                        optionValue="value"
+                        :invalid="submitted && !couponDetail.CouponType"
+                        fluid
+                    />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-sm font-semibold">
+                        Giá trị
+                        <span class="font-normal text-muted-color">({{ couponDetail.CouponType === 'percent' ? '%' : '₫' }})</span>
+                        <span class="text-red-500">*</span>
+                    </label>
+                    <InputNumber
+                        v-model="couponDetail.CouponValue"
+                        :suffix="couponDetail.CouponType === 'percent' ? '%' : ' ₫'"
+                        :max="couponDetail.CouponType === 'percent' ? 100 : undefined"
+                        :min="0"
+                        :invalid="submitted && !couponDetail.CouponValue"
+                        fluid
+                    />
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1.5">
+                <label class="text-sm font-semibold">Đơn hàng tối thiểu (₫)</label>
+                <InputNumber v-model="couponDetail.minOrderValue" :min="0" suffix=" ₫" placeholder="0 = không giới hạn" fluid />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-sm font-semibold">Số lượt dùng</label>
+                    <InputNumber v-model="couponDetail.usageLimit" :min="1" :invalid="submitted && !couponDetail.usageLimit" fluid />
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label class="text-sm font-semibold">Ngày hết hạn <span class="text-red-500">*</span></label>
+                    <DatePicker
+                        v-model="couponDetail.expiryDate"
+                        dateFormat="dd/mm/yy"
+                        :minDate="new Date()"
+                        :invalid="submitted && !couponDetail.expiryDate"
+                        fluid
+                    />
+                </div>
+            </div>
+
+            <!-- Preview -->
+            <div v-if="couponDetail.CouponValue && couponDetail.CouponType" class="rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900/40 p-4">
+                <p class="text-xs font-semibold text-green-700 dark:text-green-400 uppercase tracking-wider mb-1">Xem trước</p>
+                <p class="text-sm text-green-800 dark:text-green-300">
+                    Giảm <strong>{{ couponValueDisplay(couponDetail) }}</strong>
+                    <span v-if="couponDetail.minOrderValue"> cho đơn từ <strong>{{ formatVND(couponDetail.minOrderValue) }} ₫</strong></span>
+                </p>
+            </div>
         </div>
 
-        <Dialog v-model:visible="couponsDialog" :style="{ width: '450px' }" header="Coupon" :modal="true">
-            <div class="flex flex-col gap-6">
-                <div>
-                    <label for="name" class="block font-bold mb-3">Tên Coupon</label>
-                    <InputText id="name" v-model="couponDetail.CouponName" required="true" autofocus :invalid="submitted && !couponDetail.CouponName" fluid />
-                </div>
-                <!-- <div>
-                    <label class="block font-bold mb-3">Loại</label>
-                    <Dropdown v-model="couponDetail.CouponType" :options="couponTypeOpts" optionValue="value" optionLabel="name" required="true" autofocus :invalid="submitted && !couponDetail.CouponType" fluid />
-                </div> -->
-                <div>
-                    <label for="name" class="block font-bold mb-3">Giá trị Coupon</label>
-                    <InputNumber id="name" :max="100" :min="0" suffix="%" v-model="couponDetail.CouponValue" required="true" autofocus :invalid="submitted && !couponDetail.CouponValue" fluid />
-                </div>
-                <div>
-                    <label for="name" class="block font-bold mb-3">Áp dụng cho sản phẩm từ</label>
-                    <InputNumber id="name" v-model="couponDetail.minOrderValue" required="true" autofocus :invalid="submitted && !couponDetail.minOrderValue" fluid />
-                </div>
-                <div>
-                    <label class="block font-bold mb-3">Số lượng</label>
-                    <InputNumber v-model="couponDetail.usageLimit" required="true" autofocus :invalid="submitted && !couponDetail.usageLimit" fluid />
-                </div>
-                <div>
-                    <label for="name" class="block font-bold mb-3">Hạn sử dụng</label>
-                    <DatePicker id="name" v-model="couponDetail.expiryDate" dateFormat="dd/mm/yy" required="true" autofocus :invalid="submitted && !couponDetail.expiryDate" fluid />
-                </div>
-            </div>
-
-            <template #footer>
-                <Button label="Hủy" icon="pi pi-times" text @click="hideDialog" />
-                <Button label="Xác nhận" icon="pi pi-check" @click="saveCoupon" />
-            </template>
-        </Dialog>
-
-        <Dialog v-model:visible="deleteProductDialog" :style="{ width: '450px' }" header="Xác nhận" :modal="true">
-            <div class="flex items-center gap-4">
-                <i class="pi pi-exclamation-triangle !text-3xl" />
-                <span v-if="couponDetail"
-                    >Xác nhận xóa <b>{{ couponDetail.couponName }}</b
-                    >?</span
-                >
-            </div>
-            <template #footer>
-                <Button label="Hủy" icon="pi pi-times" severity="secondary" @click="deleteProductDialog = false" />
-                <Button label="Xác nhận" icon="pi pi-trash" severity="danger" @click="confirmDeleteSelected" />
-            </template>
-        </Dialog>
-    </div>
+        <template #footer>
+            <Button label="Huỷ" severity="secondary" text @click="hideDialog" />
+            <Button :label="isEdit ? 'Cập nhật' : 'Tạo coupon'" icon="pi pi-check" @click="saveCoupon" />
+        </template>
+    </Dialog>
 </template>

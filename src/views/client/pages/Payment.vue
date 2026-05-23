@@ -176,7 +176,10 @@
                         <div v-if="couponData?.couponValue" class="flex items-center justify-between text-sm text-emerald-600">
                             <span class="inline-flex items-center gap-2">
                                 <i class="pi pi-ticket"></i>
-                                Giảm giá ({{ couponData.couponValue }}%)
+                                Giảm giá ({{ couponData.couponType === 'percent' ? `${couponData.couponValue}%` : `${formatPrice(couponData.couponValue)}đ` }})
+                                <button type="button" class="text-slate-400 hover:text-red-400 transition-colors" @click="removeCoupon" title="Bỏ coupon">
+                                    <i class="pi pi-times text-[10px]"></i>
+                                </button>
                             </span>
                             <span class="font-bold">-{{ formatPrice((totalComputed || itemCart.totalPrice) - couponData.finalPrice) }}đ</span>
                         </div>
@@ -211,29 +214,56 @@
                 </div>
             </template>
 
-            <div class="space-y-5 p-4">
-                <div
-                    v-if="filteredCoupons && filteredCoupons.length > 0"
-                    v-for="(item, index) in filteredCoupons"
-                    :key="index"
-                    @click="useCoupon(item)"
-                    class="group relative flex cursor-pointer transform items-stretch overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm ring-indigo-500 transition-all hover:-translate-y-1 hover:border-indigo-600 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
-                >
-                    <div class="flex flex-col items-center justify-center bg-indigo-600 px-6 py-4 text-white">
-                        <span class="text-2xl font-black">{{ item.CouponValue }}%</span>
-                        <span class="text-[8px] font-black uppercase tracking-widest opacity-80">Off</span>
-                    </div>
-                    <div class="flex grow flex-col justify-center px-6 py-4">
-                        <h4 class="font-black uppercase tracking-tight text-slate-900 dark:text-white">{{ item.CouponName }}</h4>
-                        <div class="mt-2 text-[10px] font-bold text-slate-500">
-                            <p>
-                                Đơn tối thiểu: <span class="text-indigo-600">{{ formatPrice(item.minOrderValue) }}đ</span>
-                            </p>
-                            <p>HSD: {{ format(item.expiryDate, 'dd/MM/yyyy') }}</p>
+            <div class="space-y-3 p-4">
+                <!-- Eligible coupons -->
+                <template v-if="filteredCoupons.length > 0">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500">Có thể dùng</p>
+                    <div
+                        v-for="(item, index) in filteredCoupons"
+                        :key="'ok-' + index"
+                        @click="useCoupon(item)"
+                        class="group relative flex cursor-pointer transform items-stretch overflow-hidden rounded-2xl border-2 border-slate-100 bg-white shadow-sm transition-all hover:-translate-y-1 hover:border-indigo-600 hover:shadow-xl dark:border-zinc-800 dark:bg-zinc-900"
+                    >
+                        <div class="flex flex-col items-center justify-center bg-indigo-600 px-6 py-4 text-white">
+                            <span v-if="item.CouponType === 'percent'" class="text-2xl font-black">{{ item.CouponValue }}%</span>
+                            <span v-else class="text-xl font-black">{{ formatPrice(item.CouponValue) }}đ</span>
+                            <span class="text-[8px] font-black uppercase tracking-widest opacity-80">{{ item.CouponType === 'percent' ? 'Off' : 'Giảm' }}</span>
+                        </div>
+                        <div class="flex grow flex-col justify-center px-6 py-4">
+                            <h4 class="font-black uppercase tracking-tight text-slate-900 dark:text-white">{{ item.CouponName }}</h4>
+                            <div class="mt-2 text-[10px] font-bold text-slate-500">
+                                <p v-if="item.minOrderValue">Đơn tối thiểu: <span class="text-indigo-600">{{ formatPrice(item.minOrderValue) }}đ</span></p>
+                                <p>HSD: {{ format(new Date(item.expiryDate), 'dd/MM/yyyy') }}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div v-else class="flex flex-col items-center justify-center py-20 text-slate-300">
+                </template>
+
+                <!-- Locked coupons (minOrderValue not met) -->
+                <template v-if="lockedCoupons.length > 0">
+                    <p class="pt-2 text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-zinc-500">Chưa đủ điều kiện</p>
+                    <div
+                        v-for="(item, index) in lockedCoupons"
+                        :key="'lock-' + index"
+                        class="relative flex items-stretch overflow-hidden rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 opacity-60 dark:border-zinc-700 dark:bg-zinc-900/50"
+                    >
+                        <div class="flex flex-col items-center justify-center bg-slate-300 px-6 py-4 text-white dark:bg-zinc-600">
+                            <span v-if="item.CouponType === 'percent'" class="text-2xl font-black">{{ item.CouponValue }}%</span>
+                            <span v-else class="text-xl font-black">{{ formatPrice(item.CouponValue) }}đ</span>
+                            <span class="text-[8px] font-black uppercase tracking-widest opacity-80">{{ item.CouponType === 'percent' ? 'Off' : 'Giảm' }}</span>
+                        </div>
+                        <div class="flex grow flex-col justify-center px-6 py-4">
+                            <h4 class="font-black uppercase tracking-tight text-slate-500 dark:text-zinc-400">{{ item.CouponName }}</h4>
+                            <div class="mt-2 text-[10px] font-bold text-slate-400">
+                                <p class="text-amber-600 dark:text-amber-400">Cần thêm {{ formatPrice(item.minOrderValue - (totalComputed || itemCart.totalPrice || 0)) }}đ nữa</p>
+                                <p>Đơn tối thiểu: {{ formatPrice(item.minOrderValue) }}đ</p>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- Empty state -->
+                <div v-if="filteredCoupons.length === 0 && lockedCoupons.length === 0" class="flex flex-col items-center justify-center py-20 text-slate-300">
                     <i class="pi pi-ticket mb-4 text-6xl opacity-20"></i>
                     <p class="font-black uppercase tracking-widest">Không có Voucher</p>
                 </div>
@@ -284,7 +314,22 @@ const PaymentOpts = ref([
 ]);
 
 const filteredCoupons = computed(() => {
-    return Coupons.value.filter((el) => new Date(el.expiryDate) >= new Date());
+    const orderTotal = totalComputed.value || itemCart.value?.totalPrice || 0;
+    return Coupons.value.filter((el) => {
+        if (new Date(el.expiryDate) < new Date()) return false;
+        if (el.usageLimit <= 0) return false;
+        if (el.minOrderValue && orderTotal < el.minOrderValue) return false;
+        return true;
+    });
+});
+
+const lockedCoupons = computed(() => {
+    const orderTotal = totalComputed.value || itemCart.value?.totalPrice || 0;
+    return Coupons.value.filter((el) => {
+        if (new Date(el.expiryDate) < new Date()) return false;
+        if (el.usageLimit <= 0) return false;
+        return el.minOrderValue && orderTotal < el.minOrderValue;
+    });
 });
 
 const totalComputed = computed(() => {
@@ -359,20 +404,22 @@ const fetchAllCoupon = async () => {
 
 const useCoupon = async (cp) => {
     isLoading.value = true;
-    let items = route.query.prd && route.query.qt ? [{ productId: route.query.prd, quantity: route.query.qt }] : itemCart.value.items.map((el) => ({ productId: el.productId, quantity: el.quantity }));
+    const items = route.query.prd && route.query.qt ? [{ productId: route.query.prd, quantity: route.query.qt }] : itemCart.value.items.map((el) => ({ productId: el.productId, quantity: el.quantity }));
 
     try {
         const res = await API.create(`coupon/apply`, { coupon: cp._id, items });
-        proxy.$notify(res.status === 200 ? 'S' : 'E', res.status === 200 ? `Sử dụng thành công coupon!` : res?.response?.data?.message, toast);
-        if (res.status === 200) {
-            couponData.value = res.data?.metadata;
-        }
-    } catch (error) {
-        console.log(error);
-    } finally {
+        couponData.value = res.data?.metadata;
         couponModal.value = false;
+        proxy.$notify('S', 'Áp dụng coupon thành công!', toast);
+    } catch (error) {
+        proxy.$notify('E', error?.response?.data?.message ?? 'Coupon không hợp lệ!', toast);
+    } finally {
         isLoading.value = false;
     }
+};
+
+const removeCoupon = () => {
+    couponData.value = {};
 };
 
 const confirmOrder = async () => {
