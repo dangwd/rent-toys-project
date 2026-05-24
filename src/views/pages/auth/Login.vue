@@ -1,11 +1,10 @@
 <script setup>
-import FloatingConfigurator from '@/components/FloatingConfigurator.vue';
 import { useAuthStore } from '@/store';
 import { useToast } from 'primevue/usetoast';
 import { getCurrentInstance, ref } from 'vue';
 import { useRouter } from 'vue-router';
-const { proxy } = getCurrentInstance();
 
+const { proxy } = getCurrentInstance();
 const toast = useToast();
 const store = useAuthStore();
 const router = useRouter();
@@ -14,12 +13,13 @@ const email = ref('');
 const password = ref('');
 const checked = ref(false);
 const loginForm = ref(true);
+const loading = ref(false);
+
 const handleLogin = async () => {
-    const data = {
-        username: username.value,
-        password: password.value
-    };
+    loading.value = true;
+    const data = { username: username.value, password: password.value };
     const res = await store.login(data);
+    loading.value = false;
     if (res.status === 1) {
         router.push({ name: 'home' });
     } else {
@@ -28,147 +28,213 @@ const handleLogin = async () => {
 };
 
 const handleRegister = async () => {
-    const data = {
-        name: username.value,
-        email: email.value,
-        password: password.value
-    };
+    loading.value = true;
+    const data = { name: username.value, email: email.value, password: password.value };
     const res = await store.register(data);
+    loading.value = false;
     if (res.status === 1) {
         proxy.$notify('S', 'Tạo tài khoản thành công!', toast);
+        loginForm.value = true;
     } else {
-        console.log(res);
         proxy.$notify('E', res.message?.response.data?.message || 'Lỗi hệ thống', toast);
     }
+};
+
+const switchForm = () => {
+    loginForm.value = !loginForm.value;
+    username.value = '';
+    email.value = '';
+    password.value = '';
 };
 </script>
 
 <template>
-    <FloatingConfigurator />
     <Toast />
-    <div class="bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-900 flex items-center justify-center min-h-screen min-w-[100vw] overflow-hidden">
-        <!-- Background decorative elements -->
-        <div class="absolute top-10 left-10 w-32 h-32 bg-yellow-300 rounded-full opacity-20 animate-pulse"></div>
-        <div class="absolute bottom-20 right-20 w-40 h-40 bg-pink-300 rounded-full opacity-20 animate-pulse" style="animation-delay: 1s"></div>
-        <div class="absolute top-1/2 right-10 w-24 h-24 bg-blue-300 rounded-full opacity-20 animate-pulse" style="animation-delay: 2s"></div>
+    <div class="min-h-screen flex bg-gray-50 dark:bg-zinc-950">
+        <!-- Left Panel -->
+        <div class="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-indigo-600 relative overflow-hidden">
+            <!-- Background pattern -->
+            <div class="absolute inset-0 opacity-10">
+                <div class="absolute top-0 left-0 w-full h-full" style="background-image: radial-gradient(circle at 20% 30%, white 1px, transparent 1px), radial-gradient(circle at 80% 70%, white 1px, transparent 1px); background-size: 60px 60px;"></div>
+            </div>
+            <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500 rounded-full opacity-30"></div>
+            <div class="absolute -top-16 -right-16 w-72 h-72 bg-indigo-400 rounded-full opacity-20"></div>
 
-        <div class="flex flex-col items-center justify-center relative z-10">
-            <div style="border-radius: 30px; padding: 0.3rem; background: linear-gradient(135deg, #ff6b9d 0%, #ffa502 50%, #5eb3fa 100%)">
-                <div class="w-full bg-white dark:bg-slate-800 py-12 px-8 sm:px-16" style="border-radius: 28px">
-                    <!-- Logo and Header -->
-                    <div class="text-center mb-10">
-                        <div class="flex items-center justify-center gap-3 mb-4">
-                            <span class="text-4xl">🎮</span>
-                            <div>
-                                <h1 class="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent">ToySmart</h1>
-                                <p class="text-sm text-purple-600 dark:text-purple-300 font-medium">Kho đồ chơi bố mẹ tin tưởng</p>
-                            </div>
+            <!-- Logo -->
+            <div class="relative z-10">
+                <div class="inline-flex items-center justify-center bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-2">
+                    <img src="@/assets/img/logo.avif" alt="Rent Toys Logo" class="h-12 object-contain" />
+                </div>
+            </div>
+
+            <!-- Tagline -->
+            <div class="relative z-10">
+                <h2 class="text-4xl font-bold text-white leading-tight mb-4">
+                    Nơi trí tưởng tượng<br />của bé bay cao
+                </h2>
+                <p class="text-indigo-200 text-lg">Thuê đồ chơi chất lượng cao, đa dạng lứa tuổi. Giao hàng tận nơi, đổi trả linh hoạt.</p>
+
+                <div class="mt-10 flex flex-col gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                            <i class="pi pi-verified text-white"></i>
                         </div>
-                        <span class="text-slate-600 dark:text-slate-300 font-medium block mt-4">{{ loginForm ? `Đăng nhập để mua sắm!` : `Tạo tài khoản mới` }}</span>
+                        <span class="text-indigo-100 text-sm">Đồ chơi an toàn, được kiểm định chất lượng</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                            <i class="pi pi-truck text-white"></i>
+                        </div>
+                        <span class="text-indigo-100 text-sm">Giao hàng nhanh chóng trong ngày</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                            <i class="pi pi-refresh text-white"></i>
+                        </div>
+                        <span class="text-indigo-100 text-sm">Đổi trả dễ dàng, hoàn tiền 100%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer note -->
+            <div class="relative z-10 text-indigo-300 text-sm">
+                &copy; {{ new Date().getFullYear() }} Rent-Toys. Đã đăng ký bản quyền.
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="flex-1 flex flex-col items-center justify-center px-6 py-12 lg:px-16">
+            <!-- Mobile logo -->
+            <div class="lg:hidden mb-8">
+                <img src="@/assets/img/logo.avif" alt="Rent Toys Logo" class="h-12 object-contain" />
+            </div>
+
+            <div class="w-full max-w-md">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+                        {{ loginForm ? 'Đăng nhập tài khoản' : 'Tạo tài khoản mới' }}
+                    </h1>
+                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                        {{ loginForm ? 'Chào mừng bạn quay trở lại!' : 'Điền thông tin để bắt đầu mua sắm' }}
+                    </p>
+                </div>
+
+                <!-- Login Form -->
+                <div v-if="loginForm" class="space-y-5">
+                    <div>
+                        <label for="login-username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email hoặc tên đăng nhập</label>
+                        <InputText
+                            id="login-username"
+                            v-model="username"
+                            type="text"
+                            placeholder="Nhập email hoặc tên đăng nhập"
+                            class="w-full"
+                            @keyup.enter="handleLogin"
+                        />
                     </div>
 
-                    <!-- Login Form -->
-                    <div v-if="loginForm">
-                        <div class="mb-6">
-                            <label for="email1" class="block text-slate-700 dark:text-slate-200 text-sm font-semibold mb-2">📧 Email của bạn</label>
-                            <InputText
-                                id="email1"
-                                type="text"
-                                placeholder="example@email.com"
-                                class="w-full md:w-[28rem] bg-purple-50 dark:bg-slate-700 border-2 border-purple-200 dark:border-purple-600 rounded-lg focus:border-pink-500 text-slate-800 dark:text-slate-100"
-                                v-model="username"
-                            />
+                    <div>
+                        <div class="flex items-center justify-between mb-1.5">
+                            <label for="login-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mật khẩu</label>
+                            <span class="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 cursor-pointer transition-colors">Quên mật khẩu?</span>
                         </div>
-
-                        <div class="mb-6">
-                            <label for="password1" class="block text-slate-700 dark:text-slate-200 font-semibold text-sm mb-2">🔐 Mật khẩu</label>
-                            <Password
-                                id="password1"
-                                v-model="password"
-                                placeholder="Nhập mật khẩu"
-                                :toggleMask="true"
-                                class="w-full"
-                                fluid
-                                :feedback="false"
-                                inputClass="bg-purple-50 dark:bg-slate-700 border-2 border-purple-200 dark:border-purple-600 rounded-lg focus:border-pink-500"
-                            ></Password>
-                        </div>
-
-                        <div class="flex items-center justify-between mt-4 mb-8 gap-8">
-                            <div class="flex items-center">
-                                <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
-                                <label for="rememberme1" class="text-slate-600 dark:text-slate-300 text-sm">Nhớ tôi lần sau</label>
-                            </div>
-                            <span class="font-medium text-sm cursor-pointer text-pink-600 hover:text-pink-700 dark:text-pink-400 transition">Quên mật khẩu?</span>
-                        </div>
-                        <div class="flex flex-col gap-y-3">
-                            <Button
-                                label="🎉 Đăng nhập"
-                                class="w-full bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105"
-                                @click="handleLogin()"
-                            ></Button>
-                            <Button label="Chưa có tài khoản? Đăng ký ngay" text class="w-full text-purple-600 dark:text-purple-300 hover:text-purple-700 font-medium text-sm hover:underline" @click="loginForm = !loginForm"></Button>
-                        </div>
+                        <Password
+                            id="login-password"
+                            v-model="password"
+                            placeholder="Nhập mật khẩu"
+                            :toggleMask="true"
+                            class="w-full"
+                            fluid
+                            :feedback="false"
+                            @keyup.enter="handleLogin"
+                        />
                     </div>
 
-                    <!-- Register Form -->
-                    <div v-else>
-                        <div class="mb-6">
-                            <label for="username" class="block text-slate-700 dark:text-slate-200 text-sm font-semibold mb-2">👤 Tên người dùng</label>
-                            <InputText
-                                id="username"
-                                type="text"
-                                placeholder="Chọn tên hiển thị"
-                                class="w-full md:w-[28rem] bg-purple-50 dark:bg-slate-700 border-2 border-purple-200 dark:border-purple-600 rounded-lg focus:border-pink-500 text-slate-800 dark:text-slate-100"
-                                v-model="username"
-                            />
-                        </div>
-
-                        <div class="mb-6">
-                            <label for="email2" class="block text-slate-700 dark:text-slate-200 text-sm font-semibold mb-2">📧 Email của bạn</label>
-                            <InputText
-                                id="email2"
-                                type="email"
-                                placeholder="example@email.com"
-                                class="w-full md:w-[28rem] bg-purple-50 dark:bg-slate-700 border-2 border-purple-200 dark:border-purple-600 rounded-lg focus:border-pink-500 text-slate-800 dark:text-slate-100"
-                                v-model="email"
-                            />
-                        </div>
-
-                        <div class="mb-6">
-                            <label for="password2" class="block text-slate-700 dark:text-slate-200 font-semibold text-sm mb-2">🔐 Mật khẩu</label>
-                            <Password
-                                id="password2"
-                                v-model="password"
-                                placeholder="Nhập mật khẩu"
-                                :toggleMask="true"
-                                class="w-full"
-                                fluid
-                                :feedback="false"
-                                inputClass="bg-purple-50 dark:bg-slate-700 border-2 border-purple-200 dark:border-purple-600 rounded-lg focus:border-pink-500"
-                            ></Password>
-                        </div>
-
-                        <div class="flex items-center justify-between mt-4 mb-8 gap-8">
-                            <div class="flex items-center">
-                                <Checkbox v-model="checked" id="rememberme2" binary class="mr-2"></Checkbox>
-                                <label for="rememberme2" class="text-slate-600 dark:text-slate-300 text-sm">Tôi đồng ý với điều khoản</label>
-                            </div>
-                        </div>
-                        <div class="flex flex-col gap-y-3">
-                            <Button
-                                label="✨ Tạo tài khoản"
-                                class="w-full bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-semibold py-3 rounded-lg shadow-lg hover:shadow-xl transition transform hover:scale-105"
-                                @click="handleRegister()"
-                            ></Button>
-                            <Button label="Quay lại đăng nhập" text class="w-full text-purple-600 dark:text-purple-300 hover:text-purple-700 font-medium text-sm hover:underline" @click="loginForm = !loginForm"></Button>
-                        </div>
+                    <div class="flex items-center gap-2">
+                        <Checkbox v-model="checked" id="remember" binary />
+                        <label for="remember" class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer">Nhớ đăng nhập</label>
                     </div>
 
-                    <!-- Info section -->
-                    <div class="mt-10 pt-6 border-t border-purple-200 dark:border-purple-700">
-                        <p class="text-center text-xs sm:text-sm text-slate-600 dark:text-slate-400">🎁 Đăng nhập để nhận <span class="font-bold text-pink-600 dark:text-pink-400">voucher 10%</span> cho lần mua hàng đầu tiên</p>
+                    <Button
+                        label="Đăng nhập"
+                        class="w-full"
+                        :loading="loading"
+                        @click="handleLogin"
+                    />
+
+                    <div class="text-center">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Chưa có tài khoản? </span>
+                        <button type="button" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors" @click="switchForm">
+                            Đăng ký ngay
+                        </button>
                     </div>
+                </div>
+
+                <!-- Register Form -->
+                <div v-else class="space-y-5">
+                    <div>
+                        <label for="reg-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tên hiển thị</label>
+                        <InputText
+                            id="reg-name"
+                            v-model="username"
+                            type="text"
+                            placeholder="Nhập tên của bạn"
+                            class="w-full"
+                        />
+                    </div>
+
+                    <div>
+                        <label for="reg-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
+                        <InputText
+                            id="reg-email"
+                            v-model="email"
+                            type="email"
+                            placeholder="example@email.com"
+                            class="w-full"
+                        />
+                    </div>
+
+                    <div>
+                        <label for="reg-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Mật khẩu</label>
+                        <Password
+                            id="reg-password"
+                            v-model="password"
+                            placeholder="Tạo mật khẩu (ít nhất 6 ký tự)"
+                            :toggleMask="true"
+                            class="w-full"
+                            fluid
+                            :feedback="false"
+                        />
+                    </div>
+
+                    <div class="flex items-start gap-2">
+                        <Checkbox v-model="checked" id="terms" binary class="mt-0.5" />
+                        <label for="terms" class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer leading-relaxed">
+                            Tôi đồng ý với <span class="text-indigo-600 dark:text-indigo-400 font-medium">Điều khoản dịch vụ</span> và <span class="text-indigo-600 dark:text-indigo-400 font-medium">Chính sách bảo mật</span>
+                        </label>
+                    </div>
+
+                    <Button
+                        label="Tạo tài khoản"
+                        class="w-full"
+                        :loading="loading"
+                        @click="handleRegister"
+                    />
+
+                    <div class="text-center">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">Đã có tài khoản? </span>
+                        <button type="button" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors" @click="switchForm">
+                            Đăng nhập
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Divider & quick access -->
+                <div class="mt-8 pt-6 border-t border-gray-200 dark:border-zinc-700">
+                    <p class="text-center text-xs text-gray-400 dark:text-gray-500">
+                        Đăng nhập để nhận <span class="font-semibold text-indigo-600 dark:text-indigo-400">voucher 10%</span> cho lần mua hàng đầu tiên
+                    </p>
                 </div>
             </div>
         </div>
@@ -176,13 +242,10 @@ const handleRegister = async () => {
 </template>
 
 <style scoped>
-.pi-eye {
-    transform: scale(1.6);
-    margin-right: 1rem;
+:deep(.p-password) {
+    width: 100%;
 }
-
-.pi-eye-slash {
-    transform: scale(1.6);
-    margin-right: 1rem;
+:deep(.p-password-input) {
+    width: 100%;
 }
 </style>
