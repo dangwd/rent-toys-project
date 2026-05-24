@@ -13,6 +13,7 @@ const model = ref([
     {
         label: 'Quản lý',
         items: [
+            { label: 'Người dùng', icon: 'pi pi-fw pi-users', to: '/man/users' },
             { label: 'Sản phẩm', icon: 'pi pi-fw pi-box', to: '/man/products' },
             { label: 'Đơn hàng', icon: 'pi pi-fw pi-file-edit', to: '/man/invoice' },
             { label: 'Coupon', icon: 'pi pi-fw pi-ticket', to: '/man/coupon' },

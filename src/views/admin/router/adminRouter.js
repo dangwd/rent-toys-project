@@ -25,6 +25,11 @@ export default [
                 component: () => import('@/views/admin/pages/BrandsMan.vue')
             },
             {
+                path: '/man/users',
+                name: 'users',
+                component: () => import('@/views/admin/pages/UsersMan.vue')
+            },
+            {
                 path: '/man/genres',
                 name: 'genres',
                 component: () => import('@/views/admin/pages/GenreMan.vue')
