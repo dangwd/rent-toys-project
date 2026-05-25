@@ -55,7 +55,10 @@ const switchForm = () => {
         <div class="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-indigo-600 relative overflow-hidden">
             <!-- Background pattern -->
             <div class="absolute inset-0 opacity-10">
-                <div class="absolute top-0 left-0 w-full h-full" style="background-image: radial-gradient(circle at 20% 30%, white 1px, transparent 1px), radial-gradient(circle at 80% 70%, white 1px, transparent 1px); background-size: 60px 60px;"></div>
+                <div
+                    class="absolute top-0 left-0 w-full h-full"
+                    style="background-image: radial-gradient(circle at 20% 30%, white 1px, transparent 1px), radial-gradient(circle at 80% 70%, white 1px, transparent 1px); background-size: 60px 60px"
+                ></div>
             </div>
             <div class="absolute -bottom-24 -left-24 w-96 h-96 bg-indigo-500 rounded-full opacity-30"></div>
             <div class="absolute -top-16 -right-16 w-72 h-72 bg-indigo-400 rounded-full opacity-20"></div>
@@ -63,15 +66,13 @@ const switchForm = () => {
             <!-- Logo -->
             <div class="relative z-10">
                 <div class="inline-flex items-center justify-center bg-white/15 backdrop-blur-sm rounded-2xl px-4 py-2">
-                    <img src="@/assets/img/logo.avif" alt="Rent Toys Logo" class="h-12 object-contain" />
+                    <img src="@/assets/img/logo.avif" alt="KingdomToys Logo" class="h-12 object-contain" />
                 </div>
             </div>
 
             <!-- Tagline -->
             <div class="relative z-10">
-                <h2 class="text-4xl font-bold text-white leading-tight mb-4">
-                    Nơi trí tưởng tượng<br />của bé bay cao
-                </h2>
+                <h2 class="text-4xl font-bold text-white leading-tight mb-4">Nơi trí tưởng tượng<br />của bé bay cao</h2>
                 <p class="text-indigo-200 text-lg">Thuê đồ chơi chất lượng cao, đa dạng lứa tuổi. Giao hàng tận nơi, đổi trả linh hoạt.</p>
 
                 <div class="mt-10 flex flex-col gap-4">
@@ -97,16 +98,14 @@ const switchForm = () => {
             </div>
 
             <!-- Footer note -->
-            <div class="relative z-10 text-indigo-300 text-sm">
-                &copy; {{ new Date().getFullYear() }} Rent-Toys. Đã đăng ký bản quyền.
-            </div>
+            <div class="relative z-10 text-indigo-300 text-sm">&copy; {{ new Date().getFullYear() }} Rent-Toys. Đã đăng ký bản quyền.</div>
         </div>
 
         <!-- Right Panel -->
         <div class="flex-1 flex flex-col items-center justify-center px-6 py-12 lg:px-16">
             <!-- Mobile logo -->
             <div class="lg:hidden mb-8">
-                <img src="@/assets/img/logo.avif" alt="Rent Toys Logo" class="h-12 object-contain" />
+                <img src="@/assets/img/logo.avif" alt="KingdomToys Logo" class="h-12 object-contain" />
             </div>
 
             <div class="w-full max-w-md">
@@ -124,14 +123,7 @@ const switchForm = () => {
                 <div v-if="loginForm" class="space-y-5">
                     <div>
                         <label for="login-username" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email hoặc tên đăng nhập</label>
-                        <InputText
-                            id="login-username"
-                            v-model="username"
-                            type="text"
-                            placeholder="Nhập email hoặc tên đăng nhập"
-                            class="w-full"
-                            @keyup.enter="handleLogin"
-                        />
+                        <InputText id="login-username" v-model="username" type="text" placeholder="Nhập email hoặc tên đăng nhập" class="w-full" @keyup.enter="handleLogin" />
                     </div>
 
                     <div>
@@ -139,16 +131,7 @@ const switchForm = () => {
                             <label for="login-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Mật khẩu</label>
                             <span class="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 cursor-pointer transition-colors">Quên mật khẩu?</span>
                         </div>
-                        <Password
-                            id="login-password"
-                            v-model="password"
-                            placeholder="Nhập mật khẩu"
-                            :toggleMask="true"
-                            class="w-full"
-                            fluid
-                            :feedback="false"
-                            @keyup.enter="handleLogin"
-                        />
+                        <Password id="login-password" v-model="password" placeholder="Nhập mật khẩu" :toggleMask="true" class="w-full" fluid :feedback="false" @keyup.enter="handleLogin" />
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -156,18 +139,11 @@ const switchForm = () => {
                         <label for="remember" class="text-sm text-gray-600 dark:text-gray-300 cursor-pointer">Nhớ đăng nhập</label>
                     </div>
 
-                    <Button
-                        label="Đăng nhập"
-                        class="w-full"
-                        :loading="loading"
-                        @click="handleLogin"
-                    />
+                    <Button label="Đăng nhập" class="w-full" :loading="loading" @click="handleLogin" />
 
                     <div class="text-center">
                         <span class="text-sm text-gray-500 dark:text-gray-400">Chưa có tài khoản? </span>
-                        <button type="button" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors" @click="switchForm">
-                            Đăng ký ngay
-                        </button>
+                        <button type="button" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors" @click="switchForm">Đăng ký ngay</button>
                     </div>
                 </div>
 
@@ -175,37 +151,17 @@ const switchForm = () => {
                 <div v-else class="space-y-5">
                     <div>
                         <label for="reg-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Tên hiển thị</label>
-                        <InputText
-                            id="reg-name"
-                            v-model="username"
-                            type="text"
-                            placeholder="Nhập tên của bạn"
-                            class="w-full"
-                        />
+                        <InputText id="reg-name" v-model="username" type="text" placeholder="Nhập tên của bạn" class="w-full" />
                     </div>
 
                     <div>
                         <label for="reg-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Email</label>
-                        <InputText
-                            id="reg-email"
-                            v-model="email"
-                            type="email"
-                            placeholder="example@email.com"
-                            class="w-full"
-                        />
+                        <InputText id="reg-email" v-model="email" type="email" placeholder="example@email.com" class="w-full" />
                     </div>
 
                     <div>
                         <label for="reg-password" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">Mật khẩu</label>
-                        <Password
-                            id="reg-password"
-                            v-model="password"
-                            placeholder="Tạo mật khẩu (ít nhất 6 ký tự)"
-                            :toggleMask="true"
-                            class="w-full"
-                            fluid
-                            :feedback="false"
-                        />
+                        <Password id="reg-password" v-model="password" placeholder="Tạo mật khẩu (ít nhất 6 ký tự)" :toggleMask="true" class="w-full" fluid :feedback="false" />
                     </div>
 
                     <div class="flex items-start gap-2">
@@ -215,26 +171,17 @@ const switchForm = () => {
                         </label>
                     </div>
 
-                    <Button
-                        label="Tạo tài khoản"
-                        class="w-full"
-                        :loading="loading"
-                        @click="handleRegister"
-                    />
+                    <Button label="Tạo tài khoản" class="w-full" :loading="loading" @click="handleRegister" />
 
                     <div class="text-center">
                         <span class="text-sm text-gray-500 dark:text-gray-400">Đã có tài khoản? </span>
-                        <button type="button" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors" @click="switchForm">
-                            Đăng nhập
-                        </button>
+                        <button type="button" class="text-sm font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 transition-colors" @click="switchForm">Đăng nhập</button>
                     </div>
                 </div>
 
                 <!-- Divider & quick access -->
                 <div class="mt-8 pt-6 border-t border-gray-200 dark:border-zinc-700">
-                    <p class="text-center text-xs text-gray-400 dark:text-gray-500">
-                        Đăng nhập để nhận <span class="font-semibold text-indigo-600 dark:text-indigo-400">voucher 10%</span> cho lần mua hàng đầu tiên
-                    </p>
+                    <p class="text-center text-xs text-gray-400 dark:text-gray-500">Đăng nhập để nhận <span class="font-semibold text-indigo-600 dark:text-indigo-400">voucher 10%</span> cho lần mua hàng đầu tiên</p>
                 </div>
             </div>
         </div>

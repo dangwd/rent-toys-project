@@ -95,7 +95,7 @@ watch(
                 <!-- Logo -->
                 <router-link to="/client" class="flex-shrink-0 duration-300 ease-out transition-transform hover:scale-105">
                     <div class="flex items-center gap-2">
-                        <img width="140" src="../../../assets/img/logo.avif" alt="Rent Toys Logo" class="h-14 object-contain" />
+                        <img width="140" src="../../../assets/img/logo.avif" alt="KingdomToys Logo" class="h-14 object-contain" />
                     </div>
                 </router-link>
 

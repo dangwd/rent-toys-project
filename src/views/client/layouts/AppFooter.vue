@@ -16,7 +16,7 @@ const year = new Date().getFullYear();
                 <!-- Logo and Slogan -->
                 <div class="lg:col-span-4">
                     <router-link to="/client" class="flex-shrink-0">
-                        <img width="160" src="/src/assets/img/logo.avif" alt="Rent Toys Logo" />
+                        <img width="160" src="/src/assets/img/logo.avif" alt="KingdomToys Logo" />
                     </router-link>
                     <p class="mt-4 text-gray-400">Nơi trí tưởng tượng của bé bay cao.</p>
                     <div class="mt-6 flex gap-4">

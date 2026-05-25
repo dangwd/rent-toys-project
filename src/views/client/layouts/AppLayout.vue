@@ -5,6 +5,7 @@ import { useAuthStore } from '@/store';
 import { useToast } from 'primevue/usetoast';
 import { onUnmounted, watch } from 'vue';
 import Snowfall from '@/components/effects/Snowfall.vue';
+import ChatBot from '../components/ChatBot.vue';
 import AppFooter from './AppFooter.vue';
 import AppTopbar from './AppTopbar.vue';
 
@@ -50,4 +51,5 @@ onUnmounted(() => {
         <router-view></router-view>
     </div>
     <AppFooter></AppFooter>
+    <ChatBot />
 </template>

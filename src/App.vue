@@ -3,7 +3,7 @@ import AppConfigurator from './layout/AppConfigurator.vue';
 </script>
 
 <template>
-    <AppConfigurator z/>
+    <AppConfigurator />
     <router-view />
 </template>
 

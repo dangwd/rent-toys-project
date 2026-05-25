@@ -1,150 +1,210 @@
 <template>
-    <div class="container mx-auto w-full px-4 py-6 sm:px-6 lg:py-10">
-        <div class="mb-8">
-            <h1 class="text-2xl font-black tracking-tight text-surface-900 dark:text-surface-0 sm:text-3xl">Tài khoản của tôi</h1>
-            <p class="mt-1 text-sm text-muted-color">Quản lý thông tin cá nhân và bảo mật tài khoản.</p>
-        </div>
-
-        <div class="grid grid-cols-12 gap-6 lg:gap-8">
-            <aside class="col-span-12 lg:col-span-4 xl:col-span-3">
-                <div class="rounded-3xl border border-surface-200 bg-surface-0 p-6 shadow-[0_1px_3px_rgba(0,0,0,0.06)] dark:border-surface-700 dark:bg-surface-900">
-                    <div class="flex flex-col items-center text-center">
-                        <img
-                            class="h-32 w-32 rounded-full border-4 border-surface-100 object-cover shadow-sm dark:border-surface-800"
-                            :src="userDetail.thumbnail || 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'"
-                            alt=""
-                        />
-                        <h2 class="mt-4 text-xl font-bold text-surface-900 dark:text-surface-0">{{ User.name || 'Người dùng' }}</h2>
-                        <p class="mt-1 break-all text-sm text-primary">{{ User.email || '—' }}</p>
-                        <p class="mt-2 text-sm text-muted-color">{{ User.phone || 'Chưa cập nhật số điện thoại' }}</p>
-                        <Button label="Cập nhật ảnh đại diện" icon="pi pi-cloud-upload" class="mt-5 w-full" raised @click="openFile" />
-                        <input type="file" class="hidden click-file" @change="uploadFileLocal($event)" />
-                    </div>
-
-                    <div class="mt-6 rounded-2xl border border-dashed border-surface-200 bg-surface-50 p-4 dark:border-surface-700 dark:bg-surface-800/30">
-                        <p class="m-0 text-xs font-semibold uppercase tracking-wide text-muted-color">Địa chỉ hiện tại</p>
-                        <p class="mt-2 text-sm leading-6 text-surface-700 dark:text-surface-200">
-                            {{ formattedAddress }}
-                        </p>
-                    </div>
-                </div>
-            </aside>
-
-            <div class="col-span-12 lg:col-span-8 xl:col-span-9 flex flex-col gap-5">
-                <section class="rounded-2xl border border-surface-200 bg-surface-0 shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden dark:border-surface-700 dark:bg-surface-900">
-                    <div class="flex flex-col gap-1 border-b border-surface-200 bg-surface-50/80 px-5 py-4 md:px-6 dark:border-surface-700 dark:bg-surface-800/40">
-                        <div class="flex items-center gap-2 text-lg font-semibold text-surface-900 dark:text-surface-0">
-                            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-300">
-                                <i class="pi pi-user text-base"></i>
-                            </span>
-                            Thông tin người dùng
+    <div class="min-h-screen bg-gray-50 dark:bg-zinc-900">
+        <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+            <div class="grid grid-cols-12 gap-5">
+                <!-- ─── Left: Profile card ─── -->
+                <aside class="col-span-12 lg:col-span-4">
+                    <div class="sticky top-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+                        <!-- Avatar + info -->
+                        <div class="flex flex-col items-center px-6 pt-7 pb-5 text-center">
+                            <div class="relative mb-3">
+                                <img
+                                    class="h-20 w-20 rounded-full border-2 border-white object-cover shadow-md ring-2 ring-slate-100 dark:ring-zinc-700"
+                                    :src="userDetail.thumbnail || 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'"
+                                    alt="avatar"
+                                />
+                                <button class="absolute bottom-0.5 right-0.5 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-indigo-600 text-white dark:border-zinc-950" @click="openFile">
+                                    <i class="pi pi-camera" style="font-size: 8px"></i>
+                                </button>
+                                <input type="file" class="hidden click-file" @change="uploadFileLocal($event)" />
+                            </div>
+                            <h3 class="text-base font-bold text-slate-900 dark:text-white">{{ User.name || 'Bạn' }}</h3>
+                            <p class="mt-0.5 break-all text-xs text-slate-400">{{ User.email || '' }}</p>
+                            <span class="mt-3 rounded-full px-3 py-1 text-xs font-bold" :style="{ backgroundColor: currentTier.badgeBg, color: currentTier.badgeColor }"> {{ currentTier.label }} Member </span>
                         </div>
-                        <p class="m-0 pl-[2.75rem] text-sm text-muted-color">Thông tin hiển thị trên tài khoản của bạn</p>
-                    </div>
-                    <div class="p-5 md:p-6">
-                        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                            <div class="info-card">
-                                <span class="info-label">Họ tên</span>
-                                <p class="info-value">{{ User.name || '—' }}</p>
-                            </div>
-                            <div class="info-card">
-                                <span class="info-label">Tên đăng nhập</span>
-                                <p class="info-value text-primary break-all">{{ User.email || '—' }}</p>
-                            </div>
-                            <div class="info-card">
-                                <span class="info-label">Số điện thoại</span>
-                                <p class="info-value">{{ User.phone || '—' }}</p>
-                            </div>
-                            <div class="info-card sm:col-span-2 xl:col-span-3">
-                                <span class="info-label">Email</span>
-                                <p class="info-value break-all">{{ User.email || '—' }}</p>
-                            </div>
-                            <div class="info-card sm:col-span-2 xl:col-span-3">
-                                <span class="info-label">Địa chỉ</span>
-                                <p class="info-value">{{ formattedAddress }}</p>
+
+                        <!-- Progress -->
+                        <div class="border-t border-slate-100 px-5 py-4 dark:border-zinc-800">
+                            <template v-if="currentTier.nextThreshold">
+                                <div class="mb-1.5 flex items-center justify-between text-xs font-semibold">
+                                    <span class="text-slate-500">{{ currentTier.label }}</span>
+                                    <span class="font-bold" :style="{ color: currentTier.badgeColor }">{{ tierProgress }}%</span>
+                                    <span class="text-slate-500">{{ currentTier.nextLabel }}</span>
+                                </div>
+                                <div class="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-zinc-800">
+                                    <div class="h-full rounded-full transition-all duration-700" :style="{ width: tierProgress + '%', background: currentTier.progressColor }" />
+                                </div>
+                                <p class="mt-2.5 text-xs text-slate-400">
+                                    Còn <strong class="text-slate-600 dark:text-slate-300">{{ formatPrice(currentTier.nextThreshold - (User.totalSpent || 0)) }}đ</strong> để lên
+                                    <strong class="text-slate-600 dark:text-slate-300">{{ currentTier.nextLabel }}</strong>
+                                </p>
+                            </template>
+                            <div v-else class="flex items-center gap-2 text-xs font-semibold text-violet-600 dark:text-violet-400">
+                                <i class="pi pi-verified text-sm"></i>
+                                <span>Bạn đang ở hạng cao nhất!</span>
                             </div>
                         </div>
-                        <div class="mt-6 flex justify-end border-t border-surface-200 pt-5 dark:border-surface-700">
-                            <Button icon="pi pi-pencil" label="Cập nhật thông tin" @click="openUpdateUser" />
+
+                        <!-- Nav -->
+                        <div class="border-t border-slate-100 p-2 dark:border-zinc-800">
+                            <button class="flex w-full items-center gap-2.5 rounded-xl bg-indigo-50 px-4 py-2.5 text-left text-sm font-semibold text-indigo-600 dark:bg-indigo-950/30 dark:text-indigo-400">
+                                <i class="pi pi-user w-4 text-sm"></i>Thông tin tài khoản
+                            </button>
+                            <RouterLink to="/client/orders" class="mt-0.5 flex w-full items-center gap-2.5 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-zinc-800">
+                                <i class="pi pi-list w-4 text-sm"></i>Lịch sử đơn hàng
+                            </RouterLink>
+                            <button class="mt-0.5 flex w-full items-center gap-2.5 rounded-xl px-4 py-2.5 text-left text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-zinc-800">
+                                <i class="pi pi-heart w-4 text-sm"></i>Yêu thích
+                            </button>
+                            <button class="mt-0.5 flex w-full items-center gap-2.5 rounded-xl px-4 py-2.5 text-left text-sm font-medium text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-zinc-800">
+                                <i class="pi pi-crown w-4 text-sm"></i>Hạng thành viên
+                            </button>
                         </div>
                     </div>
-                </section>
+                </aside>
 
-                <section class="rounded-2xl border border-surface-200 bg-surface-0 shadow-[0_1px_3px_rgba(0,0,0,0.06)] overflow-hidden dark:border-surface-700 dark:bg-surface-900">
-                    <div class="flex flex-col gap-1 border-b border-surface-200 bg-surface-50/80 px-5 py-4 md:px-6 dark:border-surface-700 dark:bg-surface-800/40">
-                        <div class="flex items-center gap-2 text-lg font-semibold text-surface-900 dark:text-surface-0">
-                            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-300">
-                                <i class="pi pi-key text-base"></i>
-                            </span>
-                            Đổi mật khẩu
-                        </div>
-                        <p class="m-0 pl-[2.75rem] text-sm text-muted-color">Bảo vệ tài khoản bằng mật khẩu đủ mạnh</p>
-                    </div>
-                    <div class="p-5 md:p-6">
-                        <div class="grid grid-cols-1 gap-6 xl:grid-cols-2 xl:gap-8">
-                            <div class="flex flex-col gap-4">
-                                <div class="flex flex-col gap-2">
-                                    <label for="pwd-current" class="text-sm font-medium text-surface-700 dark:text-surface-200">Mật khẩu hiện tại</label>
-                                    <Password v-model.trim="changePassword.password" input-id="pwd-current" :autocomplete="false" fluid toggle-mask />
-                                </div>
-                                <div class="flex flex-col gap-2">
-                                    <label for="pwd-new" class="text-sm font-medium text-surface-700 dark:text-surface-200">Mật khẩu mới</label>
-                                    <Password v-model.trim="changePassword.newPassword" input-id="pwd-new" fluid toggle-mask />
-                                </div>
-                                <div class="flex flex-col gap-2">
-                                    <label for="pwd-confirm" class="text-sm font-medium text-surface-700 dark:text-surface-200">Nhập lại mật khẩu</label>
-                                    <Password v-model.trim="changePassword.cfPassword" input-id="pwd-confirm" fluid toggle-mask />
-                                </div>
-                                <div class="flex justify-end pt-2 xl:hidden">
-                                    <Button icon="pi pi-check" label="Đổi mật khẩu" @click="confirmChangePassword" />
-                                </div>
-                            </div>
+                <!-- ─── Right: Stacked content ─── -->
+                <div class="col-span-12 flex flex-col gap-5 lg:col-span-8">
+                    <!-- Card 1: Tier hero (full width, spending inside) -->
+                    <div class="relative overflow-hidden rounded-2xl" :style="{ background: currentTier.heroGradient }">
+                        <!-- blobs -->
+                        <div class="pointer-events-none absolute -right-8 -top-8 h-48 w-48 rounded-full bg-white/10" />
+                        <div class="pointer-events-none absolute -bottom-10 right-20 h-32 w-32 rounded-full bg-white/[.06]" />
 
-                            <div class="flex flex-col gap-4 rounded-xl border border-dashed border-primary-200 bg-primary-50/60 p-5 dark:border-primary-800/60 dark:bg-primary-950/25">
-                                <div class="flex gap-3">
-                                    <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary-100 text-primary-600 dark:bg-primary-900/50 dark:text-primary-300">
-                                        <i class="pi pi-shield text-sm"></i>
-                                    </span>
-                                    <p class="m-0 text-sm leading-relaxed text-surface-700 dark:text-surface-200">
-                                        Bạn nên dùng mật khẩu mạnh và <strong class="font-semibold text-surface-900 dark:text-surface-0">chưa từng dùng ở dịch vụ khác</strong>.
+                        <div class="relative z-10 flex items-stretch">
+                            <!-- Tier info -->
+                            <div class="flex flex-1 flex-col justify-between p-6">
+                                <span class="w-fit rounded-full bg-white/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white"> Active Tier </span>
+                                <div class="mt-4">
+                                    <h2 class="text-3xl font-black leading-tight text-white">{{ currentTier.label }}<br />Member</h2>
+                                    <p class="mt-2 max-w-[220px] text-xs leading-relaxed text-white/70">
+                                        {{ currentTier.description }}
                                     </p>
                                 </div>
-                                <div class="flex gap-3">
-                                    <span class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300">
-                                        <i class="pi pi-info-circle text-sm"></i>
-                                    </span>
-                                    <div class="min-w-0 flex-1">
-                                        <p class="m-0 text-sm font-semibold text-surface-900 dark:text-surface-0">Yêu cầu mật khẩu</p>
-                                        <ul class="m-0 mt-3 flex list-none flex-col gap-2.5 p-0 text-sm text-surface-700 dark:text-surface-200">
-                                            <li class="flex gap-2">
-                                                <i class="pi pi-check-circle mt-0.5 shrink-0 text-xs text-primary-500"></i>
-                                                <span>Có ít nhất 8 ký tự</span>
-                                            </li>
-                                            <li class="flex gap-2">
-                                                <i class="pi pi-check-circle mt-0.5 shrink-0 text-xs text-primary-500"></i>
-                                                <span>Có ít nhất một chữ hoa và một chữ thường</span>
-                                            </li>
-                                            <li class="flex gap-2">
-                                                <i class="pi pi-check-circle mt-0.5 shrink-0 text-xs text-primary-500"></i>
-                                                <span>Có ít nhất một chữ số</span>
-                                            </li>
-                                            <li class="flex gap-2">
-                                                <i class="pi pi-check-circle mt-0.5 shrink-0 text-xs text-primary-500"></i>
-                                                <span>Có ít nhất một ký tự đặc biệt</span>
-                                            </li>
-                                        </ul>
-                                    </div>
+                            </div>
+
+                            <!-- Emoji center -->
+                            <div class="flex items-center justify-center px-2 text-6xl leading-none" style="filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.3))">
+                                {{ currentTier.emoji }}
+                            </div>
+
+                            <!-- Spending panel -->
+                            <div class="flex w-36 shrink-0 flex-col items-center justify-center gap-1 border-l border-white/10 bg-white/10 px-5 py-6 text-center backdrop-blur-sm">
+                                <i class="pi pi-star-fill text-white/80" style="font-size: 1.1rem"></i>
+                                <p class="mt-1 text-[10px] font-bold uppercase tracking-widest text-white/60">Chi tiêu</p>
+                                <p class="text-xl font-black leading-tight text-white">{{ formatPrice(User.totalSpent || 0) }}<span class="text-sm font-semibold">đ</span></p>
+                                <button class="mt-2 text-[11px] font-semibold text-white/70 hover:text-white">Quyền lợi →</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 2: Benefits (4 cards in a row) -->
+                    <div class="grid grid-cols-4 gap-3">
+                        <div v-for="b in currentTier.benefits" :key="b.title" class="flex flex-col gap-2.5 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+                            <div class="flex h-9 w-9 items-center justify-center rounded-xl" :style="{ backgroundColor: currentTier.badgeBg }">
+                                <i :class="b.icon" style="font-size: 0.9rem" :style="{ color: currentTier.badgeColor }"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800 dark:text-slate-100">{{ b.title }}</p>
+                                <p class="mt-0.5 text-xs text-slate-400">{{ b.desc }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Personal info -->
+                    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+                        <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4 dark:border-zinc-800">
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white">Thông tin cá nhân</h4>
+                                <p class="mt-0.5 text-xs text-slate-400">Thông tin hiển thị trên tài khoản của bạn</p>
+                            </div>
+                            <button class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 transition hover:bg-indigo-100 dark:bg-indigo-950/30 dark:hover:bg-indigo-950/50" @click="openUpdateUser">
+                                <i class="pi pi-pencil text-indigo-600 dark:text-indigo-400" style="font-size: 0.8rem"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-5 p-5">
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Họ tên</p>
+                                <p class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ User.name || '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Email</p>
+                                <p class="mt-1 break-all text-sm font-semibold text-slate-800 dark:text-slate-100">{{ User.email || '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Số điện thoại</p>
+                                <p class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ User.phone || '—' }}</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Địa chỉ giao hàng</p>
+                                <p class="mt-1 text-sm font-semibold text-slate-800 dark:text-slate-100">{{ formattedAddress }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Change password -->
+                    <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
+                        <!-- Header -->
+                        <div class="flex items-center gap-3 border-b border-slate-100 px-5 py-4 dark:border-zinc-800">
+                            <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/30">
+                                <i class="pi pi-lock text-indigo-600 dark:text-indigo-400" style="font-size:0.9rem"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-slate-900 dark:text-white">Đổi mật khẩu</h4>
+                                <p class="text-xs text-slate-400">Bảo vệ tài khoản bằng mật khẩu đủ mạnh</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2">
+                            <!-- Left: inputs -->
+                            <div class="flex flex-col gap-4 p-5 md:border-r md:border-slate-100 md:dark:border-zinc-800">
+                                <div class="flex flex-col gap-1.5">
+                                    <label class="text-xs font-semibold text-slate-500">Mật khẩu hiện tại</label>
+                                    <Password v-model.trim="changePassword.password" :autocomplete="false" fluid toggle-mask />
                                 </div>
-                                <div class="hidden justify-end pt-2 xl:flex">
+                                <div class="flex flex-col gap-1.5">
+                                    <label class="text-xs font-semibold text-slate-500">Mật khẩu mới</label>
+                                    <Password v-model.trim="changePassword.newPassword" fluid toggle-mask />
+                                </div>
+                                <div class="flex flex-col gap-1.5">
+                                    <label class="text-xs font-semibold text-slate-500">Nhập lại mật khẩu</label>
+                                    <Password v-model.trim="changePassword.cfPassword" fluid toggle-mask />
+                                </div>
+                                <div class="flex justify-end pt-1">
                                     <Button icon="pi pi-check" label="Đổi mật khẩu" @click="confirmChangePassword" />
+                                </div>
+                            </div>
+
+                            <!-- Right: requirements -->
+                            <div class="flex flex-col gap-4 bg-slate-50/60 p-5 dark:bg-zinc-900/40">
+                                <div class="flex items-center gap-2">
+                                    <i class="pi pi-shield text-indigo-500 dark:text-indigo-400" style="font-size:0.9rem"></i>
+                                    <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Yêu cầu mật khẩu</p>
+                                </div>
+                                <ul class="flex flex-col gap-2.5">
+                                    <li v-for="req in passwordRequirements" :key="req" class="flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
+                                        <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-950/50">
+                                            <i class="pi pi-check text-indigo-600 dark:text-indigo-400" style="font-size:7px"></i>
+                                        </span>
+                                        {{ req }}
+                                    </li>
+                                </ul>
+                                <div class="mt-auto rounded-xl border border-amber-100 bg-amber-50 p-3 dark:border-amber-900/30 dark:bg-amber-950/20">
+                                    <div class="flex gap-2">
+                                        <i class="pi pi-info-circle mt-0.5 shrink-0 text-amber-500 dark:text-amber-400" style="font-size:0.85rem"></i>
+                                        <p class="text-xs leading-relaxed text-amber-700 dark:text-amber-300">
+                                            Không dùng lại mật khẩu đã sử dụng ở dịch vụ khác để bảo vệ tài khoản tốt nhất.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </section>
+                </div>
             </div>
         </div>
 
+        <!-- ─── Dialog: Update user ─── -->
         <Dialog v-model:visible="updateUserModal" modal header="Cập nhật thông tin" :style="{ width: 'min(92vw, 50rem)' }">
             <div class="grid gap-4 md:grid-cols-2">
                 <div class="flex flex-col gap-2 md:col-span-2">
@@ -185,16 +245,22 @@
         </Dialog>
     </div>
 </template>
+
 <script setup>
 import API from '@/api/api-main';
+import { formatPrice } from '@/helper/formatPrice';
 import { useToast } from 'primevue/usetoast';
 import { computed, getCurrentInstance, onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
+
 const { proxy } = getCurrentInstance();
 const toast = useToast();
+
 onMounted(() => {
     fetchProvince();
     getMe();
 });
+
 const formData = new FormData();
 const selectedDistrict = ref();
 const selectedProvince = ref();
@@ -202,13 +268,95 @@ const userDetail = ref({});
 const Province = ref([]);
 const Districts = ref([]);
 const Wards = ref([]);
-const changePassword = ref({
-    password: '',
-    newPassword: '',
-    cfPassword: ''
-});
+const changePassword = ref({ password: '', newPassword: '', cfPassword: '' });
+const passwordRequirements = ['Ít nhất 8 ký tự', 'Có chữ hoa và chữ thường', 'Có ít nhất 1 chữ số', 'Có ít nhất 1 ký tự đặc biệt'];
 const updateUserModal = ref(false);
 const User = ref({});
+
+const tierConfig = {
+    bronze: {
+        label: 'Bronze',
+        emoji: '🥉',
+        description: 'Bắt đầu hành trình khám phá đồ chơi cùng chúng tôi.',
+        heroGradient: 'linear-gradient(135deg, #7c2d12 0%, #b45309 55%, #d97706 100%)',
+        progressColor: 'linear-gradient(90deg, #b45309, #fbbf24)',
+        badgeBg: '#fff7ed',
+        badgeColor: '#c2410c',
+        benefits: [
+            { icon: 'pi pi-tag', title: 'Khám phá', desc: 'Toàn bộ danh mục' },
+            { icon: 'pi pi-truck', title: 'Giao hàng', desc: 'Phí tiêu chuẩn' },
+            { icon: 'pi pi-headphones', title: 'Hỗ trợ', desc: 'Cơ bản 24/7' },
+            { icon: 'pi pi-gift', title: 'Sinh nhật', desc: 'Voucher quà tặng' }
+        ],
+        from: 0,
+        nextThreshold: 2000000,
+        nextLabel: 'Silver'
+    },
+    silver: {
+        label: 'Silver',
+        emoji: '🥈',
+        description: 'Bạn là thành viên Silver được yêu mến. Hành trình đến Gold đang chờ!',
+        heroGradient: 'linear-gradient(135deg, #0f2044 0%, #1d4ed8 55%, #3b82f6 100%)',
+        progressColor: 'linear-gradient(90deg, #1d4ed8, #60a5fa)',
+        badgeBg: '#eff6ff',
+        badgeColor: '#1d4ed8',
+        benefits: [
+            { icon: 'pi pi-percentage', title: 'Giảm 3%', desc: 'Toàn bộ đơn hàng' },
+            { icon: 'pi pi-truck', title: 'Freeship', desc: 'Giao hàng tiêu chuẩn' },
+            { icon: 'pi pi-bell', title: 'Pre-order', desc: 'Đặt trước độc quyền' },
+            { icon: 'pi pi-gift', title: 'Sinh nhật', desc: 'Quà bất ngờ' }
+        ],
+        from: 2000000,
+        nextThreshold: 5000000,
+        nextLabel: 'Gold'
+    },
+    gold: {
+        label: 'Gold',
+        emoji: '🥇',
+        description: 'Thành viên Gold ưu tú! Chỉ một bước nữa là Platinum.',
+        heroGradient: 'linear-gradient(135deg, #78350f 0%, #d97706 55%, #fbbf24 100%)',
+        progressColor: 'linear-gradient(90deg, #d97706, #fde68a)',
+        badgeBg: '#fefce8',
+        badgeColor: '#a16207',
+        benefits: [
+            { icon: 'pi pi-percentage', title: 'Giảm 5%', desc: 'Toàn bộ đơn hàng' },
+            { icon: 'pi pi-truck', title: 'Freeship', desc: 'Giao hàng nhanh' },
+            { icon: 'pi pi-star', title: 'Pre-order', desc: 'Truy cập độc quyền' },
+            { icon: 'pi pi-gift', title: 'Sinh nhật', desc: 'Quà đặc biệt' }
+        ],
+        from: 5000000,
+        nextThreshold: 10000000,
+        nextLabel: 'Platinum'
+    },
+    platinum: {
+        label: 'Platinum',
+        emoji: '💎',
+        description: 'Bạn đã đạt hạng cao nhất! Cảm ơn sự tin tưởng tuyệt vời của bạn.',
+        heroGradient: 'linear-gradient(135deg, #3b0764 0%, #6d28d9 55%, #7c3aed 100%)',
+        progressColor: 'linear-gradient(90deg, #6d28d9, #a78bfa)',
+        badgeBg: '#f5f3ff',
+        badgeColor: '#6d28d9',
+        benefits: [
+            { icon: 'pi pi-percentage', title: 'Giảm 7%', desc: 'Toàn bộ đơn hàng' },
+            { icon: 'pi pi-truck', title: 'Express Ship', desc: 'Giao hàng hỏa tốc' },
+            { icon: 'pi pi-users', title: 'VIP Support', desc: 'Hỗ trợ ưu tiên' },
+            { icon: 'pi pi-ticket', title: 'Voucher VIP', desc: 'Ưu đãi đặc biệt' }
+        ],
+        from: 10000000,
+        nextThreshold: null,
+        nextLabel: null
+    }
+};
+
+const currentTier = computed(() => tierConfig[User.value.membershipTier] || tierConfig.bronze);
+
+const tierProgress = computed(() => {
+    const cfg = currentTier.value;
+    if (!cfg.nextThreshold) return 100;
+    const spent = Math.min(User.value.totalSpent || 0, cfg.nextThreshold);
+    return Math.max(0, Math.round(((spent - cfg.from) / (cfg.nextThreshold - cfg.from)) * 100));
+});
+
 const formattedAddress = computed(() => {
     const parts = [User.value.addressLine, User.value.ward, User.value.district, User.value.province].filter(Boolean);
     return parts.length ? parts.join(', ') : 'Chưa cập nhật địa chỉ';
@@ -218,25 +366,29 @@ const getMe = async () => {
     try {
         const res = await API.get(`get-me`);
         User.value = res.data.metadata;
-        userDetail.value = User.value;
+        userDetail.value = { ...User.value };
         selectedProvince.value = User.value.province;
         selectedDistrict.value = User.value.district;
     } catch (error) {
         console.log(error);
     }
 };
+
 const openUpdateUser = () => {
     updateUserModal.value = true;
     getMe();
 };
+
 const onProvinceChange = (e) => {
     userDetail.value.province = selectedProvince.value.FullName;
     fetchDistrict(e.value);
 };
+
 const onDistrictChange = (e) => {
     userDetail.value.district = selectedDistrict.value.FullName;
     fetchWard(e.value);
 };
+
 const fetchProvince = async () => {
     try {
         const res = await API.get(`province`);
@@ -245,6 +397,7 @@ const fetchProvince = async () => {
         console.log(error);
     }
 };
+
 const fetchDistrict = async (province) => {
     try {
         const res = await API.get(`province/district/${province.Code}`);
@@ -253,6 +406,7 @@ const fetchDistrict = async (province) => {
         console.log(error);
     }
 };
+
 const fetchWard = async (district) => {
     try {
         const res = await API.get(`province/ward/${district.Code}`);
@@ -261,6 +415,7 @@ const fetchWard = async (district) => {
         console.log(error);
     }
 };
+
 const updateUser = async () => {
     formData.append('items', JSON.stringify(userDetail.value));
     try {
@@ -268,7 +423,6 @@ const updateUser = async () => {
         if (res) {
             getMe();
             proxy.$notify('S', 'Thành công!', toast);
-
             updateUserModal.value = false;
         }
     } catch (error) {
@@ -278,9 +432,11 @@ const updateUser = async () => {
         formData.delete('images');
     }
 };
+
 const openFile = () => {
     document.querySelectorAll('.click-file')[0].click();
 };
+
 const uploadFileLocal = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
@@ -288,6 +444,7 @@ const uploadFileLocal = async (event) => {
     document.querySelectorAll('.click-file')[0].value = '';
     updateUser();
 };
+
 const confirmChangePassword = async () => {
     if (changePassword.value.cfPassword !== changePassword.value.newPassword) {
         return proxy.$notify('E', 'Mật khẩu nhập lại không khớp!', toast);
@@ -304,16 +461,3 @@ const confirmChangePassword = async () => {
     }
 };
 </script>
-<style scoped>
-.info-card {
-    @apply rounded-xl border border-surface-100 bg-surface-50 px-4 py-3 dark:border-surface-800 dark:bg-surface-800/30;
-}
-
-.info-label {
-    @apply text-xs font-semibold uppercase tracking-wide text-muted-color;
-}
-
-.info-value {
-    @apply m-0 mt-1 font-medium break-words text-surface-800 dark:text-surface-100;
-}
-</style>
