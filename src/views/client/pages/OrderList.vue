@@ -6,14 +6,21 @@
                 <aside class="col-span-12 lg:col-span-4">
                     <div class="sticky top-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-zinc-800 dark:bg-zinc-950">
                         <!-- Avatar + info -->
-                        <div class="flex flex-col items-center px-6 pt-7 pb-5 text-center">
-                            <div class="relative mb-3">
+                        <div class="flex flex-col items-center px-6 pt-8 pb-5 text-center">
+                            <!-- Container = frame size (110px); avatar (80px) sits centered inside -->
+                            <div class="relative mb-4" style="width: 110px; height: 110px">
                                 <img
-                                    class="h-20 w-20 rounded-full border-2 border-white object-cover shadow-md ring-2 ring-slate-100 dark:ring-zinc-700"
+                                    class="absolute rounded-full object-cover"
+                                    style="width: 80px; height: 80px; top: 15px; left: 15px"
                                     :src="userDetail.thumbnail || 'https://t4.ftcdn.net/jpg/05/49/98/39/360_F_549983970_bRCkYfk0P6PP5fKbMhZMIb07mCJ6esXL.jpg'"
                                     alt="avatar"
                                 />
-                                <button class="absolute bottom-0.5 right-0.5 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-indigo-600 text-white dark:border-zinc-950" @click="openFile">
+                                <TierFrame :tier="User.membershipTier || 'bronze'" class="pointer-events-none absolute inset-0 h-full w-full z-10" :style="{ filter: `drop-shadow(0 0 7px ${currentTier.gemColor})` }" />
+                                <button
+                                    class="absolute z-20 flex h-6 w-6 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-indigo-600 text-white dark:border-zinc-950"
+                                    style="bottom: 12px; right: 12px"
+                                    @click="openFile"
+                                >
                                     <i class="pi pi-camera" style="font-size: 8px"></i>
                                 </button>
                                 <input type="file" class="hidden click-file" @change="uploadFileLocal($event)" />
@@ -147,7 +154,7 @@
                         <!-- Header -->
                         <div class="flex items-center gap-3 border-b border-slate-100 px-5 py-4 dark:border-zinc-800">
                             <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50 dark:bg-indigo-950/30">
-                                <i class="pi pi-lock text-indigo-600 dark:text-indigo-400" style="font-size:0.9rem"></i>
+                                <i class="pi pi-lock text-indigo-600 dark:text-indigo-400" style="font-size: 0.9rem"></i>
                             </div>
                             <div>
                                 <h4 class="font-bold text-slate-900 dark:text-white">Đổi mật khẩu</h4>
@@ -178,23 +185,21 @@
                             <!-- Right: requirements -->
                             <div class="flex flex-col gap-4 bg-slate-50/60 p-5 dark:bg-zinc-900/40">
                                 <div class="flex items-center gap-2">
-                                    <i class="pi pi-shield text-indigo-500 dark:text-indigo-400" style="font-size:0.9rem"></i>
+                                    <i class="pi pi-shield text-indigo-500 dark:text-indigo-400" style="font-size: 0.9rem"></i>
                                     <p class="text-sm font-semibold text-slate-700 dark:text-slate-200">Yêu cầu mật khẩu</p>
                                 </div>
                                 <ul class="flex flex-col gap-2.5">
                                     <li v-for="req in passwordRequirements" :key="req" class="flex items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
                                         <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-950/50">
-                                            <i class="pi pi-check text-indigo-600 dark:text-indigo-400" style="font-size:7px"></i>
+                                            <i class="pi pi-check text-indigo-600 dark:text-indigo-400" style="font-size: 7px"></i>
                                         </span>
                                         {{ req }}
                                     </li>
                                 </ul>
                                 <div class="mt-auto rounded-xl border border-amber-100 bg-amber-50 p-3 dark:border-amber-900/30 dark:bg-amber-950/20">
                                     <div class="flex gap-2">
-                                        <i class="pi pi-info-circle mt-0.5 shrink-0 text-amber-500 dark:text-amber-400" style="font-size:0.85rem"></i>
-                                        <p class="text-xs leading-relaxed text-amber-700 dark:text-amber-300">
-                                            Không dùng lại mật khẩu đã sử dụng ở dịch vụ khác để bảo vệ tài khoản tốt nhất.
-                                        </p>
+                                        <i class="pi pi-info-circle mt-0.5 shrink-0 text-amber-500 dark:text-amber-400" style="font-size: 0.85rem"></i>
+                                        <p class="text-xs leading-relaxed text-amber-700 dark:text-amber-300">Không dùng lại mật khẩu đã sử dụng ở dịch vụ khác để bảo vệ tài khoản tốt nhất.</p>
                                     </div>
                                 </div>
                             </div>
@@ -252,6 +257,7 @@ import { formatPrice } from '@/helper/formatPrice';
 import { useToast } from 'primevue/usetoast';
 import { computed, getCurrentInstance, onMounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
+import TierFrame from '../components/TierFrame.vue';
 
 const { proxy } = getCurrentInstance();
 const toast = useToast();
@@ -282,6 +288,10 @@ const tierConfig = {
         progressColor: 'linear-gradient(90deg, #b45309, #fbbf24)',
         badgeBg: '#fff7ed',
         badgeColor: '#c2410c',
+        frameRing: 'linear-gradient(135deg, #cd7f32 0%, #8B4513 30%, #fbbf24 60%, #b45309 80%, #cd7f32 100%)',
+        frameGlow: '0 0 0 1px rgba(180,83,9,0.2), 0 0 12px 3px rgba(180,83,9,0.4)',
+        gemColor: '#f59e0b',
+        gemGlow: '0 0 6px 1px rgba(245,158,11,0.8)',
         benefits: [
             { icon: 'pi pi-tag', title: 'Khám phá', desc: 'Toàn bộ danh mục' },
             { icon: 'pi pi-truck', title: 'Giao hàng', desc: 'Phí tiêu chuẩn' },
@@ -300,6 +310,10 @@ const tierConfig = {
         progressColor: 'linear-gradient(90deg, #1d4ed8, #60a5fa)',
         badgeBg: '#eff6ff',
         badgeColor: '#1d4ed8',
+        frameRing: 'linear-gradient(135deg, #94a3b8 0%, #e2e8f0 30%, #94a3b8 60%, #cbd5e1 80%, #e2e8f0 100%)',
+        frameGlow: '0 0 0 1px rgba(148,163,184,0.3), 0 0 12px 3px rgba(148,163,184,0.45)',
+        gemColor: '#e2e8f0',
+        gemGlow: '0 0 6px 1px rgba(226,232,240,0.9)',
         benefits: [
             { icon: 'pi pi-percentage', title: 'Giảm 3%', desc: 'Toàn bộ đơn hàng' },
             { icon: 'pi pi-truck', title: 'Freeship', desc: 'Giao hàng tiêu chuẩn' },
@@ -318,6 +332,10 @@ const tierConfig = {
         progressColor: 'linear-gradient(90deg, #d97706, #fde68a)',
         badgeBg: '#fefce8',
         badgeColor: '#a16207',
+        frameRing: 'linear-gradient(135deg, #f59e0b 0%, #fde68a 25%, #d97706 50%, #fbbf24 75%, #f59e0b 100%)',
+        frameGlow: '0 0 0 1px rgba(245,158,11,0.25), 0 0 16px 5px rgba(245,158,11,0.5)',
+        gemColor: '#fde047',
+        gemGlow: '0 0 8px 2px rgba(253,224,71,0.9)',
         benefits: [
             { icon: 'pi pi-percentage', title: 'Giảm 5%', desc: 'Toàn bộ đơn hàng' },
             { icon: 'pi pi-truck', title: 'Freeship', desc: 'Giao hàng nhanh' },
@@ -336,6 +354,10 @@ const tierConfig = {
         progressColor: 'linear-gradient(90deg, #6d28d9, #a78bfa)',
         badgeBg: '#f5f3ff',
         badgeColor: '#6d28d9',
+        frameRing: 'linear-gradient(135deg, #7c3aed 0%, #c4b5fd 25%, #4c1d95 50%, #a78bfa 75%, #7c3aed 100%)',
+        frameGlow: '0 0 0 1px rgba(124,58,237,0.3), 0 0 20px 6px rgba(124,58,237,0.55)',
+        gemColor: '#c4b5fd',
+        gemGlow: '0 0 10px 3px rgba(196,181,253,0.9)',
         benefits: [
             { icon: 'pi pi-percentage', title: 'Giảm 7%', desc: 'Toàn bộ đơn hàng' },
             { icon: 'pi pi-truck', title: 'Express Ship', desc: 'Giao hàng hỏa tốc' },
