@@ -176,7 +176,7 @@
                         <div v-if="couponData?.couponValue" class="flex items-center justify-between text-sm text-emerald-600">
                             <span class="inline-flex items-center gap-2">
                                 <i class="pi pi-ticket"></i>
-                                Giảm giá ({{ couponData.couponType === 'percent' ? `${couponData.couponValue}%` : `${formatPrice(couponData.couponValue)}đ` }})
+                                Voucher ({{ couponData.couponType === 'percent' ? `${couponData.couponValue}%` : `${formatPrice(couponData.couponValue)}đ` }})
                                 <button type="button" class="text-slate-400 hover:text-red-400 transition-colors" @click="removeCoupon" title="Bỏ coupon">
                                     <i class="pi pi-times text-[10px]"></i>
                                 </button>
@@ -184,10 +184,18 @@
                             <span class="font-bold">-{{ formatPrice((totalComputed || itemCart.totalPrice) - couponData.finalPrice) }}đ</span>
                         </div>
 
+                        <div v-if="tierDiscountPercent > 0" class="flex items-center justify-between text-sm text-indigo-600 dark:text-indigo-400">
+                            <span class="inline-flex items-center gap-2">
+                                <i class="pi pi-star-fill text-xs"></i>
+                                Ưu đãi hạng {{ tierLabelMap[userTier] }} ({{ tierDiscountPercent }}%)
+                            </span>
+                            <span class="font-bold">-{{ formatPrice(tierDiscountAmount) }}đ</span>
+                        </div>
+
                         <div class="rounded-2xl bg-slate-50 p-4 dark:bg-zinc-900">
                             <div class="flex items-center justify-between">
                                 <span class="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-zinc-400">Tổng cộng</span>
-                                <span class="text-xl font-black text-slate-900 dark:text-white"> {{ formatPrice(couponData?.finalPrice || totalComputed || itemCart.totalPrice) }}đ </span>
+                                <span class="text-xl font-black text-slate-900 dark:text-white">{{ formatPrice(finalTotal) }}đ</span>
                             </div>
                             <p class="m-0 mt-2 text-[11px] text-slate-400">VAT đã bao gồm</p>
                         </div>
@@ -232,7 +240,9 @@
                         <div class="flex grow flex-col justify-center px-6 py-4">
                             <h4 class="font-black uppercase tracking-tight text-slate-900 dark:text-white">{{ item.CouponName }}</h4>
                             <div class="mt-2 text-[10px] font-bold text-slate-500">
-                                <p v-if="item.minOrderValue">Đơn tối thiểu: <span class="text-indigo-600">{{ formatPrice(item.minOrderValue) }}đ</span></p>
+                                <p v-if="item.minOrderValue">
+                                    Đơn tối thiểu: <span class="text-indigo-600">{{ formatPrice(item.minOrderValue) }}đ</span>
+                                </p>
                                 <p>HSD: {{ format(new Date(item.expiryDate), 'dd/MM/yyyy') }}</p>
                             </div>
                         </div>
@@ -307,6 +317,23 @@ const payload = ref({
     fullName: user.name,
     paymentMethod: 'cod'
 });
+
+const userTier = ref(null);
+
+const tierDiscountMap = { bronze: 0, silver: 3, gold: 5, platinum: 10 };
+const tierLabelMap = { bronze: 'Bronze', silver: 'Silver', gold: 'Gold', platinum: 'Platinum' };
+
+const tierDiscountPercent = computed(() => tierDiscountMap[userTier.value] || 0);
+
+// Áp dụng tier discount lên giá sau coupon (nếu có)
+const priceAfterCoupon = computed(() => couponData.value?.finalPrice || totalComputed.value || itemCart.value?.totalPrice || 0);
+
+const tierDiscountAmount = computed(() => {
+    if (!tierDiscountPercent.value) return 0;
+    return Math.round((totalComputed.value * tierDiscountPercent.value) / 100);
+});
+
+const finalTotal = computed(() => priceAfterCoupon.value - tierDiscountAmount.value);
 
 const PaymentOpts = ref([
     { label: 'Tiền mặt (COD)', value: 'cod' },
@@ -457,6 +484,7 @@ const getMe = async () => {
         const res = await API.get('get-me');
         Object.assign(payload.value, res.data.metadata);
         payload.value.fullName = res.data.metadata.name;
+        userTier.value = res.data.metadata.membershipTier ?? null;
     } catch (error) {}
 };
 

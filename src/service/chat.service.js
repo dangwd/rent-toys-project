@@ -23,12 +23,18 @@ class ChatService {
         await API.updatev2(`chat/conversations/${conversationId}/read`, {});
     }
 
-    async getConversations() {
-        const res = await API.get('chat/conversations');
+    async getConversations(status = '') {
+        const query = status ? `?status=${status}` : '';
+        const res = await API.get(`chat/conversations${query}`);
         const meta = res?.data?.metadata;
         if (Array.isArray(meta)) return meta;
         if (Array.isArray(meta?.result)) return meta.result;
         return [];
+    }
+
+    async updateStatus(conversationId, status) {
+        const res = await API.updatev2(`chat/conversations/${conversationId}/status`, { status });
+        return res?.data?.metadata ?? null;
     }
 }
 
