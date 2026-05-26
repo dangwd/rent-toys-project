@@ -61,6 +61,12 @@ export default [
                 name: 'revenueReport',
                 component: () => import('@/views/admin/pages/RevenueReport.vue'),
                 meta: { requiresAuth: true, roles: 'A' }
+            },
+            {
+                path: '/man/chat',
+                name: 'chatManagement',
+                component: () => import('@/views/admin/pages/ChatMan.vue'),
+                meta: { requiresAuth: true, roles: 'A' }
             }
         ]
     },

@@ -17,7 +17,8 @@ const model = ref([
             { label: 'Sản phẩm', icon: 'pi pi-fw pi-box', to: '/man/products' },
             { label: 'Đơn hàng', icon: 'pi pi-fw pi-file-edit', to: '/man/invoice' },
             { label: 'Coupon', icon: 'pi pi-fw pi-ticket', to: '/man/coupon' },
-            { label: 'Banner', icon: 'pi pi-fw pi-image', to: '/man/banners' }
+            { label: 'Banner', icon: 'pi pi-fw pi-image', to: '/man/banners' },
+            { label: 'Chat hỗ trợ', icon: 'pi pi-fw pi-comments', to: '/man/chat' }
         ]
     },
     {
